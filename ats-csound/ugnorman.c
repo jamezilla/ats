@@ -85,13 +85,6 @@ static	ATSBUFREADNZ	*atsbufreadaddrnz;
 
 int readdatafile(const char *, ATSFILEDATA *);
 
-void myiniterror(char *s)
-{
-	fprintf(stderr,"INIT ERROR: %s\n", s);
-	exit(1);
-}
-
-
 /************************************************************/
 /*********  ATSREAD       ***********************************/
 /************************************************************/
@@ -119,16 +112,20 @@ void atsreadset(ATSREAD *p){
 	double * temppnt;
 	
 	/* copy in ats file name */
-	if (*p->ifileno == SSTRCOD)
-	{
-		strcpy(atsfilname, p->STRARG);
-	}
-    	else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
-		strcpy(atsfilname, strsets[(long)*p->ifileno]);
-	else 
-		sprintf(atsfilname,"ats.%d", (int)*p->ifileno);
+        if (*p->ifileno == sstrcod){
+                strcpy(atsfilname, unquote(p->STRARG));
+        }
+        else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+                strcpy(atsfilname, strsets[(long)*p->ifileno]);
+        else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
 	
-	p->atsmemfile = ldmemfile(atsfilname);
+	// load memfile
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+        {
+                sprintf(errmsg, "ATSREAD: Ats file %s not read (does it exist?)", atsfilname);
+                initerror(errmsg);
+                return;
+        }
 	
 	// allocate space so we can store the data for later use
 	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
@@ -266,16 +263,20 @@ void atsreadnzset(ATSREADNZ *p){
 	double * temppnt;
 	
 	/* copy in ats file name */
-	if (*p->ifileno == SSTRCOD)
-	{
-		strcpy(atsfilname, p->STRARG);
-	}
-    	else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
-		strcpy(atsfilname, strsets[(long)*p->ifileno]);
-	else 
-		sprintf(atsfilname,"ats.%d", (int)*p->ifileno);
+        if (*p->ifileno == sstrcod){
+                strcpy(atsfilname, unquote(p->STRARG));
+        }
+        else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+                strcpy(atsfilname, strsets[(long)*p->ifileno]);
+        else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
 	
-	p->atsmemfile = ldmemfile(atsfilname);
+	// load memfile
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+        {
+                sprintf(errmsg, "ATSREADNZ: Ats file %s not read (does it exist?)", atsfilname);
+                initerror(errmsg);
+                return;
+        }
 	
 	// allocate space so we can store the data for later use
 	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
@@ -393,7 +394,7 @@ void atsaddset(ATSADD *p){
 	// set up function table for synthesis
         if ((ftp = ftfind(p->ifn)) == NULL){
 		sprintf(errmsg, "ATSADD: Function table number for synthesis waveform not valid\n");
-		myiniterror(errmsg);
+		initerror(errmsg);
                 return;
 	}
         p->ftp = ftp;
@@ -403,7 +404,7 @@ void atsaddset(ATSADD *p){
                 if ((AmpGateFunc = ftfind(p->igatefun)) == NULL)
 		{
 			sprintf(errmsg, "ATSADD: Gate Function table number not valid\n");
-			myiniterror(errmsg);
+			initerror(errmsg);
                         return;
 		}
                 else
@@ -411,16 +412,21 @@ void atsaddset(ATSADD *p){
         }
 	
 	/* copy in ats file name */
-	if (*p->ifileno == SSTRCOD)
-	{
-		strcpy(atsfilname, p->STRARG);
-	}
-    	else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
-		strcpy(atsfilname, strsets[(long)*p->ifileno]);
-	else 
-		sprintf(atsfilname,"ats.%d", (int)*p->ifileno);
+        if (*p->ifileno == sstrcod){
+                strcpy(atsfilname, unquote(p->STRARG));
+        }
+        else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+                strcpy(atsfilname, strsets[(long)*p->ifileno]);
+        else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
 	
-	p->atsmemfile = ldmemfile(atsfilname);
+	// load memfile
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+        {
+                sprintf(errmsg, "ATSADD: Ats file %s not read (does it exist?)", atsfilname);
+                initerror(errmsg);
+                return;
+        }
+	
 	// allocate space so we can store the data for later use
 	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0 || (int)*(p->iptls) > p->prevpartials)
 	{
@@ -533,14 +539,14 @@ void atsadd(ATSADD *p){
 
         if (p->auxch.auxp == NULL)
         {
-		myiniterror("ATSADD: not intialized");
+		initerror("ATSADD: not intialized");
                 return;
         }
 
         ftp = p->ftp;           // ftp is a poiter to the ftable
         if (ftp == NULL)
         {
-                myiniterror("ATSADD: not intialized");
+                initerror("ATSADD: not intialized");
                 return;
         }
 	
@@ -552,7 +558,7 @@ void atsadd(ATSADD *p){
 		{
                 	p->prFlg = 0;
 			sprintf(errmsg, "ATSADD: only positive time pointer values are allowed, setting to zero\n");
-			myiniterror(errmsg);
+			initerror(errmsg);
 		}
         }
         else if (frIndx >= p->maxFr) // if we're trying to get frames past where we have data
@@ -562,7 +568,7 @@ void atsadd(ATSADD *p){
                 {
                         p->prFlg = 0;   // set to false
 			sprintf(errmsg, "ATSADD: time pointer out of range, truncating to last frame\n");
-			myiniterror(errmsg);
+			initerror(errmsg);
                 }
         }
 	else
@@ -720,7 +726,6 @@ void FetchADDNZbands(
         for(i = 0; i < 25; i++)
         {
 		buf[i] = *input[frame1 + i] + (double)frac * (*(input[frame2 + i]) - *(input[frame1 + i])); // calc energy
-		//fprintf(stderr,"buf %f\n", buf[i]);
         }
 }
 
@@ -920,7 +925,7 @@ void atsaddnz(ATSADDNZ *p){
 		{
                 	p->prFlg = 0;
 			sprintf(errmsg, "ATSADDNZ: only positive time pointer values are allowed, setting to zero\n");
-			myiniterror(errmsg);
+			initerror(errmsg);
 		}
         }
         else if (frIndx >= p->maxFr) // if we're trying to get frames past where we have data
@@ -930,7 +935,7 @@ void atsaddnz(ATSADDNZ *p){
                 {
                         p->prFlg = 0;   // set to false
 			sprintf(errmsg, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
-			myiniterror(errmsg);
+			initerror(errmsg);
                 }
         }
 	else
