@@ -1194,7 +1194,7 @@ void atssinnoi(ATSSINNOI *p)
 				amp = oscbuf[i].amp;
 				freq = (float)oscbuf[i].freq * *p->kfreq;
 				inc = TWOPI * freq / esr;
-				nzamp = *(p->nzbuf + i);			
+				nzamp = sqrt( *(p->nzbuf + i) / (p->atshead->winsz * ATSA_NOISE_VARIANCE) );			
 				nzfreq   = (freq < 500. ? 50. : freq * .05);
 				do
 				{
@@ -1203,9 +1203,9 @@ void atssinnoi(ATSSINNOI *p)
 					phase += inc;
 						
 					//calc noise
-					noise = sinewave * randifats(&(p->randinoise[i]), nzfreq);
+					noise = nzamp * sinewave * randifats(&(p->randinoise[i]), nzfreq);
 					//calc output
-					*ar += (float)sinewave * *p->ksinamp + (float)(noise * nzamp) * *p->knzamp;
+					*ar += (float)sinewave * *p->ksinamp + (float)noise * *p->knzamp;
 					ar++;
 				}
 				while(--nsmps);
