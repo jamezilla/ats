@@ -85,6 +85,15 @@ int peak_frq_inc(void const *a, void const *b)
   return(1000.0 * (((ATS_PEAK *)a)->frq - ((ATS_PEAK *)b)->frq));
 }
 
+/* peak_amp_inc
+ * ============
+ * function used by qsort to sort an array of peaks
+ * in increasing amplitude order.
+ */
+int peak_amp_inc(void const *a, void const *b)
+{
+  return(1000.0 * (((ATS_PEAK *)a)->amp - ((ATS_PEAK *)b)->amp));
+}
 
 /* peak_smr_dec
  * ============

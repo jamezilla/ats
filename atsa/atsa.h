@@ -303,6 +303,13 @@ ATS_PEAK *push_peak(ATS_PEAK *new_peak, ATS_PEAK *peaks, int *peaks_size);
  */
 int peak_frq_inc(void const *a, void const *b);
 
+/* peak_amp_inc
+ * ============
+ * function used by qsort to sort an array of peaks
+ * in increasing amplitude order.
+ */
+int peak_amp_inc(void const *a, void const *b);
+
 /* peak_smr_dec
  * ============
  * function used by qsort to sort an array of peaks
