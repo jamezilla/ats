@@ -73,12 +73,12 @@ typedef struct _atsreadnz
         double  maxFr;
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
+        char * filename;
         
         AUXCH   auxch;
-	
-	ATSFILEDATA filedata;
-	
-	double * datap;	// pointer to the data that we get from the ats file energy
+	MEMFIL * atsmemfile;
+
+	double ** datap;	// pointer to the data that we get from the ats file energy
 
 }       ATSREADNZ;
 
@@ -89,13 +89,15 @@ typedef struct _atsadd
         
 	FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
         AUXCH   auxch;
-        double  maxFr;
+        MEMFIL * atsmemfile;
+        
+	double  maxFr;
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
         double	MaxAmp;         // maximum amplitude in anaylsis file
+        char * filename;
 
-	ATSFILEDATA filedata;
-	ATS_DATA_LOC * datap;
+	ATS_DATA_LOC ** datap;
         double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
 
