@@ -1199,13 +1199,13 @@ void atssinnoi(ATSSINNOI *p)
 				do
 				{
 					//calc sine wave
-					sinewave = cos(phase) * amp;
+					sinewave = cos(phase);
 					phase += inc;
 						
 					//calc noise
 					noise = nzamp * sinewave * randifats(&(p->randinoise[i]), nzfreq);
 					//calc output
-					*ar += (float)sinewave * *p->ksinamp + (float)noise * *p->knzamp;
+					*ar += (float)(amp * sinewave) * *p->ksinamp + (float)noise * *p->knzamp;
 					ar++;
 				}
 				while(--nsmps);
