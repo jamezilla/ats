@@ -1,0 +1,64 @@
+SHELL = /bin/sh
+top_srcdir = .
+
+INSTALL = @INSTALL@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+srcdir = @srcdir@
+mandir = @mandir@
+libdir = @libdir@
+includedir = @includedir@
+VPATH = @srcdir@
+mkinstalldirs = $(SHELL) $(srcdir)/mkinstalldirs
+
+CC = @CC@
+DEFS = @DEFS@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+
+LDSO_FLAGS = @LDSO_FLAGS@
+SO_INSTALL = @SO_INSTALL@
+SO_LD = @SO_LD@
+A_LD = ld
+A_LD_FLAGS = @A_LD_FLAGS@
+LD_FLAGS = @LD_FLAGS@
+
+.c.o:
+	$(CC) -c $(DEFS) $(CFLAGS) $<
+
+SNDLIB_HEADERS = sndlib.h sndlib-strings.h clm.h
+SNDLIB_O_FILES = headers.o io.o sound.o clm.o
+
+sndlib: $(SNDLIB_HEADERS) $(SNDLIB_O_FILES)
+	$(A_LD) $(LD_FLAGS) $(LDFLAGS) $(SNDLIB_O_FILES) -o sndlib.a $(A_LD_FLAGS)
+
+$(SNDLIB_O_FILES): $(SNDLIB_HEADERS)
+
+clean:
+	rm -f $(SNDLIB_O_FILES) sndlib.a
+
+install: sndlib
+	$(mkinstalldirs) $(bindir)
+	$(mkinstalldirs) $(libdir)
+	$(mkinstalldirs) $(includedir)
+	$(SO_INSTALL) sndlib.so $(libdir)/libsndlib.so
+	$(INSTALL) sndlib.a $(libdir)/libsndlib.a
+	$(INSTALL) sndlib-config $(bindir)/sndlib-config
+	$(INSTALL) $(srcdir)/sndlib.h $(includedir)/sndlib.h
+
+uninstall:
+	rm -f $(libdir)/libsndlib.so
+	rm -f $(libdir)/libsndlib.a
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.in
+	cd $(srcdir); autoconf
+
