@@ -46,6 +46,25 @@ typedef struct _atsread {
   	t_outlet *freq_out, *amp_out, *nz_out;
 } t_atsread;
 
+
+#ifdef BYTESWAP
+//byte swaps a double
+double bswap(double * swap_me)
+{
+	unsigned char *sw_in, sw_out[8];	//for swaping
+	sw_in = (unsigned char *)swap_me;
+   sw_out[0] = sw_in[7];
+   sw_out[1] = sw_in[6];
+   sw_out[2] = sw_in[5];
+   sw_out[3] = sw_in[4];
+   sw_out[4] = sw_in[3];
+   sw_out[5] = sw_in[2];
+   sw_out[6] = sw_in[1];
+   sw_out[7] = sw_in[0];
+	return *((double *)sw_out);
+}
+#endif
+
 //function prototype
 void readdatafile(t_atsread *, const char *);
 
@@ -503,118 +522,177 @@ void atsread_setup(void) {
 void readdatafile(t_atsread *x, const char * filename)
 {
 	FILE * fin;
-        double temp;
+	double temp;
 	int i,j;
+#ifdef BYTESWAP
+	int swapped = 0;
+	int k;
+#endif
 	
 	if((fin=fopen(filename,"rb"))==0)
 	{
 		post("ATSREAD: cannot open file %s", filename);
-                return;
+		return;
 	}
 	//delete any previous data
-        if(x->data != NULL){
-        	for(i = 0; i < (int)(x->atshead).nfrms; i++)
-                	free(x->data[i]);
-                free(x->data);
-                x->data = NULL;
+	if(x->data != NULL){
+		for(i = 0; i < (int)(x->atshead).nfrms; i++)
+			free(x->data[i]);
+		free(x->data);
+		x->data = NULL;
 	}
-        if(x->nzdata != NULL){
-        	for(i = 0; i < (int)(x->atshead).nfrms; i++)
-                	free(x->nzdata[i]);
+	if(x->nzdata != NULL){
+		for(i = 0; i < (int)(x->atshead).nfrms; i++)
+			free(x->nzdata[i]);
 		free(x->nzdata);
-               	x->nzdata = NULL;
-        }
+		x->nzdata = NULL;
+	}
          
 	// read the header
 	fread(&(x->atshead),sizeof(t_atshead),1,fin);
 
-        //make sure this is an ats file
-        if((int)x->atshead.magic != 123){
-         	post("ATSREAD - Magic Number not correct in %s", filename);
-                fclose(fin);
-                return;
-        }
-        post("\t %s stats: \n \t\tType: %i, Frames: %i, Partials: %i, Sampling rate: %i Hz, Duration %f sec, Max Freq: %f Hz, Max Amp: %f",filename,
-         	(int)x->atshead.type, (int)x->atshead.nfrms, (int)x->atshead.npartials, (int)x->atshead.sampr, (float)x->atshead.dur, (float)x->atshead.freqmax, (float)x->atshead.ampmax);
-        if((int)x->atshead.type > 4 || (int)x->atshead.type < 1)
-	{
-         	post("ATSREAD - %i type Ats files not supported yet",(int)x->atshead.type);
-                x->atshead.magic = 0;
+	//make sure this is an ats file
+	if((int)x->atshead.magic != 123){
+
+#ifndef BYTESWAP
+		post("ATSREAD - Magic Number not correct in %s", filename);
 		fclose(fin);
-                return;
-        }
+		return;
+#else
+		//attempt to byte swap
+		if((int)bswap(&x->atshead.magic) != 123){	//not an ats file
+			post("ATSREAD - Magic Number not correct in %s", filename);
+			fclose(fin);
+			return;
+		} else {
+			post("ATSREAD - %s is of the wrong endianness, byteswapping.", filename);
+			swapped = 1;	//true (for later use)
+			//byte swap
+			for(i = 0; i < (sizeof(t_atshead) / sizeof(double)); i++)
+				((double *)(&x->atshead))[i]  = bswap(&(((double *)(&x->atshead))[i]));
+		}
+#endif
+	}
+	post("\t %s stats: \n \t\tType: %i, Frames: %i, Partials: %i, Sampling rate: %i Hz, Duration %f sec, Max Freq: %f Hz, Max Amp: %f",
+		filename, (int)x->atshead.type, (int)x->atshead.nfrms, (int)x->atshead.npartials, (int)x->atshead.sampr, (float)x->atshead.dur, 
+		(float)x->atshead.freqmax, (float)x->atshead.ampmax);
+	
+	if((int)x->atshead.type > 4 || (int)x->atshead.type < 1)
+	{
+		post("ATSREAD - %i type Ats files not supported yet",(int)x->atshead.type);
+		x->atshead.magic = 0;
+		fclose(fin);
+		return;
+	}
         
 	//allocate memory for a new data table
-        x->data = (t_atsdataloc **)malloc(sizeof(t_atsdataloc *) * (int)x->atshead.nfrms);
+	x->data = (t_atsdataloc **)malloc(sizeof(t_atsdataloc *) * (int)x->atshead.nfrms);
 	for(i = 0; i < (int)x->atshead.nfrms; i++)
-         	x->data[i] = (t_atsdataloc *)malloc(sizeof(t_atsdataloc) * (int)x->atshead.npartials);
+		x->data[i] = (t_atsdataloc *)malloc(sizeof(t_atsdataloc) * (int)x->atshead.npartials);
                 
 	// store the data into table(s)
         
-	switch ( (int)x->atshead.type)
-        {
-        	case 1 :
-	                for(i = 0; i < (int)x->atshead.nfrms; i++)
-                        {
-        	                //eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                		//get a whole frame of partial data
-                                fread(&x->data[i][0], sizeof(t_atsdataloc),(int)x->atshead.npartials,fin);
-                        }
-                        break;
+	switch ((int)x->atshead.type)
+	{
+		case 1 :
+			for(i = 0; i < (int)x->atshead.nfrms; i++)
+			{
+				//eat time data
+				fread(&temp,sizeof(double),1,fin);
+				//get a whole frame of partial data
+				fread(&x->data[i][0], sizeof(t_atsdataloc),(int)x->atshead.npartials,fin);
+#ifdef BYTESWAP
+				if(swapped) {	//byte swap if nessisary
+					for(k = 0; k < (int)x->atshead.npartials; k++){
+						x->data[i][k].amp  = bswap(&x->data[i][k].amp);
+						x->data[i][k].freq  = bswap(&x->data[i][k].freq);
+					}
+				}
+#endif
+			}
+			break;
 		case 2 :
-                	for(i = 0; i < (int)x->atshead.nfrms; i++)
-                        {
-                        	//eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get partial data
-                                for(j = 0; j < (int)x->atshead.npartials; j++)
-                                {
-                                	fread(&x->data[i][j], sizeof(t_atsdataloc),1,fin);
-                                        //eat phase info
-                                        fread(&temp, sizeof(double),1,fin);
-                                }
-                        }
-                        break;
+			for(i = 0; i < (int)x->atshead.nfrms; i++)
+			{
+				//eat time data
+				fread(&temp,sizeof(double),1,fin);
+				//get partial data
+				for(j = 0; j < (int)x->atshead.npartials; j++)
+				{
+					fread(&x->data[i][j], sizeof(t_atsdataloc),1,fin);
+					//eat phase info
+					fread(&temp, sizeof(double),1,fin);
+#ifdef BYTESWAP
+					if(swapped) {	//byte swap if nessisary
+						x->data[i][j].amp = bswap(&x->data[i][j].amp);
+						x->data[i][j].freq = bswap(&x->data[i][j].freq);
+					}
+#endif
+				}
+			}
+			break;
 		case 3 :
 			//allocate mem for the noise data
-                        x->nzdata = (double **)malloc(sizeof(double *) * (int)x->atshead.nfrms);
-                        for(i = 0; i < (int)x->atshead.nfrms; i++)
-                       	{
-                        	//allocate this row
-                        	x->nzdata[i] = (double *)malloc(sizeof(double) * 25);
-                                //eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get a whole frame of partial data
-                                fread(&x->data[i][0], sizeof(t_atsdataloc),(int)x->atshead.npartials,fin);
-                                //get the noise
-                                fread(&x->nzdata[i][0], sizeof(double),25,fin);
-                        }
-                        break;
-		case 4 :
-                	//allocate mem for the noise data
-                        x->nzdata = (double **)malloc(sizeof(double *) * (int)x->atshead.nfrms);
-                        for(i = 0; i < (int)x->atshead.nfrms; i++)
-                        {
-                        	//allocate noise for this row
-                                x->nzdata[i] = (double *)malloc(sizeof(double) * 25);
-                                //eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get partial data
-                                for(j = 0; j < (int)x->atshead.npartials; j++)
-                                {
-                                	fread(&x->data[i][j], sizeof(t_atsdataloc),1,fin);
-                                        //eat phase info
-                                        fread(&temp, sizeof(double),1,fin);
-                                }
-                                //get the noise
-                                fread(&x->nzdata[i][0], sizeof(double),25,fin);
+			x->nzdata = (double **)malloc(sizeof(double *) * (int)x->atshead.nfrms);
+			for(i = 0; i < (int)x->atshead.nfrms; i++)
+			{
+				//allocate this row
+				x->nzdata[i] = (double *)malloc(sizeof(double) * 25);
+				//eat time data
+				fread(&temp,sizeof(double),1,fin);
+				//get a whole frame of partial data
+				fread(&x->data[i][0], sizeof(t_atsdataloc),(int)x->atshead.npartials,fin);
+				//get the noise
+				fread(&x->nzdata[i][0], sizeof(double),25,fin);
+#ifdef BYTESWAP
+					if(swapped) {	//byte swap if nessisary
+						for(k = 0; k < (int)x->atshead.npartials; k++){
+							x->data[i][k].freq = bswap(&x->data[i][k].freq);
+							x->data[i][k].amp = bswap(&x->data[i][k].amp);
+						}
+						for(k = 0; k < 25; k++)
+							x->nzdata[i][k] = bswap(&x->nzdata[i][k]);
+					}
+#endif
 			}
-                        break;
+			break;
+		case 4 :
+			//allocate mem for the noise data
+			x->nzdata = (double **)malloc(sizeof(double *) * (int)x->atshead.nfrms);
+			for(i = 0; i < (int)x->atshead.nfrms; i++)
+			{
+				//allocate noise for this row
+				x->nzdata[i] = (double *)malloc(sizeof(double) * 25);
+				//eat time data
+				fread(&temp,sizeof(double),1,fin);
+				//get partial data
+				for(j = 0; j < (int)x->atshead.npartials; j++)
+				{
+					fread(&x->data[i][j], sizeof(t_atsdataloc),1,fin);
+					//eat phase info
+					fread(&temp, sizeof(double),1,fin);
+#ifdef BYTESWAP
+					if(swapped) {	//byte swap if nessisary
+						x->data[i][j].freq = bswap(&x->data[i][j].freq);
+						x->data[i][j].amp = bswap(&x->data[i][j].amp);
+					}
+#endif
+				}
+				//get the noise
+				fread(&x->nzdata[i][0], sizeof(double),25,fin);
+#ifdef BYTESWAP
+				if(swapped) {	//byte swap if nessisary
+					for(k = 0; k < 25; k++)
+						x->nzdata[i][k] = bswap(&x->nzdata[i][k]);
+				}
+#endif
+			}
+			break;
 	}
+
 	// set up the frame multiplyer
 	x->framemult = (x->atshead.nfrms - (double)1)/ x->atshead.dur;
-	
+
 	if(x->outpartials != NULL)
 		free(x->outpartials);
 	x->outpartials = (int *)malloc(sizeof(int) * (int)(x->atshead.npartials));
@@ -630,7 +708,7 @@ void readdatafile(t_atsread *x, const char * filename)
 	x->amplist = (t_atom *)malloc(sizeof(t_atom) * (int)(x->atshead.npartials));
 	x->freqlist = (t_atom *)malloc(sizeof(t_atom) * (int)(x->atshead.npartials));
 
-        //close the input file
-  	fclose(fin);
-                return;
+	//close the input file
+	fclose(fin);
+	return;
 }

@@ -7,6 +7,9 @@ I have only tested it for Linux and haven't had any problems with the current so
 Here is how I compile it (with "m_pd.h" from the PD source in the same directory)
 gcc -shared -o atsread.pd_linux atsread.c
 
+or to allow byte swapping:
+gcc -DBYTESWAP -shared -o atsread.pd_linux atsread.c
+
 Then p ut the atsread.pd_linux file into your path somewhere (most likely your "externals" directory) and put the help-*.pd, cl.ats and crt.ats in your help directory (which should also be in your pd path hopefully).
 
 
