@@ -1,0 +1,79 @@
+<html>
+<head>
+   <title>atsread, atsreadnz</title>
+</head>
+<body bgcolor="white">
+Signal Generators: STFT Resynthesis (Vocoding)</a>
+
+<hr size="1" color="#A9A9A9" noshade>
+
+<h2>atsread, atsreadnz</h2>
+
+
+<pre>
+  kfreq, kamp	<strong>atsread</strong>     ktimepnt, ifile, ipartial
+  
+  kenergy	<strong>atsreadnz</strong>    ktimepnt, ifile, iband
+</pre>
+<hr size="2" color="#A9A9A9" noshade>
+<h3>Description</h3>
+
+<p><strong>atsread</strong> and <strong>atsreadnz</strong> read data from an <strong>ATS</strong> file.  atsread returns the amplitude (<em>kamp</em>) and frequency (<em>kfreq</em>) 
+information of a user specified partial contained in the ATS
+analysis file at the time indicated by the time pointer <em>ktimepnt</em>.  atsreadnz returns the energy (<em>kenergy</em>) of a user specified noise band (1-25 bands) at the time indicated by the time
+pointer <em>ktimepnt</em>.
+</p>
+
+<h3>Initialization</h3>
+<p><em>ifile</em> &#8211; the <strong>ATS</strong> number (n in ats.n) or the name in quotes of the analysis file made using ATS.</p>
+<p><em>ipartial / iband</em> &#8211; the number of the analysis partial to return the frequency in Hz and amplitude (in the case of atsread) 
+or the number of the noise band to return the energy data (in the case of atsreadnz).
+</p>
+
+<h3>Performance</h3>
+
+<p><em>kfreq</em>, <em>kamp</em> &#8211; outputs of the <strong>atsread</strong> unit.  These values represent the frequency and amplitude of a specific partial
+selected by the user using <em>ipartial</em>.  The partials' informations are derived from an ATS analysis.  <strong>atsread</strong> linearly interpolates the 
+frequency and amplitude between frames in the ATS analysis file; this happens at the k-rate.  The output is dependent on the data in the analysis file and the <em>ktimepnt</em>.
+</p>
+<p><em>kenergy</em> &#8211; output of the <strong>atsreadnz</strong> unit.  At the k-rate the linearly interpolated energy of the noise band indicated in <em>iband</em> is
+output.  The output is dependent on the data in the analysis file and the <em>ktimepnt</em>.
+
+</p>
+<p><em>ktimepnt</em> &#8211; used for <strong>atsread</strong> and <strong>atsreadnz</strong> exactly the same as for <strong>pvoc</strong> and <strong>atsadd</strong>.
+</p>
+</p>
+</p>
+<h3>Examples</h3>
+1.
+<pre>  ktime	line  0, p3, 2.5
+  kfreq, kamp	atsread	ktime, "clarinet.ats", 2
+  aout	oscili	1000000 * kamp, kfreq, 1</pre>
+<p>Here we're using atsread to get the 2nd partial's frequency and amplitude data out of the clarinet.ats ATS analysis file.  
+We're using that data to drive an oscillator, but we could use it for anything else that can take a k-rate input, like the bandwidth and resonance of a filter etc.
+</p>
+
+2.
+<pre>  ktime	line	2.5, p3, 0
+  kenergy	atsreadnz ktime, "clarinet.ats", 5
+  </pre>
+<p>Here we are extracting the noise energy from band 5 in the clarinet.ats ATS analysis file.  We're actually reading backwards from 2.5 seconds to the beginning of the analysis file.  We could use this to synthesize noise like this:</p>
+
+<pre>  anoise	randi	sqrt(kenergy), 55
+  aout        oscili  4000000000000000000000000, 455, 2
+  aout = aout * anoise</pre>
+  <p>Function table 2 used in the oscillator is a cosine, which is needed to shift the band limited noise into the correct place in the frequency spectrum.  The randi function
+  creates a band of noise centered about 0 Hz that has a bandwidth of about 110 Hz; multiplying it by a cosine will shift it to be centered at 455 Hz, which is the center frequency of the 5th critical noise band.
+  This is only an example, for synthesizing the noise you'd be better off just using atsaddnz unless you want to use your own noise synthesis algorithm.
+Maybe you could use the noise energy for something else like applying a small amount of jitter to specific partials or for controlling something totally unrelated
+to the source sound?
+  </p>
+
+<h3>Author </h3>
+<p>Alex Norman (edited from Richard Karpen's pvread documentation)<br>
+Seattle, Wash<br>
+2003<br>
+</p>
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+~<html><head>
+
+<title>atsinfo</title>
+
+<body bgcolor="white">
+Signal Generators: STFT Resynthesis (Vocoding)
+
+<hr size="1" color="#A9A9A9" noshade="noshade">
+
+<h2>atsinfo</h2>
+ 
+<pre> idata      <strong>atsinfo</strong>      iatsfile, ilocation</pre>
+<hr size="2" color="#A9A9A9" noshade="noshade">
+<h3>Description</h3>
+<p><strong>atsinfo</strong> reads data out of the header of an ATS file.
+</p>
+<h3>Initialization</h3>
+<p><em>iatsfile</em> &#8211; the <strong>ATS</strong> number (n in ats.n) or the name in quotes of the analysis file made using ATS.</p>
+<p><em>ilocation</em> &#8211; indicates which location in the header file to return.  The data in the header
+	gives information about the data contained in the rest of the ATS file.  The possible values for <em>ilocation</em> are given in the following list:
+<br>
+	<ol start=0>
+		<li>Sample rate (Hz)
+		<li>Frame Size (samples)
+		<li>Window Size (samples)
+		<li>Number of Partials
+		<li>Number of Frames
+		<li>Maximum Amplitude
+		<li>Maximum Frequency (Hz)
+		<li>Duration (seconds)
+		<li>ATS file Type
+	</ol>
+</p>
+
+<h3>Performance</h3>
+<p>Macros can really improve the legibility of your csound code, I've provided my Macro Definitions below:
+	<br>
+<pre>
+	#define ATS_SAMP_RATE #0#
+	#define ATS_FRAME_SZ #1#
+	#define ATS_WIN_SZ #2#
+	#define ATS_N_PARTIALS #3#
+	#define ATS_N_FRAMES #4#
+	#define ATS_AMP_MAX #5#
+	#define ATS_FREQ_MAX #6#
+	#define ATS_DUR #7#
+	#define ATS_TYPE #8#</pre>
+</p>
+<p><strong>atsinfo</strong> can be useful for writing generic instruments that will work with many ATS files, even if they have different lengths and different numbers of partials etc.  Example 2 is a simple application of this.
+</p>
+<h3>Examples</h3>
+1.
+<pre>  imax_freq	<strong>atsinfo</strong> "cl.ats", $ATS_FREQ_MAX</pre>
+<p>In the example above we get the maximum frequency value from the ATS file "cl.ats" and store it in imax_freq.  We use at Csound Macro (defined above) $ATS_FREQ_MAX, which is equivalent to the number 6</p>
+2.
+<pre>
+  i_npartials	<strong>atsinfo</strong> p4, $ATS_N_PARTIALS
+  i_dur		<strong>atsinfo</strong> p4, $ATS_DUR
+  ktimepnt	<strong>line</strong> 0, p3, i_dur
+  aout		<strong>atsadd</strong> ktimepnt, 1, p4, 1, i_npartials</pre>
+<p>In the example above we use atsinfo to retrieve the duration and number of partials in the ATS file indicated by p4.  With this info we synthesize the partials using atsadd.  Since the duration and number of partials are not "hard-coded" we can use this code with any ats file.</p>
+
+<h3>Author </h3>
+<p>Alex Norman
+<br>Seattle, Washington
+<br>2004
+</p>
+</body></html>

@@ -1,0 +1,167 @@
+<html><head>
+
+<title>atsadd, atsaddnz & atssinnoi</title>
+
+<body bgcolor="white">
+Signal Generators: STFT Resynthesis (Vocoding)
+
+<hr size="1" color="#A9A9A9" noshade="noshade">
+
+<h2>atsadd, atsaddnz, atssinnoi</h2>
+
+ 
+<pre> ar      <strong>atsadd</strong>      ktimepnt, kfmod, iatsfile, ifn, ipartials[, ipartialoffset, ipartialincr, igatefn]</pre>
+<pre> ar      <strong>atsaddnz</strong>    ktimepnt, iatsfile, ifn, ibands[, ibandoffset, ibandincr]</pre>
+<pre> ar      <strong>atssinnoi</strong>   ktimepnt, ksinlev, knzlev, kfmod, iatsfile, ipartials[, ipartialoffset, ipartialincr]</pre>
+
+<hr size="2" color="#A9A9A9" noshade="noshade">
+<h3>Description</h3>
+<p><strong>atsadd</strong> and <strong>atsaddnz</strong> are based on pvadd by
+Richard Karpen and use files created by Juan Pampin's <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html">ATS (Analysis -
+Transformation - Synthesis)</a>.  <strong>atssinnoi</strong> is based on ATS's
+sinnoi synth.  <strong>atsadd</strong> reads from an <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html"><strong>ATS</strong></a>
+analysis file and uses the data to perform additive synthesis using an internal
+array of interpolating oscillators.  The user supplies the wave table (usually
+one period of a sine wave), and can choose which analysis partials will be used
+in the re-synthesis. <strong>atsaddnz</strong> also reads from an <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html"><strong>ATS</strong></a>
+file but it resynthesizes the noise from noise energy data contained in the ATS
+file.  It uses a modified randi function to create band limited noise and
+modulates that with a user supplied wave table (one period of a cosine wave),
+to synthesize a user specified selection of frequency bands. Modulating the
+noise is required to put the band limited noise in the correct place in the
+frequency spectrum.  <strong>atssinnoi</strong> reads data from an ATS data
+file and uses the information to synthesize sines and noise together.  The
+noise energy for each band is distributed equally among each partial that falls
+in that band.  Each partial is then synthesized, along with that partial's
+noise component.  Each noise component is then modulated by the corresponding
+partial to be put in the correct place in the frequency spectrum.  The level of
+the noise and the partials are individually controllable.  See the <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html">ATS webpage</a> for more
+info about the sinnoi synthesis.  An <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html"><strong>ATS</strong></a>
+analysis differs from a pvanal in that ATS tracks the partials and computes the
+noise energy of the sound being analyzed.  For more info about ATS analysis
+read Juan Pampin's description on the <a
+href="http://www-ccrma.stanford.edu/%7Ejuan/ATS.html#analysis">the ATS
+web-page.</a></p>
+
+<h3>Initialization</h3>
+
+<p><em>ktimepnt</em> &#8211; a time pointer for reading through the ats
+file</p>
+
+<p><em>kfmod</em> &#8211; an input for performing pitch transposition or
+frequency modulation on all of the synthesized partials, if no fm or pitch
+change is desired then use a 1 for this value</p>
+
+<p><em>iatsfile</em> &#8211; integer or character-string denoting a
+control-file derived from ATS analysis of an audio signal. An integer denotes
+the suffix of a file <em>ats.m</em>; a character-string (in double quotes)
+gives a filename, optionally a full pathname. If not full-path, the file is
+sought first in the current directory, then in the one given by the environment
+variable <strong>SADIR</strong> (if defined).  </p>
+
+<p><em>ifn</em> &#8211; table number of a stored function containing a sine
+wave for atsadd and a cosine for atsaddnz (see examples below for more
+info)</p>
+
+<p><em>ipartials / ibands</em> &#8211; number of partials or noise bands that
+will be used in the resynthesis (the noise has a maximum of 25 bands)</p>
+
+<p><em>ipartialoffset / ibandoffset</em> (optional) &#8211; is the first
+partial or noise band used (defaults to 0).  </p>
+
+<p><em>ipartialincr / ibandincr</em> (optional) &#8211; sets an increment by
+which these synthesis opcodes counts up from
+<em>ipartialoffset/ibandoffset</em> for <em>ibins</em> components in the
+re-synthesis (defaults to 1).  </p>
+
+<p><em>ksinlev</em> controls the level of the sines in the
+<strong>atssinnoi</strong> ugen. A value of 1 gives full volume sinewaves.</p>
+
+<p><em>knzlev</em> controls the level of the noise components in the
+<strong>atssinnoi</strong> ugen. A value of 1 gives full volume noise.</p>
+
+<p><em>igatefn</em> (optional) &#8211; is the number of a stored function which
+will be applied to the amplitudes of the analysis bins before resynthesis takes
+place. If <em>igatefn</em> is greater than 0 the amplitudes of each bin will be
+scaled by <em>igatefn</em> through a simple mapping process. First, the
+amplitudes of all of the bins in all of the frames in the entire analysis file
+are compared to determine the maximum amplitude value. This value is then used
+create normalized amplitudes as indices into the stored function
+<em>igatefn</em>.  The maximum amplitude will map to the last point in the
+function. An amplitude of 0 will map to the first point in the function. Values
+between 0 and 1 will map accordingly to points along the function table. This
+will be made clearer in the examples below. </p>
+
+<h3>Performance</h3>
+<p><em>ktimpnt</em> and <em>kfmod</em> are used in the same way as in
+<strong>pvoc</strong>.  </p>
+
+<h3>Examples</h3>
+1.
+<pre>  ktime <strong>line</strong>  0, p3, 2.5
+  asig  <strong>atsadd</strong> ktime, 1, "clarinet.ats", 1, 20, 2</pre>
+<p>In the example above, <em>ipartials</em> is 20 and <em>ipartialoffset</em>
+is 2.  This will synthesize the 3rd thru 22nd partials in the "clarinet.ats"
+analysis file.  kmod is 1 so there will be no pitch transformation.  Since the
+<em>ktimepnt</em> envelope moves from 0 to 2.5 over the duration of the note,
+the analysis file will be read from 0 to 2.5 seconds of the original duration
+of the analysis over the duration of the csound note, this way we can change
+the duration independent of the pitch.
+
+</p>
+
+2.
+<pre>  ktime <strong>line</strong>  0, p3, 2.5
+  asig  <strong>atsaddnz</strong> ktime, "clarinet.ats", 2, 25</pre>
+<p>In the example above we're synthesizing all 25 noise bands from the data
+contained in the ATS analysis file called "clarinet.ats", we're using function
+table 2, which should be a cosine ie:</p> 
+
+<pre>  f2 0 4096 9 1 1 90</pre>
+
+3.
+<pre>  ktime <strong>line</strong>  0, p3, 2.5
+  asig  <strong>atsadd</strong> ktime, 1.0125, "clarinet.ats", 1, 20, 0, 2</pre>
+<p>In the above example we synthesize 20 partials as in example 1 except this
+time we're using a <em>ipartialoffset</em> of 0 and <em>ipartialincr</em> of 2,
+which means that we'll start from the first partial and synthesize 20 partials
+total, skipping every other one (ie. partial 1, 3, 5,...).  We've also
+increased the pitch of the result (<em>kfmod</em> is set to 1.0125).</p> 
+
+4.
+<pre>  ktime <strong>line</strong>  2.5, p3, 0
+  asig <strong>atsaddnz</strong> ktime, 1, "clarinet.ats", 2, 1, 24</pre>
+
+<p> Here we synthesize only the 25th noise band (<em>ibandoffset</em> of 24 and
+<em>ibands</em> of 1).  Also our time pointer is going from 2.5 to 0 over the
+duration of the note so we're reading backwards from 2.5 seconds in the
+analysis file.  </p>
+
+5.
+<pre>  ktime <strong>line</strong>  0, p3, 2.5
+  asig <strong>atssinnoi</strong> ktime, 1, 1, 1, "clarinet.ats", 42</pre>
+
+<p>Here we synthesize both the noise and the sinewaves (all 42 partials)
+contained in "clarinet.ats" together.  The relative volumes of the noise and
+the partials are unaltered (each set to 1).</p>
+
+6.
+<pre>  ktime <strong>line</strong>  0, p3, 2.5
+  knzfade <strong>expon</strong>  0.001, p3, 2.5
+  asig <strong>atssinnoi</strong> ktime, 1, knzfade, 1, "clarinet.ats", 42</pre>
+
+<p>This example here is like example 5 except that we use an envelope
+to control <em>knzlev</em> (the noise level).  The result of this will be a
+clarinet sound that has its noise component fade in over the duration of the
+note.</p>
+
+<h3>Author </h3>
+<p>Alex Norman (an edited version of Richard Karpen's pvadd documentation)<br>
+Seattle, Wash<br>
+2004<br>
+</body></html>
