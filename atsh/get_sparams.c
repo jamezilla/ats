@@ -114,7 +114,7 @@ void set_params()
 {
 char *str;  
 
- str=(char*)malloc(10 * sizeof(char)); 
+ str=(char*)malloc(1024 * sizeof(char)); 
  *str=0;        
 
  str=gtk_editable_get_chars(GTK_EDITABLE(entry[0]),0,9);
@@ -136,6 +136,10 @@ char *str;
  sparams->sr=(float)atof((char*)str);
  *str=0;
 
+ str=gtk_editable_get_chars(GTK_EDITABLE(osfile_label),0,-1);
+ *out_tittle=0;
+ strcat(out_tittle, str);
+ *str=0;
 
  //Phase information is not used for synthesis at present
  sparams->upha=FALSE;
@@ -275,7 +279,7 @@ void get_sparams ()
     gtk_widget_show (fileb);
     
     osfile_label=gtk_entry_new();
-    gtk_editable_set_editable(GTK_EDITABLE(osfile_label), FALSE);
+    gtk_editable_set_editable(GTK_EDITABLE(osfile_label), TRUE);
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->vbox), osfile_label, FALSE, FALSE, 2);
     gtk_entry_set_text(GTK_ENTRY (osfile_label),out_tittle);
     gtk_widget_show (osfile_label);

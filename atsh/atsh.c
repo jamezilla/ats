@@ -15,8 +15,6 @@ void h_scroll(GtkObject *adj,gpointer data);
 void v_scroll(GtkObject *adj,gpointer data);
 void v_setup();
 
-
-GtkWidget     *win_main;
 GtkTooltips   *tooltips;
 GtkWidget     *toolbar;
 GtkWidget     *main_graph;
@@ -233,7 +231,6 @@ void CreateMainWindow (char *cmdl_filename)
     /* --- Create the top window and size it. --- */
     win_main = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_set_usize(win_main, GRAPH_W, GRAPH_H);
-    gtk_window_set_title (GTK_WINDOW (win_main), "ATSH - Pablo Di Liscia / Juan Pampin / Pete Moss");
     gtk_container_border_width (GTK_CONTAINER (win_main),0);
     gtk_window_set_position(GTK_WINDOW(win_main),GTK_WIN_POS_CENTER);
     //the user can shrink the window, and/or enlarge it...
@@ -411,7 +408,9 @@ void CreateMainWindow (char *cmdl_filename)
      if(cmdl_filename) { //DO WE HAVE ANY ATS FILE NAME REQUESTED BY COMMAND LINE...???
 		atsin(cmdl_filename);
      }
-
+     else {
+       show_file_name(win_main,NULL);
+     }
      //check the GTK Version
      /*
      g_print("\nGTK Version(Library)= %d.%d.%d  \n", gtk_major_version, gtk_minor_version, gtk_micro_version );
@@ -701,3 +700,22 @@ void normalize_amplitude(GtkWidget *widget, gpointer data)
     return;
 }
 //////////////////////////////////////////////////////////
+void show_file_name(GtkWidget *window,char *name)
+{
+  char *str;
+
+  if(name == NULL) {
+    gtk_window_set_title(GTK_WINDOW(window), "ATSH: NONE");
+    
+  }
+  else {
+    str=(char*)malloc(1200*sizeof(char));
+    *str=0;
+    strcat(str, "ATSH: ");
+    strcat(str, name);
+    gtk_window_set_title(GTK_WINDOW(window), str);
+    free(str);
+}
+  
+  return;
+}

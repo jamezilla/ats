@@ -471,6 +471,7 @@ void atsin(char *pointer)
     floaded=FALSE;
     draw_default();
     init_scalers(FALSE);
+    show_file_name(win_main,NULL);
     return;
   }
 
@@ -492,6 +493,7 @@ void atsin(char *pointer)
       need_byte_swap=FALSE;
       init_scalers(FALSE);
       draw_default();
+      show_file_name(win_main,NULL);
       return;
     } 
     else {
@@ -525,6 +527,7 @@ void atsin(char *pointer)
     floaded=FALSE;
     init_scalers(FALSE);
     draw_default();
+    show_file_name(win_main,NULL);
     return; 
   }
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -672,7 +675,7 @@ void atsin(char *pointer)
         else {
           set_time_env(timenv, TRUE);
         }
-
+	show_file_name(win_main,pointer);
         fclose(atsfin);
         draw_pixm(); 
  

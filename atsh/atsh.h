@@ -244,6 +244,7 @@ char *res_tittle;
 char *info;
 short *selected;
 FILE *atsfin, *soundin, *soundout;
+GtkWidget     *win_main;
 
 ATS_HEADER *atshed;
 SPARAMS *sparams;
@@ -333,7 +334,7 @@ void Create_menu (GtkWidget *menubar);
 
 gint EndProgram ();
 void PrintFunc (GtkWidget *widget, gpointer data);
-
+void show_file_name(GtkWidget *window,char *name);
 void init_scalers(gint how);
 //void h_scroll(GtkObject *adj,gpointer data);
 void h_setup();
