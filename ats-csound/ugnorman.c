@@ -56,7 +56,8 @@ kamp 		atsinterpread kfreq
 
 
 
-#include "cs.h"
+//#include "cs.h"
+#include "csdl.h"
 
 #include "ugnorman.h"
 #include <math.h>
@@ -2210,27 +2211,29 @@ void atscross(ATSCROSS *p)
 
 /* end of ugnorman.c */
 
-#define S	sizeof
+//#define S	sizeof
+//
+//static OENTRY localops[] = {
+//  	{ "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
+//  	{ "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL},
+//  	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
+//	{ "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
+//	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
+//	{ "atsbufread",    S(ATSBUFREAD),   3,     "", "kkSiop", atsbufreadset, atsbufread, NULL},
+//	{ "atspartialtap",    S(ATSPARTIALTAP),   3,     "kk", "i", atspartialtapset, atspartialtap, NULL},
+//	{ "atsinterpread",    S(ATSINTERPREAD),   3,     "k", "k", atsinterpreadset, atsinterpread, NULL},
+//	{ "atscross",    S(ATSCROSS),   5,     "a", "kkSikkiopo", atscrossset, NULL, atscross},
+//	{ "atsinfo",    S(ATSINFO),   1,     "i", "Si", atsinfo, NULL, NULL}
+//};
+//LINKAGE
 
-static OENTRY localops[] = {
-  	{ "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
-  	{ "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL},
-  	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
-	{ "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
-	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
-	{ "atsbufread",    S(ATSBUFREAD),   3,     "", "kkSiop", atsbufreadset, atsbufread, NULL},
-	{ "atspartialtap",    S(ATSPARTIALTAP),   3,     "kk", "i", atspartialtapset, atspartialtap, NULL},
-	{ "atsinterpread",    S(ATSINTERPREAD),   3,     "k", "k", atsinterpreadset, atsinterpread, NULL},
-	{ "atscross",    S(ATSCROSS),   5,     "a", "kkSikkiopo", atscrossset, NULL, atscross},
-	{ "atsinfo",    S(ATSINFO),   1,     "i", "Si", atsinfo, NULL, NULL}
-};
 
-long opcode_size(void)
-{
-    return sizeof(localops);
-}
-
-OENTRY *opcode_init(ENVIRON *xx)
-{
-    return localops;
-}
+//long opcode_size(void)
+//{
+//    return sizeof(localops);
+//}
+//
+//OENTRY *opcode_init(ENVIRON *csound)
+//{
+//    return localops;
+//}
