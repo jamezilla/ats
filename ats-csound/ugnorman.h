@@ -88,13 +88,11 @@ typedef struct _atsadd
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
         double	MaxAmp;         // maximum amplitude in anaylsis file
-        char * filename;
-
+	int firstpartial, partialinc, frmInc;
+	double * datastart;
 	int prevpartials;	//stores the partials of previous calls
-	ATS_DATA_LOC ** datap;
         double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
-
 }       ATSADD;
 
 typedef struct _atsaddnz

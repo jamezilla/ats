@@ -342,15 +342,14 @@ void atsreadnz(ATSREADNZ *p){
 /*
  * ATSADD
  */
-void FetchADDPartials(ATS_DATA_LOC **, ATS_DATA_LOC *, float, int);
+void FetchADDPartials(ATSADD *, ATS_DATA_LOC *, float);
 void AtsAmpGate(ATS_DATA_LOC *, int, FUNC *, double);
 
 void atsaddset(ATSADD *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
        	FUNC *ftp, *AmpGateFunc; 
-	int i, j, frmInc, firstpartial, partialinc;
-	double * temppnt;
+	int i;
         
 	// set up function table for synthesis
         if ((ftp = ftfind(p->ifn)) == NULL){
@@ -387,48 +386,32 @@ void atsaddset(ATSADD *p){
                 initerror(errmsg);
                 return;
         }
+	//point the header pointer at the header data
+	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
+	
+	//make sure that this is an ats file
+	if (atsh->magic != 123)
+	{
+                sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+               	initerror(errmsg);
+               	return;
+        }
 	
 	// allocate space so we can store the data for later use
-	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0 || (int)*(p->iptls) > p->prevpartials)
+	if(p->auxch.auxp == NULL || (int)*(p->iptls) > p->prevpartials)
 	{
 		p->prevpartials = (int)*(p->iptls);
-		// copy in the file name
-		if(p->filename != NULL)
-		{
-			mfree(p->filename);
-			p->filename = NULL;
-		}
-		p->filename = (char *)mmalloc(sizeof(char) * strlen(atsfilname));
-		strcpy(p->filename, atsfilname);
-		
-		//point the header pointer at the header data
-		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
-	        
-		//make sure that this is an ats file
-		if (atsh->magic != 123)
-		{
-        	        sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-                	initerror(errmsg);
-                	return;
-        	}
-
-		auxalloc(((int)(atsh->nfrms) * (int)(*p->iptls) * (sizeof(ATS_DATA_LOC *) + sizeof(ATS_DATA_LOC)) + (int)(*p->iptls) * sizeof(double)), &p->auxch);
-		
-		p->datap = (ATS_DATA_LOC **) (p->auxch.auxp);
-		//get past the last partial in the last frame of the data pointer;
-		p->buf = (ATS_DATA_LOC *)(p->datap + (int)(atsh->nfrms)*(int)(*p->iptls) * sizeof(ATS_DATA_LOC *));
-		p->oscphase = (double *)(p->buf + (int)(*p->iptls));
-		
-		p->maxFr = atsh->nfrms - 1;
-		p->timefrmInc = atsh->nfrms / atsh->dur;
-        	p->MaxAmp = atsh->ampmax;        // store the maxium amplitude
+		// need room for a buffer and an array of oscillator phase increments
+		auxalloc(((int)(atsh->nfrms) * (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double)), &p->auxch);
 	}
-	else
-	{
-		//point the header pointer at the header data
-		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
-	}
-		
+	
+	// set up the buffer, phase, etc.
+	p->buf = (ATS_DATA_LOC *)(p->auxch.auxp);
+	p->oscphase = (double *)(p->buf + (int)(*p->iptls));
+	p->maxFr = (int)atsh->nfrms - 1;
+	p->timefrmInc = atsh->nfrms / atsh->dur;
+        p->MaxAmp = atsh->ampmax;        // store the maxium amplitude
+	
 	// make sure partials are in range
         if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
         {
@@ -436,45 +419,36 @@ void atsaddset(ATSADD *p){
                 initerror(errmsg);
                 return;
         }
+	//get a pointer to the beginning of the data
+	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 
-	// point the data pointer to the correct partials
-	
+	// get increments for the partials
 	switch ( (int)(atsh->type))
         {
-                case 1 :        firstpartial = (int)(1 + 2 * (*p->iptloffset));
-                                partialinc = 2;
-                                frmInc = (int)(atsh->npartials * 2 + 1);
+                case 1 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+                                p->partialinc = 2;
+                                p->frmInc = (int)(atsh->npartials * 2 + 1);
                                 break;
 
-                case 2 :        firstpartial = (int)(1 + 3 * (*p->iptloffset));
-                                partialinc = 3;
-                                frmInc = (int)(atsh->npartials * 3 + 1);
+                case 2 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+                                p->partialinc = 3;
+                                p->frmInc = (int)(atsh->npartials * 3 + 1);
                                 break;
 
-                case 3 :        firstpartial = (int)(1 + 2 * (*p->iptloffset));
-                                partialinc = 2;
-                                frmInc = (int)(atsh->npartials * 2 + 26);
+                case 3 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+                                p->partialinc = 2;
+                                p->frmInc = (int)(atsh->npartials * 2 + 26);
                                 break;
 
-                case 4 :        firstpartial = (int)(1 + 3 * (*p->iptloffset));
-                                partialinc = 3;
-                                frmInc = (int)(atsh->npartials * 3 + 26);
+                case 4 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+                                p->partialinc = 3;
+                                p->frmInc = (int)(atsh->npartials * 3 + 26);
                                 break;
 
                 default:        sprintf(errmsg, "ATSADD: Type not implemented");
                                 initerror(errmsg);
                                 return;
         }
-
-	temppnt = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
-	for(i = 0; i < (int)(atsh->nfrms); i++)
-	{
-		for(j = 0; j < (int)(*p->iptls); j++)
-		{
-			p->datap[j + i * (int)(*p->iptls)] = (ATS_DATA_LOC *)(temppnt + firstpartial + partialinc * (int)(*p->iptloffset - 1 + j * *p->iptlincr));
-		}
-		temppnt = temppnt + frmInc;
-	}
 	
 	// initilize the phase of the oscilators
 	for(i = 0; i < (int)(*p->iptls); i++)
@@ -487,7 +461,6 @@ void atsaddset(ATSADD *p){
 }
 
 void atsadd(ATSADD *p){
-
         float	frIndx;
         float	* ar, amp, fract, v1, *ftab;
         FUNC    *ftp;
@@ -522,9 +495,9 @@ void atsadd(ATSADD *p){
 			initerror(errmsg);
 		}
         }
-        else if (frIndx >= p->maxFr) // if we're trying to get frames past where we have data
+        else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
         {
-                frIndx = (float)p->maxFr - 1.0;
+                frIndx = (float)p->maxFr;
                 if (p->prFlg)
                 {
                         p->prFlg = 0;   // set to false
@@ -534,8 +507,10 @@ void atsadd(ATSADD *p){
         }
 	else
 		p->prFlg = 1;
-        FetchADDPartials(p->datap, buf, frIndx, (int)*p->iptls);
-        oscphase = p->oscphase;
+        
+	FetchADDPartials(p, buf, frIndx);
+        
+	oscphase = p->oscphase;
         // initialize output to zero
         ar = p->aoutput;
         for (i = 0; i < nsmps; i++)
@@ -567,26 +542,38 @@ void atsadd(ATSADD *p){
         }
 }
 
-void FetchADDPartials(
-        ATS_DATA_LOC	**input,
-        ATS_DATA_LOC	*buf,
-        float	position,
-        int	npartials
-        )
+void FetchADDPartials(ATSADD *p, ATS_DATA_LOC *buf, float position)
 {
         float   frac;           // the distance in time we are between frames
-        int     frame1, frame2;
+	double * frm0, * frm1;
+        int     frame;
         int     i;      // for the for loop
-
-        frame1 = (int)position;
-        frac = position - frame1;
-	frame1 = frame1 * npartials;	//the actual index of the array (a 1d array faking a 2d array)
-	frame2 = frame1 + npartials;	//get to the next frame
+	int     partialloc = p->firstpartial;
+	int     npartials = (int)*p->iptls;
+	
+        frame = (int)position;
+	frm0 = p->datastart + frame * p->frmInc;
+	
+	// if we're using the data from the last frame we shouldn't try to interpolate
+	if(frame == p->maxFr)
+	{
+		for(i = 0; i < npartials; i++)
+		{
+			buf[i].amp = frm0[partialloc]; // calc amplitude
+			buf[i].freq = frm0[partialloc + 1];
+			partialloc += p->partialinc;
+		}
+		return;
+	}
+	
+        frac = position - frame;
+	frm1 = frm0 + p->frmInc;
 	
         for(i = 0; i < npartials; i++)
         {
-                buf[i].amp = input[frame1 + i]->amp + frac * (input[frame2 + i]->amp - input[frame1 + i]->amp); // calc amplitude
-                buf[i].freq = input[frame1 + i]->freq + frac * (input[frame2 + i]->freq - input[frame1 + i]->freq); // calc freq
+                buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
+		buf[i].freq = frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1]); // calc freq
+		partialloc += p->partialinc;       // get to the next partial
         }
 }
 
