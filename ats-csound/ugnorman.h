@@ -5,7 +5,7 @@ typedef struct atsdataloc
 {
 	double amp;
 	double freq;
-}       ATS_DATA_LOC;
+} ATS_DATA_LOC;
 
 typedef struct _randiats
 { //the data for the randi UG
@@ -21,7 +21,7 @@ typedef struct _atsnzaux
 	float   phaseinc[25];
 	float   nfreq[25];
 	RANDIATS randinoise[25];
-}       atsnzAUX;
+} atsnzAUX;
 
 typedef struct atsstruct
 {
@@ -48,29 +48,32 @@ typedef struct _atsfiledata
 /* structures to pass data to the opcodes */
 
 typedef struct _atsread
-{       OPDS    h;
-        float   *kfreq, *kamp, *ktimpnt, *ifileno, *ipartial; //outputs (2) and inputs
-        int  maxFr;	// indicates the maximun frame
+{
+	OPDS    h;
+	float   *kfreq, *kamp, *ktimpnt, *ifileno, *ipartial; //outputs (2) and inputs
+	int  maxFr;	// indicates the maximun frame
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
 	double * datastart;	//points to the start of the data
 	int	partialloc, frmInc;	//tells the location of the partal to output and the number of doubles to increment to get to the next frame
-        MEMFIL * atsmemfile;
+	MEMFIL * atsmemfile;
 	double timefrmInc;
-}       ATSREAD;
+} ATSREAD;
 
 typedef struct _atsreadnz
-{       OPDS    h;
-        float   *kenergy, *ktimpnt, *ifileno, *inzbin; //outputs (1) and inputs
-        int  maxFr;
+{
+	OPDS    h;
+	float   *kenergy, *ktimpnt, *ifileno, *inzbin; //outputs (1) and inputs
+	int  maxFr;
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
 	double * datastart;	//points to the start of the data
-        int nzbandloc, frmInc;
+	int nzbandloc, frmInc;
 	MEMFIL * atsmemfile;
-        double  timefrmInc;
-}       ATSREADNZ;
+	double  timefrmInc;
+} ATSREADNZ;
 
 typedef struct _atsadd
-{       OPDS    h;
+{
+	OPDS    h;
 	float   *aoutput, *ktimpnt, *kfmod, *ifileno, *ifn, *iptls; // audio output and k & i inputs
 	float   *iptloffset, *iptlincr, *igatefun; // optional arguments
 	
@@ -87,7 +90,7 @@ typedef struct _atsadd
 	int memsize;	//stores the size of memeory in the aux alloc
 	double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
-}       ATSADD;
+} ATSADD;
 
 typedef struct _atsaddnz
 {  
@@ -112,7 +115,7 @@ typedef struct _atsaddnz
 	RANDIATS randinoise[25];	// a pointer to the interpolated random noise info
 	double	nfreq[25];
 	ATSSTRUCT atshead;
-}       ATSADDNZ;
+} ATSADDNZ;
 
 typedef struct _atsbufread
 {
@@ -177,7 +180,7 @@ typedef struct _atssinnoi
 	int partialinc;
 	int firstband;
 	int     frmInc;         // amount to increment frame pointer to get to next frame
-		double  timefrmInc;
+	double  timefrmInc;
         
 	ATS_DATA_LOC * oscbuf;           // stores band information for passing data
         
@@ -186,7 +189,7 @@ typedef struct _atssinnoi
 	RANDIATS * randinoise;	// a pointer to the interpolated random noise info
 	ATSSTRUCT * atshead;
 	char * filename;
-}       ATSSINNOI;
+} ATSSINNOI;
 
 typedef struct _atspartialtap
 {
