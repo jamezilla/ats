@@ -182,7 +182,7 @@ void FetchPartial(
 	float	frac;		// the distance in time we are between frames
 	int	frame;		// the number of the first frame
 	double * frm1, * frm2;	// a pointer to frame 1 and frame 2
-	double temp1, temp2;
+	double frm1amp, frm1freq, frm2amp, frm2freq;
 	
 	frame = (int)position;
 	frm1 = p->datastart + p->frmInc * frame + p->partialloc;
@@ -190,20 +190,32 @@ void FetchPartial(
 	// if we're using the data from the last frame we shouldn't try to interpolate
 	if(frame == p->maxFr)
 	{
-		buf[0] = (p->swapped == 1) ? (float)bswap(frm1) : (float)*frm1;	// calc amplitude
-		buf[1] = (p->swapped == 1) ? (float)bswap(frm1 + 1) : (float)*(frm1 + 1); // calc freq
+		if (p->swapped == 1) {
+			buf[0] = (float)bswap(frm1);	// calc amplitude
+			buf[1] = (float)bswap(frm1 + 1); // calc freq
+		} else {
+			buf[0] = (float)*frm1;	// calc amplitude
+			buf[1] = (float)*(frm1 + 1); // calc freq
+		}
 		return;
 	}
 	frm2 = frm1 + p->frmInc;
 	frac = position - frame;
 	
-	temp1 = (p->swapped == 1) ? bswap(frm1) : *frm1;
-	temp2 = (p->swapped == 1) ? bswap(frm2) : *frm2;
-	buf[0] = (float)(temp1 + frac * (temp2 - temp1));	// calc amplitude
-	
-	temp1 = (p->swapped == 1) ? bswap(frm1 + 1) : *(frm1 + 1);
-	temp2 = (p->swapped == 1) ? bswap(frm2 + 1) : *(frm2 + 1);
-	buf[1] = (float)(temp1 + frac * (temp2 - temp1));	// calc freq
+	//byte swap if needed
+	if (p->swapped == 1) {
+		frm1amp = bswap(frm1);
+		frm2amp = bswap(frm2);
+		frm1freq = bswap(frm1 + 1);
+		frm2freq = bswap(frm2 + 1);
+	} else {
+		frm1amp = *frm1;
+		frm2amp = *frm2;
+		frm1freq = *(frm1 + 1);
+		frm2freq = *(frm2 + 1);
+	}
+	buf[0] = (float)(frm1amp + frac * (frm2amp - frm1amp));	// calc amplitude
+	buf[1] = (float)(frm1freq + frac * (frm2freq - frm1freq));	// calc freq
 }
 
 void atsreadset(ATSREAD *p){
@@ -248,9 +260,17 @@ void atsreadset(ATSREAD *p){
 	}
 
 	//byte swap if nessisary
-	p->maxFr = (p->swapped == 1) ? (int)bswap(&atsh->nfrms) - 1 : (int)atsh->nfrms - 1;
-	p->timefrmInc = (p->swapped == 1) ? bswap(&atsh->nfrms) / bswap(&atsh->dur) : atsh->nfrms / atsh->dur;
-	n_partials = (p->swapped == 1) ? (int)bswap(&atsh->npartials) : (int)atsh->npartials;
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		n_partials = (int)bswap(&atsh->npartials);
+		type = (int)bswap(&atsh->type);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		n_partials = (int)atsh->npartials;
+		type = (int)atsh->type;
+	}
 
 	// check to see if partial is valid
 	if( (int)(*p->ipartial) > n_partials || (int)(*p->ipartial) <= 0)
@@ -260,7 +280,6 @@ void atsreadset(ATSREAD *p){
 		return;
 	}
 	
-	type = (p->swapped == 1) ? (int)bswap(&atsh->type) : (int)atsh->type;
 
 	// point the data pointer to the correct partial
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
@@ -395,9 +414,17 @@ void atsreadnzset(ATSREADNZ *p){
 	}
 
 	//byte swap if nessisary
-	p->maxFr = (p->swapped == 1) ? (int)bswap(&atsh->nfrms) - 1 : (int)atsh->nfrms - 1;
-	p->timefrmInc = (p->swapped == 1) ? bswap(&atsh->nfrms) / bswap(&atsh->dur) : atsh->nfrms / atsh->dur;
-	n_partials = (p->swapped == 1) ? (int)bswap(&atsh->npartials) : (int)atsh->npartials;
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		n_partials = (int)bswap(&atsh->npartials);
+		type = (int)bswap(&atsh->type);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		n_partials = (int)atsh->npartials;
+		type = (int)atsh->type;
+	}
 	
 	// point the data pointer to the correct partial
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
@@ -410,7 +437,6 @@ void atsreadnzset(ATSREADNZ *p){
 		return;
 	}
 
-	type = (p->swapped == 1) ? (int)bswap(&atsh->type) : (int)atsh->type;
 	switch (type)
 	{
 		case 3 :	p->nzbandloc =  (int)(2 * n_partials + *p->inzbin);        //get past the partial data to the noise
