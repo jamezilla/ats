@@ -4,6 +4,9 @@ Oscar Pablo Di Liscia / Juan Pampin
  */
 
 #include "atsh.h"
+extern char *ats_tittle;
+char *hdata;
+
 ///////////////////////////////////////////////////////////////////////
 void create_hsep(GtkWidget *vbox)
 {

@@ -9,12 +9,24 @@ GtkWidget *filew;
 char      *filt;
 GtkWidget *outlabel;
 GtkWidget *slabel;
+extern GtkWidget     *isfile_label;
+extern GtkWidget     *osfile_label;
+extern GtkWidget     *afile_label;
+extern GtkWidget     *rfile_label;
+char *in_tittle;
+extern char *out_tittle;
+extern char *out_ats_tittle;
+char *ats_tittle;
+extern ANARGS *atsh_anargs;
+extern GtkObject *valadj;
+
 
 typedef struct {
   void (*func)();
   GtkWidget *filesel;
   int opid;
 } typFileSelectionData;
+
 ////////////////////////////////////////////////////////////
 GtkWidget *create_men_snd(char *label, int ID, GtkWidget *parent)
 {

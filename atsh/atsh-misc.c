@@ -6,9 +6,10 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "atsh.h"
 
 extern GtkWidget           *win_main;
-extern GtkAccelGroup       *accel_group;
+GtkAccelGroup       *accel_group;
 extern GtkTooltips         *tooltips;
 
+GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
 
 
 

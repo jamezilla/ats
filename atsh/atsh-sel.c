@@ -11,6 +11,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 
+extern GtkWidget     *main_graph;
+extern VIEW_PAR *h, *v;
+
 ///////////////////////////////////////////////////////
 void set_met(GtkWidget *widget, gpointer data)
 {

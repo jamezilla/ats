@@ -8,6 +8,23 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #define ENG_RMS(val, ws) sqrt((double)val/(ws * (float)ATSA_NOISE_VARIANCE))
 
+void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
+float ioscilator(float amp,float frec,int op,float *oscpt);
+int locate_frame(int from_frame, float time, float dif);
+void set_output_type(int *format, int *header);
+void randi_setup(float sr, float freq, RANDI *radat);
+float randi(RANDI *radat);
+float randif(RANDI *radat, float freq);
+void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps, int op, float *oscpt);
+void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata);
+void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
+
+
+double tl_sr;
+extern float *sine_table;
+extern char *out_tittle;
+extern char *ats_tittle;
+
 ///////////////////////////////////////////////////////////////////
 //randi output random numbers in the range of 1,-1
 //getting a new number at frequency freq and interpolating

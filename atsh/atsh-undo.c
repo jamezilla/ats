@@ -4,6 +4,9 @@ Oscar Pablo Di Liscia / Juan Pampin
  */
 
 #include "atsh.h"
+
+extern UNDO_DATA *undat;
+
 ////////////////////////////////////////////////////////////////////////////
 void do_undo(GtkWidget *widget,gpointer data)
 {

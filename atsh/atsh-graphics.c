@@ -5,6 +5,14 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 float res_data[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
+extern GtkWidget     *main_graph;
+extern GtkWidget     *label;
+extern GtkObject *hadj1,*hadj2;
+extern GtkWidget *vscale1, *vscale2;
+extern GtkWidget *hruler, *vruler;
+extern VIEW_PAR *h, *v;
+extern GdkPixmap *pixmap;
+
 
 //////////////////////////////////////////////////////////////////////////////
 gint configure_event(GtkWidget *widget, GdkEventConfigure *event)

@@ -4,6 +4,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 */
 
 #include "atsh.h"
+
+extern char *ats_tittle;
+
 /////////////////////////////////////////////////////////////////////////////
 void from_now(GtkWidget *widget, GtkAdjustment *adj)
 {

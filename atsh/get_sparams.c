@@ -4,6 +4,12 @@ Oscar Pablo Di Liscia / Juan Pampin
 */
 
 #include "atsh.h"
+GtkWidget     *osfile_label;
+extern char *out_tittle;
+extern char *ats_tittle;
+extern GtkWidget **entry;
+char **param_list;
+GtkWidget *tlabel1, *tlabel2;
 
 /////////////////////////////////////////////////////////////////////////////
 void allorsel (GtkWidget *widget, gpointer data)

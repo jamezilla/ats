@@ -10,7 +10,30 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "atsh.h"
 #include "my_curve.h"
 
+void CreateMainWindow (char *cmdl_filename);
+void h_scroll(GtkObject *adj,gpointer data);
+void v_scroll(GtkObject *adj,gpointer data);
+void v_setup();
 
+
+GtkWidget     *win_main;
+GtkTooltips   *tooltips;
+GtkWidget     *toolbar;
+GtkWidget     *main_graph;
+GtkWidget     *label;
+char *out_tittle;
+char *out_ats_tittle;
+float *sine_table;
+ANARGS *atsh_anargs;
+GtkObject *hadj1,*hadj2;
+GtkObject *vadj1,*vadj2, *valadj;
+GtkWidget *hscale1, *hscale2;
+GtkWidget *vscale1, *vscale2, *valscale;
+GtkWidget *hruler, *vruler;
+VIEW_PAR *h, *v;
+UNDO_DATA *undat;
+GtkWidget **entry;
+GdkPixmap *pixmap;
 
 /*
  * EndProgram

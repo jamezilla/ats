@@ -219,25 +219,25 @@ typedef struct { //the data for the randi UG
 
 //GLOBAL VARIABLES
 
-double tl_sr;
-float *sine_table;
+//double tl_sr;
+//float *sine_table;
 
 //FROM MAIN
-GtkWidget     *win_main;
-GtkTooltips   *tooltips;
-GtkAccelGroup *accel_group;
-GtkWidget     *toolbar;
-GtkWidget     *main_graph;
-GtkWidget     *label;
-GtkWidget     *isfile_label;
-GtkWidget     *osfile_label;
-GtkWidget     *afile_label;
-GtkWidget     *rfile_label;
+//GtkWidget     *win_main;
+//GtkTooltips   *tooltips;
+//GtkAccelGroup *accel_group;
+//GtkWidget     *toolbar;
+//GtkWidget     *main_graph;
+//GtkWidget     *label;
+//GtkWidget     *isfile_label;
+//GtkWidget     *osfile_label;
+//GtkWidget     *afile_label;
+//GtkWidget     *rfile_label;
 
-char *in_tittle;
-char *out_tittle;
-char *out_ats_tittle;
-char *ats_tittle;
+//char *in_tittle;
+//char *out_tittle;
+//char *out_ats_tittle;
+//char *ats_tittle;
 char *undo_file;
 char *apf_tittle;
 char *res_tittle;
@@ -268,23 +268,23 @@ int   floaded, view_type,vertex1,vertex2;
 short outype;
 int   depth, interpolated, need_byte_swap, draw;
 
-VIEW_PAR *h, *v;
-UNDO_DATA *undat;
+//VIEW_PAR *h, *v;
+//UNDO_DATA *undat;
 
-ANARGS *atsh_anargs;
+//ANARGS *atsh_anargs;
 
-GtkObject *hadj1,*hadj2;
-GtkObject *vadj1,*vadj2, *valadj;
-GtkWidget *hscale1, *hscale2;
-GtkWidget *vscale1, *vscale2, *valscale;
-GtkWidget *hruler, *vruler;
+//GtkObject *hadj1,*hadj2;
+//GtkObject *vadj1,*vadj2, *valadj;
+//GtkWidget *hscale1, *hscale2;
+//GtkWidget *vscale1, *vscale2, *valscale;
+//GtkWidget *hruler, *vruler;
 
 GtkWidget *fWedit;
 GtkWidget *aWedit;
 GtkWidget *tWedit;
 
-GtkWidget **entry;
-GdkPixmap *pixmap;
+//GtkWidget **entry;
+//GdkPixmap *pixmap;
 GdkGC *draw_pen;
 GdkColor *draw_col;
 GdkRectangle update_rect;
@@ -302,43 +302,43 @@ GtkWidget *clist;
 GtkObject *adj1;
 GtkWidget *ti_num, *fr_num, *fr_from, *fr_to;
 //From getsparams.c
-char **param_list;
-GtkWidget *tlabel1, *tlabel2;
+//char **param_list;
+//GtkWidget *tlabel1, *tlabel2;
 //From header
-char *hdata;
+//char *hdata;
 GtkWidget *window1;
 //
 
 //SYNTHESIS FUNCTIONS
 void do_synthesis();
-void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
+//void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
 void make_sine_table();
-float ioscilator(float amp,float frec,int op,float *oscpt);
-int locate_frame(int from_frame, float time, float dif);
-void set_output_type(int *format, int *header);
-void randi_setup(float sr, float freq, RANDI *radat);
-float randi(RANDI *radat);
-float randif(RANDI *radat, float freq);
-void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps, int op, float *oscpt);
-void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata);
-void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
+//float ioscilator(float amp,float frec,int op,float *oscpt);
+//int locate_frame(int from_frame, float time, float dif);
+// void set_output_type(int *format, int *header);
+// void randi_setup(float sr, float freq, RANDI *radat);
+// float randi(RANDI *radat);
+// float randif(RANDI *radat, float freq);
+// void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps, int op, float *oscpt);
+// void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata);
+// void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
 
 //MAIN PROGRAM FUNCTIONS
-void CreateMainWindow (char *cmdl_filename);
-void DeSelectMenu (GtkWidget *widget, gpointer data);
-GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
-GtkWidget *CreateMenuCheck (GtkWidget *menu, char *szName, GtkSignalFunc func,gpointer data);
-void CreateToolbar (GtkWidget *vbox_main);
+//void CreateMainWindow (char *cmdl_filename);
+//void DeSelectMenu (GtkWidget *widget, gpointer data);
+//GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
+//GtkWidget *CreateMenuCheck (GtkWidget *menu, char *szName, GtkSignalFunc func,gpointer data);
+//void CreateToolbar (GtkWidget *vbox_main);
 void Create_menu (GtkWidget *menubar);
 
 gint EndProgram ();
 void PrintFunc (GtkWidget *widget, gpointer data);
 
 void init_scalers(gint how);
-void h_scroll(GtkObject *adj,gpointer data);
+//void h_scroll(GtkObject *adj,gpointer data);
 void h_setup();
-void v_scroll(GtkObject *adj,gpointer data);
-void v_setup();
+//void v_scroll(GtkObject *adj,gpointer data);
+//void v_setup();
 
 void mem_realloc();
 void set_avec();

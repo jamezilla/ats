@@ -6,13 +6,18 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 //GtkWidget *statlab;
+GtkWidget     *isfile_label;
+GtkWidget     *afile_label;
+GtkWidget     *rfile_label;
 
+extern char *in_tittle;
+extern char *out_ats_tittle;
+extern char *ats_tittle;
+extern ANARGS *atsh_anargs;
 ///////////////////////////////////////////////////////
 void update_aparameters()
 {
-char *str;
-
- str=(char*)malloc(32*sizeof(char));
+char *str=(char*)malloc(32*sizeof(char));
   
  *str=0;
   sprintf(str, " %9.4f ",atsh_anargs->start);
