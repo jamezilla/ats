@@ -1,6 +1,6 @@
 CC = gcc
 DEFS = -DLINUX
-CFLAGS = -I$(ATSA_LOC) -ggdb -O2 -Wall
+CFLAGS = -I$(ATSA_LOC) -ggdb -Wall -O1
 GTK_LIBS = `gtk-config --libs`
 GTK_CFLAGS = `gtk-config --cflags`
 LIBS = -lm $(ATSA_LOC)/atsa.a
