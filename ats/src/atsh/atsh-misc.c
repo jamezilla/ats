@@ -284,13 +284,20 @@ void Create_menu (GtkWidget *menubar)
        --- Help ---
        ----------------- */
     menu = (GtkWidget *)CreateBarSubMenu (menubar, "Help");
-    /*
-    menuitem = CreateMenuItem (menu, "Help", "^H", 
-                     "View help file(HTML format)", 
-                     GTK_SIGNAL_FUNC (PrintFunc), "help");
-    */
-    menuitem = CreateMenuItem (menu, "About ATSH", "", 
-                     "About ATSH", 
-                     GTK_SIGNAL_FUNC (about), NULL);
+
+    menuitem = CreateMenuItem (menu, "Help", "^H", "View help information", GTK_SIGNAL_FUNC (help), NULL);
+
+    menuitem = CreateMenuItem (menu, "About ATSH", "", "About ATSH", GTK_SIGNAL_FUNC (about), NULL);
     
 }
+
+
+// void set_window_icon (GtkWidget * this_window)
+// {
+// #include "atsh_icon.xpm"
+//   GdkPixmap *pixmap;
+//   GdkBitmap *mask;
+
+//   pixmap = gdk_pixmap_create_from_xpm_d (this_window->window, &mask, &this_window->style->bg[GTK_STATE_NORMAL], atsh_icon_xpm);
+//   gdk_window_set_icon (this_window->window, NULL, pixmap, mask);
+// }

@@ -455,6 +455,7 @@ void show_header (void);
 //void hclose(GtkWidget *widget, gpointer data);
 //void create_hsep(void);
 void about(void);
+void help(void);
 
 //FILE FUNCTIONS
 GtkWidget *create_men_snd(char *label, int ID, GtkWidget *parent);
@@ -527,5 +528,7 @@ void make_peaks(ATS_SOUND *sound, ATS_PEAK *peaks, int frame);
  * to_frame: last frame
  */
 void atsh_compute_SMR(ATS_SOUND *sound, int from_frame, int to_frame);
+
+//void set_window_icon (GtkWidget * this_window);
 
 #endif /* !ATSH_H */

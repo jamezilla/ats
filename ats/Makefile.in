@@ -128,14 +128,13 @@ atsa_SOURCES = src/atsa/atsa-nogui.c src/atsa/atsa.c
 atsa_LDADD = libatsa.a
 atsa_CFLAGS = -Isrc/sndlib
 
-atsh_SOURCES = src/atsh/about.c src/atsh/atsh-analysis.c src/atsh/atsh.c src/atsh/atsh-curves.c src/atsh/ats-header.c src/atsh/atsh-files.c src/atsh/atsh-graphics.c src/atsh/atsh.h src/atsh/atsh-mask.c src/atsh/atsh-misc.c src/atsh/atsh-sel.c src/atsh/atsh-undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c
+atsh_SOURCES = src/atsh/about.c src/atsh/atsh-analysis.c src/atsh/atsh.c src/atsh/atsh-curves.c src/atsh/ats-header.c src/atsh/atsh-files.c src/atsh/atsh-graphics.c src/atsh/atsh.h src/atsh/atsh-mask.c src/atsh/atsh-misc.c src/atsh/atsh-sel.c src/atsh/atsh-undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
 atsh_LDADD = libatsa.a @GTK_LIBS@
 atsh_CFLAGS = -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@
 
-EXTRA_DIST = README TODO reconf \
+EXTRA_DIST = README TODO doc \
 src/sndlib/clm.c src/sndlib/clm.h src/sndlib/clm-strings.h src/sndlib/config.guess src/sndlib/config.h.in src/sndlib/config.sub src/sndlib/configure src/sndlib/headers.c src/sndlib/install-sh src/sndlib/io.c src/sndlib/makefile.in src/sndlib/README src/sndlib/sndlib-config.in src/sndlib/sndlib.h src/sndlib/sndlib-strings.h src/sndlib/sound.c
 
-DIST_SUBDIRS = examples doc
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -168,7 +167,7 @@ am_atsh_OBJECTS = atsh-about.$(OBJEXT) atsh-atsh-analysis.$(OBJEXT) \
 	atsh-atsh-undo.$(OBJEXT) atsh-get_sparams.$(OBJEXT) \
 	atsh-list_view.$(OBJEXT) atsh-my_curve.$(OBJEXT) \
 	atsh-popup.$(OBJEXT) atsh-progress.$(OBJEXT) \
-	atsh-synth-funcs.$(OBJEXT)
+	atsh-synth-funcs.$(OBJEXT) atsh-help.$(OBJEXT)
 atsh_OBJECTS = $(am_atsh_OBJECTS)
 atsh_DEPENDENCIES = libatsa.a
 atsh_LDFLAGS =
@@ -189,6 +188,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-undo.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-get_sparams.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-list_view.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-my_curve.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-popup.Po \
@@ -312,6 +312,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-get_sparams.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-list_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-my_curve.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-popup.Po@am__quote@
@@ -964,6 +965,28 @@ atsh-synth-funcs.obj: src/atsh/synth-funcs.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-synth-funcs.Po' tmpdepfile='$(DEPDIR)/atsh-synth-funcs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-synth-funcs.obj `if test -f 'src/atsh/synth-funcs.c'; then $(CYGPATH_W) 'src/atsh/synth-funcs.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/synth-funcs.c'; fi`
+
+atsh-help.o: src/atsh/help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-help.o -MD -MP -MF "$(DEPDIR)/atsh-help.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-help.o `test -f 'src/atsh/help.c' || echo '$(srcdir)/'`src/atsh/help.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-help.Tpo" "$(DEPDIR)/atsh-help.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-help.Tpo"; exit 1; \
+@am__fastdepCC_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/help.c' object='atsh-help.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-help.Po' tmpdepfile='$(DEPDIR)/atsh-help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-help.o `test -f 'src/atsh/help.c' || echo '$(srcdir)/'`src/atsh/help.c
+
+atsh-help.obj: src/atsh/help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-help.obj -MD -MP -MF "$(DEPDIR)/atsh-help.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-help.obj `if test -f 'src/atsh/help.c'; then $(CYGPATH_W) 'src/atsh/help.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/help.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-help.Tpo" "$(DEPDIR)/atsh-help.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-help.Tpo"; exit 1; \
+@am__fastdepCC_TRUE@	fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/help.c' object='atsh-help.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-help.Po' tmpdepfile='$(DEPDIR)/atsh-help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-help.obj `if test -f 'src/atsh/help.c'; then $(CYGPATH_W) 'src/atsh/help.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/help.c'; fi`
 uninstall-info-am:
 
 ETAGS = etags
@@ -1063,6 +1086,9 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
@@ -1232,6 +1258,10 @@ src/sndlib/sndlib.a:
 
 sclean:
 	cd src/sndlib ; make clean
+
+dist-hook:
+	rm -rf `find $(distdir)/doc -name CVS`
+#DIST_SUBDIRS = examples doc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
