@@ -340,7 +340,6 @@ void h_setup();
 //void v_scroll(GtkObject *adj,gpointer data);
 //void v_setup();
 
-void mem_realloc();
 void set_avec();
 void edit_freq(GtkWidget *widget, gpointer data);
 void edit_amp (GtkWidget *widget, gpointer data);

@@ -520,17 +520,24 @@ void atsin(char *pointer)
   }
   /////////////////////////////////////////////////////////////////////////////////////////
  
-    if(!ats_sound) {
-      Popup("Could not allocate enough memory for ATS data");
-      *ats_tittle=0;
-      fclose(atsfin);
-      floaded=FALSE;
-      init_scalers(FALSE);
-      draw_default();
-      return; 
-    }
+//     if(!ats_sound) {
+//       Popup("Could not allocate enough memory for ATS data");
+//       *ats_tittle=0;
+//       fclose(atsfin);
+//       floaded=FALSE;
+//       init_scalers(FALSE);
+//       draw_default();
+//       return; 
+//     }
 
-    mem_realloc();
+    if(ats_sound != NULL) free_sound(ats_sound);
+    ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
+    init_sound(ats_sound, (int)atshed->sr, (int)atshed->fs, (int)atshed->ws, (int)atshed->fra+1, (double)atshed->dur, (int)atshed->par, FILE_HAS_NOISE);
+
+    selected=(short*)realloc(selected, (int)atshed->par * sizeof(short) + 1);
+    
+    //all partials are UNselected by default
+    for(i=0; i<(int)atshed->par; i++) selected[i]=FALSE;
     ////////////////////////////////////////////////////////////////////////////////////////
 
     normfac= 1. / atshed->ma;

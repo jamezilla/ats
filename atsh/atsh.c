@@ -125,8 +125,9 @@ int main (int argc, char *argv[])
     
     avec=(float*)malloc(sizeof(float));
     fvec=(float*)malloc(sizeof(float));
-    ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
-    init_sound(ats_sound, 44100 , 2205, 2205, 1,.05,1);
+    ats_sound = NULL;
+    //    ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
+    //    init_sound(ats_sound, 44100 , 2205, 2205, 1,.05,1);
 
     selected=(short*)malloc(sizeof(short));
     info=(char*)malloc(sizeof(char)*1024);
@@ -564,27 +565,6 @@ void v_setup()
   draw=TRUE;
   draw_pixm();
 return;
-}
-///////////////////////////////////////////////////////////////////////////////////
-void mem_realloc()
-{
-  int i;
-
-  if(ats_sound != NULL) {
-    free_sound(ats_sound);
-    ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
-    init_sound(ats_sound, (int)atshed->sr, (int)atshed->fs, (int)atshed->ws, (int)atshed->fra+1, (double)atshed->dur, (int)atshed->par);
-  
-    //THIS SHOULD BE DONE ON ATSA
-    if(FILE_HAS_NOISE) {
-      ats_sound->band_energy = (void *)malloc(ATSA_CRITICAL_BANDS * sizeof(void *));
-      for(i=0; i<ATSA_CRITICAL_BANDS; i++) ats_sound->band_energy[i] = (double *)malloc(atshed->fra * sizeof(double));
-    }
-  }  
-  selected=(short*)realloc(selected, (int)atshed->par * sizeof(short) + 1);
-    
-  //all partials are UNselected by default
-  for(i=0; i<(int)atshed->par; i++) selected[i]=FALSE;
 }
 
 //////////////////////////////////////////////////////////

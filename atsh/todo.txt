@@ -19,7 +19,7 @@ Analysis:
 2-Amp. threshold default should be -72
 
 ATSA:
-1-Move residual bands memory alloc. from residual-analysis.c to init_sound in utilities.c.
+
 
 GENERAL:
 1-Optimize MAKEFILE

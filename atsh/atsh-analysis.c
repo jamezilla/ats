@@ -143,8 +143,6 @@ void set_defaults(GtkWidget *widget, gpointer *data)
     atsh_anargs->win_type       =BLACKMAN_H;
     gtk_option_menu_set_history (GTK_OPTION_MENU (optionmenu2), 3); 
     atsh_anargs->type           =4;
-
-    return;
 }
 
 ///////////////////////////////////////////////////////
@@ -152,9 +150,7 @@ void unload_ats_file()
 {
   floaded=0;
   selected=(short*)realloc(selected, sizeof(short));
-  init_sound(ats_sound, 44100 , 2205, 2205, 1,.1,1);
-  return;
-
+  //init_sound(ats_sound, 44100 , 2205, 2205, 1,.1,1);
 }
 ///////////////////////////////////////////////////////
 void change_ats_type(GtkWidget *widget, gpointer data)
@@ -162,7 +158,6 @@ void change_ats_type(GtkWidget *widget, gpointer data)
   int menu;
   menu=GPOINTER_TO_INT(data); 
   atsh_anargs->type=(int)menu+1; //change here
- return;
 }
 ///////////////////////////////////////////////////////
 void change_win_type(GtkWidget *widget, gpointer data)
@@ -170,8 +165,6 @@ void change_win_type(GtkWidget *widget, gpointer data)
   int menu;
   menu=GPOINTER_TO_INT(data); 
   atsh_anargs->win_type=(float)menu;
-
- return;
 }
 ///////////////////////////////////////////////////////
 GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which)
