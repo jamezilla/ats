@@ -13,6 +13,43 @@ Edition:
 5-SMR/Amplitude display.
 6-Smart sellection using frequency with harmonic factor and SMR threshold.
 
+-synthesis/parameters: remove 'use all partials' button and make it synthesize only what is selected, or everything if nothing selected.  allow editing of the file field.  come up with better language than 'deterministic' and 'residual'.  do we need a freq scalar?
+-synthesis/resynthesize: make the progress bar and 'done' popup just one form, so that the prog bar stays on screen until dismissed, and the 'done' info gets written to the prog bar form.  
+--analysis: make info printed to stdout into a form with progress bar
+-view/data on header: beautify output
+
+- change title bar to say 'ATSH - filename' and keep it updated with file names
+- label the zoom bars and contrast bar
+- move the frame and frequency info from bottom right corner to bottom centered, or maybe to status bar (if one exists)
+
+//////////////////////////////////////////////////////
+idea for menu layout:
+the menu should be layed out as below, with the same order as below
+
+Analysis (was File)
+ -Load ATS file
+ -Save ATS file
+ -New ATS file
+ -Quit
+ (remove 'set output soundfile')
+
+Transformation (was Edit)
+(keep everything as is for now)
+
+Synthesis
+ -Parameters (keep same)
+ -Synthesize (was Resynthesize)
+ -Playback controls (when implemented)
+
+View
+ (keep everything the same)
+
+Help
+ -Documentation (launch the html documentation)
+ -About (keep same)
+
+////////////////////////////////////////////////
+
 
 Analysis:
 1-Re-order analysis parameters
