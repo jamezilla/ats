@@ -12,7 +12,8 @@ software, please e-mail me if you find problems.
 Here is how I compile it (with "m_pd.h" from the PD source in the same directory) 
 gcc -shared -o atsread.pd_linux atsread.c
 
-or to allow byte swapping: 
+or to allow byte swapping (using big endian files on little endian machines,
+and visa versa): 
 gcc -DBYTESWAP -shared -o atsread.pd_linux atsread.c
 
 Then put the atsread.pd_linux file into your path somewhere (most likely your

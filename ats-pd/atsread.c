@@ -9,14 +9,12 @@
 
 #define ATSA_NOISE_VARIANCE 0.04
 
-typedef struct _atsdataloc
-{
+typedef struct _atsdataloc {
 	double amp;
 	double freq;
 }	t_atsdataloc;
 
-typedef struct _atshead
-{
+typedef struct _atshead {
 	double  magic;  /* ats magic number */
 	double  sampr;  /* sampling rate */
 	double  frmsz;  /* frame size in samples */
