@@ -3,11 +3,11 @@ LD = ld
 CFLAGS = -I. -ggdb -O2 -Wall
 
 #you might need to put -lm here as well
-LIBS = ./atsa-sndlib/sndlib.a -lfftw3
+LIBS = ./atsa-sndlib/sndlib.a #-lfftw3
 #LIBS = ./atsa-sndlib/sndlib.a /usr/local/lib/libfftw3.a
 
 #if you have fftw installed, then -DFFTW
-DEFS = -DLINUX -DFFTW
+DEFS = -DLINUX #-DFFTW
 
 #if you have/use gls you need to also include -lgsl -lgslcblas in this line
 NOGUI_LIBS = -lm atsa.a
