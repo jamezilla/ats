@@ -18,7 +18,7 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
   /* create pointers and structures */
   ATS_SOUND *sound = NULL;
   FILE *outfile;
- /* open output file */
+  /* open output file */
   outfile = fopen(ats_outfile, "wb");
   if (outfile == NULL) {
     printf("\n Could not open %s for writing, bye...\n\n", ats_outfile);

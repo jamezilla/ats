@@ -408,7 +408,7 @@ void CreateMainWindow (char *cmdl_filename)
 //     gtk_object_set_data_full (GTK_OBJECT (win_main), "statusbar",statusbar,
 //                           (GtkDestroyNotify) gtk_widget_unref);
      gtk_box_pack_start (GTK_BOX (vbox_main), statusbar, FALSE, FALSE, 0);
-     gtk_statusbar_push(GTK_STATUSBAR(statusbar), context_id, "Amplitude Plot:");
+     gtk_statusbar_push(GTK_STATUSBAR(statusbar), context_id, "Sinusoidal Amplitude Plot:");
      gtk_widget_show(statusbar);
 
      init_scalers(FALSE);

@@ -5,31 +5,31 @@
 
 #include "atsa.h"
 
-void usage()
+void usage(void)
 {
-  fprintf(stderr, "atsa soundfile atsfile [flags]\n");
+  fprintf(stderr, "ATSA ");
+  fprintf(stderr, VERSION);
+  fprintf(stderr, "\natsa soundfile atsfile [flags]\n");
   fprintf(stderr, "Flags:\n");
-  fprintf(stderr,
-	  "\t -b start (%f seconds)\n\
-\t -e duration (%f seconds or end)\n\
-\t -l lowest frequency (%f Hertz)\n\
-\t -H highest frequency (%f Hertz)\n\
-\t -d frequency deviation (%f of partial freq.)\n\
-\t -c window cycles (%d cycles)\n\
-\t -w window type (type: %d)\n\
-\t\t(Options: 0=BLACKMAN, 1=BLACKMAN_H, 2=HAMMING, 3=VONHANN)\n\
-\t -h hop size (%f of window size)\n\
-\t -m lowest magnitude (%f)\n\
-\t -t track length (%d frames)\n\
-\t -s min. segment length (%d frames)\n\
-\t -g min. gap length (%d frames)\n\
-\t -T SMR threshold (%f dB SPL)\n\
-\t -S min. segment SMR (%f dB SPL)\n\
-\t -P last peak contribution (%f of last peak's parameters)\n\
-\t -M SMR contribution (%f)\n\
-\t -F File Type (type: %d)\n\
-\t\t(Options: 1=amp.and freq. only, 2=amp.,freq. and phase, 3=amp.,freq. and residual, 4=amp.,freq.,phase, and residual)\n\
-\n", 
+  fprintf(stderr, "\t -b start (%f seconds)\n"           \
+          "\t -e duration (%f seconds or end)\n"         \
+          "\t -l lowest frequency (%f Hertz)\n"          \
+          "\t -H highest frequency (%f Hertz)\n"         \
+          "\t -d frequency deviation (%f of partial freq.)\n"    \
+          "\t -c window cycles (%d cycles)\n"                           \
+          "\t -w window type (type: %d)\n"                              \
+          "\t\t(Options: 0=BLACKMAN, 1=BLACKMAN_H, 2=HAMMING, 3=VONHANN)\n" \
+          "\t -h hop size (%f of window size)\n"                        \
+          "\t -m lowest magnitude (%f)\n"                               \
+          "\t -t track length (%d frames)\n"                            \
+          "\t -s min. segment length (%d frames)\n"                     \
+          "\t -g min. gap length (%d frames)\n"                         \
+          "\t -T SMR threshold (%f dB SPL)\n"                           \
+          "\t -S min. segment SMR (%f dB SPL)\n"                        \
+          "\t -P last peak contribution (%f of last peak's parameters)\n" \
+          "\t -M SMR contribution (%f)\n"                               \
+          "\t -F File Type (type: %d)\n"                                \
+          "\t\t(Options: 1=amp.and freq. only, 2=amp.,freq. and phase, 3=amp.,freq. and residual, 4=amp.,freq.,phase, and residual)\n\n", 
 	  ATSA_START, 
 	  ATSA_DUR,
 	  ATSA_LFREQ, 

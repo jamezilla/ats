@@ -6,6 +6,10 @@
 #ifndef ATSA_H
 #define ATSA_H 1
 
+#if defined(HAVE_CONFIG_H)
+#include <config.h>
+#endif
+
 #ifdef FFTW
 #include <fftw3.h>
 #endif

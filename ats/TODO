@@ -18,7 +18,7 @@ Editing:
 Analysis: make info printed to stdout into a form with progress bar
 
 - label the zoom bars and contrast bar or separate the two zoom bars out of the contrast one. Take out the number on the latter.
-- move the frame and frequency info from bottom right corner to bottom centered, or maybe to status bar (if one exists)
+
 
 View menu
  Replace Sinusoidal and Noise by a call to a Configuration View Window
@@ -26,4 +26,6 @@ View menu
 - add Help/Documentation menu item that launches the html documentation
 
 
+
+all menus: rethink keyboard commands.  several commands do not need a keyboard shortcut, and others need a better letter.
 

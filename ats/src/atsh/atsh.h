@@ -325,9 +325,9 @@ GtkWidget *window1;
 //
 
 //SYNTHESIS FUNCTIONS
-void do_synthesis();
+void do_synthesis(void);
 //void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
-void make_sine_table();
+void make_sine_table(void);
 //float ioscilator(float amp,float frec,int op,float *oscpt);
 //int locate_frame(int from_frame, float time, float dif);
 // void set_output_type(int *format, int *header);
@@ -346,16 +346,16 @@ void make_sine_table();
 //void CreateToolbar (GtkWidget *vbox_main);
 void Create_menu (GtkWidget *menubar);
 
-gint EndProgram ();
+gint EndProgram (void);
 void PrintFunc (GtkWidget *widget, gpointer data);
 void show_file_name(GtkWidget *window,char *name);
 void init_scalers(gint how);
 //void h_scroll(GtkObject *adj,gpointer data);
-void h_setup();
+void h_setup(void);
 //void v_scroll(GtkObject *adj,gpointer data);
-//void v_setup();
+//void v_setup(void);
 
-void set_avec();
+void set_avec(void);
 void edit_freq(GtkWidget *widget, gpointer data);
 void edit_amp (GtkWidget *widget, gpointer data);
 void edit_tim (GtkWidget *widget, gpointer data);
@@ -387,9 +387,9 @@ void curve_reset_time(GtkWidget *widget, ENVELOPE *data);
 //PROGRESSBAR FUNCTIONS
 void StartProgress(char *message, int canstop);
 void UpdateProgress(int pos, int len);
-void EndProgress ();
+void EndProgress (void);
 gint CanWindowClose(GtkWidget *widget);
-void stop_process();
+void stop_process(void);
 
 //POPUP DIALOG WINDOW FUNCTIONS
 void CloseDialog (GtkWidget *widget, gpointer data);
@@ -398,21 +398,21 @@ void Popup (char *szMessage);
 
 //LIST VIEW FUNCTIONS
 void update_time(gfloat valt, gint valf);
-void redraw_screen();
+void redraw_screen(void);
 void clist_update(GtkAdjustment *adj);
 void delete_window (GtkWidget *widget, gpointer data);
-void init_str();
+void init_str(void);
 void selection_made(GtkWidget *clist, gint row, gint column, GdkEventButton *event, gpointer data );
 void unselection_made(GtkWidget *clist, gint row, gint column, GdkEventButton *event, gpointer data );
-int list_view();
+int list_view(void);
 void from_now(GtkWidget *widget, GtkAdjustment *adj);
 void to_now(GtkWidget *widget, GtkAdjustment *adj);
 
 // SYNTHESIS PARAMETERS SELECTION FUNCTION
-void get_sparams ();
+void get_sparams (void);
 GtkWidget *CreateEditField (char *name, int what);
 char **alocstring(int np , int nc);
-void set_params();
+void set_params(void);
 void allorsel (GtkWidget *widget, gpointer data);
 //void upha(GtkWidget *widget, gpointer data);
 
@@ -427,32 +427,33 @@ gint configure_event(GtkWidget *widget, GdkEventConfigure *event);
 gint click(GtkWidget *widget, GdkEventButton *event); 
 void change_color (int nRed, int nGreen, int nBlue);
 void draw_selection_line(int x);
-void draw_selection();
+void draw_selection(void);
 void erase_selection(int pfrom, int pto);
-void draw_default();
-void draw_pixm();
+void draw_default(void);
+void draw_pixm(void);
 void repaint(gpointer data);
 void set_selection(int from, int to, int x1, int x2, int width);
 void set_hruler(double from, double to, double pos, double max);
-void set_spec_view();
-void set_res_view();
-void set_interpolated_view();
+void set_spec_view(void);
+void set_smr_view(void);
+void set_res_view(void);
+void set_interpolated_view(void);
 
 void update_value(GtkAdjustment *adj);
-void unzoom();
-void zoom_sel();
-void sel_only();
-void sel_all();
-void sel_un();
-void sel_even();
-void sel_odd();
-void revert_sel();
+void unzoom(void);
+void zoom_sel(void);
+void sel_only(void);
+void sel_all(void);
+void sel_un(void);
+void sel_even(void);
+void sel_odd(void);
+void revert_sel(void);
 
 
 //ABOUT WINDOW FUNCTIONS
 void show_header (void);
 //void hclose(GtkWidget *widget, gpointer data);
-//void create_hsep();
+//void create_hsep(void);
 void about(void);
 
 //FILE FUNCTIONS
@@ -471,21 +472,21 @@ void GetFilename (char *sTitle, void (*callback) (char *),char* selected, char *
 void FileOk (GtkWidget *w, gpointer data);
 void destroy (GtkWidget *widget, gpointer *data);
 void filesel(GtkWidget *widget,char *what);
-void stringinit();
-void stringfree();
+void stringinit(void);
+void stringfree(void);
 int  my_filelength(FILE *fpt);
-void edit_audio();
+void edit_audio(void);
 void choose_output(GtkWidget *widget, gpointer data);
 void getap(char *pointer);
 void savap(char *pointer);
 
 //ANALYSIS WINDOW FUNCTIONS
-void retrieve_file_names();
+void retrieve_file_names(void);
 void change_ats_type(GtkWidget *widget, gpointer data);
 void select_out_atsfile(GtkWidget *widget, gpointer *data);
 void select_in_soundfile(GtkWidget *widget, gpointer *data);
 void set_defaults(GtkWidget *widget, gpointer *data);
-void unload_ats_file();
+void unload_ats_file(void);
 void change_win_type(GtkWidget *widget, gpointer data);
 GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which);
 void set_aparam(GtkWidget *widget, gpointer data);
@@ -498,7 +499,7 @@ GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *wi
 void create_ana_dlg (void);
 void get_ap(GtkWidget *widget, gpointer *data);
 void sav_ap(GtkWidget *widget, gpointer *data);
-void update_aparameters();
+void update_aparameters(void);
 
 //SELECTION FILTER FUNCTIONS
 void create_sel_dlg (void);

@@ -5,9 +5,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 
-extern GtkWidget           *win_main;
-GtkAccelGroup       *accel_group;
-extern GtkTooltips         *tooltips;
+extern GtkWidget *win_main;
+GtkAccelGroup *accel_group;
+extern GtkTooltips *tooltips;
 
 GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
 
@@ -233,16 +233,23 @@ void Create_menu (GtkWidget *menubar)
        --- View menu ---
        ----------------- */
     menu = (GtkWidget *)CreateBarSubMenu (menubar, "View");
+
     menuitem = CreateMenuItem (menu, "List", "^T", 
                      "View Amp., Freq. and Phase on a list", 
                      GTK_SIGNAL_FUNC (list_view), NULL);
+
     menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
-    menuitem = CreateMenuItem (menu, "Spectrum (Amp / SMR)", "^C", 
-                     "View Spectrum Plot(Toggles between Amplitude or SMR values)", 
+
+    menuitem = CreateMenuItem (menu, "Sinusoidal Amplitude", "^C", 
+                     "View Sinusoidal Plot with Amplitude data", 
                      GTK_SIGNAL_FUNC (set_spec_view), NULL);
 
-    menuitem = CreateMenuItem (menu, "Residual", "^D", 
-			       "View Residual Plot", 
+    menuitem = CreateMenuItem (menu, "Sinusoidal SMR", "", 
+                     "View Sinusoidal Plot with SMR data", 
+                     GTK_SIGNAL_FUNC (set_smr_view), NULL);
+
+    menuitem = CreateMenuItem (menu, "Noise", "^D", 
+			       "View Noise Plot", 
 			       GTK_SIGNAL_FUNC (set_res_view), NULL);
 
     menuitem = CreateMenuItem (menu, "Lines / Dashes", "^M", 
@@ -250,9 +257,11 @@ void Create_menu (GtkWidget *menubar)
 			       GTK_SIGNAL_FUNC (set_interpolated_view), NULL);
 			       
     menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
+
     menuitem = CreateMenuItem (menu, "unzoom", "^U", 
                      "zoom out full", 
                      GTK_SIGNAL_FUNC (unzoom), NULL);
+
     menuitem = CreateMenuItem (menu, "zoom selection", "^Z", 
                      "zoom selected region", 
                      GTK_SIGNAL_FUNC (zoom_sel), NULL); 
@@ -265,8 +274,8 @@ void Create_menu (GtkWidget *menubar)
 			       "switch between view only selection /view all", 
 			       GTK_SIGNAL_FUNC (sel_only), NULL);
     menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
-    menuitem = CreateMenuItem (menu, "Data on Header", "^E", 
-                     "view specs of ATS file", 
+    menuitem = CreateMenuItem (menu, "Header Data", "^E", 
+                     "view ATS file header data", 
                      GTK_SIGNAL_FUNC (show_header), NULL);
    
     
@@ -280,10 +289,8 @@ void Create_menu (GtkWidget *menubar)
                      "View help file(HTML format)", 
                      GTK_SIGNAL_FUNC (PrintFunc), "help");
     */
-    menuitem = CreateMenuItem (menu, "About", "^A", 
-                     "About this program", 
+    menuitem = CreateMenuItem (menu, "About", "", 
+                     "About ATSH", 
                      GTK_SIGNAL_FUNC (about), NULL);
     
-return;
-
 }

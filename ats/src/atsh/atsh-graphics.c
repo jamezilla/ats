@@ -19,10 +19,7 @@ extern gint context_id;
 //////////////////////////////////////////////////////////////////////////////
 gint configure_event(GtkWidget *widget, GdkEventConfigure *event)
 {
- 
-  if(pixmap) {
-    gdk_pixmap_unref(pixmap);
-  }
+  if(pixmap) gdk_pixmap_unref(pixmap);
 
   pixmap= gdk_pixmap_new(widget->window,
 			 widget->allocation.width,
@@ -30,19 +27,14 @@ gint configure_event(GtkWidget *widget, GdkEventConfigure *event)
 			 -1);
   draw_pen= gdk_gc_new (pixmap);
 
-   if(floaded==0) {
-    draw_default(NULL);
-  }
-  else{
-    draw_pixm(NULL);
-  }
+  if(floaded==0) draw_default();
+  else draw_pixm();
   
-return(1);
+  return(1);
 }
 /////////////////////////////////////////////////////////////////////////////
 gint expose_event(GtkWidget *widget, GdkEventExpose *event)
 {
-  
   gdk_draw_pixmap(widget->window,
 		  widget->style->white_gc,
 		  pixmap,
@@ -51,7 +43,7 @@ gint expose_event(GtkWidget *widget, GdkEventExpose *event)
 		  widget->allocation.width,
 		  widget->allocation.height
 		  );
-return(0);
+  return(0);
 }
 ////////////////////////////////////////////////////////////////////////////
 void change_color (int nRed, int nGreen, int nBlue )
@@ -408,61 +400,62 @@ return;
 /////////////////////////////////////////////////////////////////////////////////
 void update_value(GtkAdjustment *adj)
 {  
-  
-  if(floaded==0) {return;}
-  valexp=adj->value / 100.;
-  draw_pixm();
-  return;
+  if(floaded) {
+    valexp=adj->value / 100.;
+    draw_pixm();
+  }
 }
 /////////////////////////////////////////////////////////////////////////////////
-void set_spec_view() //SPECTRAL view switch between AMP & SMR plot
+void set_spec_view(void) //SPECTRAL view switch between AMP & SMR plot
 {
-  
-  if(floaded==1) {
+  if(floaded) {
     gtk_widget_show(GTK_WIDGET(vscale1));
     gtk_widget_show(GTK_WIDGET(vscale2));
     view_type=SON_VIEW;
     gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend/1000.,(float)v->viewstart/1000.,
 			 (float)v->viewstart/1000.,(float)v->diff/1000.);
     gtk_widget_show(GTK_WIDGET(vruler));
-    if(scale_type==AMP_SCALE) { //switch between AMP & SMR view
-      scale_type=SMR_SCALE;
-      if(smr_done==FALSE) {
-	atsh_compute_SMR(ats_sound, 0, atshed->fra);
-      }
-    } 
-    else{scale_type=AMP_SCALE;}
+    scale_type=AMP_SCALE;
     draw_pixm();
   }
-  return;
 }
 /////////////////////////////////////////////////////////////////////////////////
-void set_res_view() //Show residual data, if any, on a Bark scale
+void set_smr_view(void) //SPECTRAL view switch between AMP & SMR plot
 {
-
-  if(floaded==1) {
-    if(FILE_HAS_NOISE) {
-      gtk_widget_hide(GTK_WIDGET(vscale1));
-      gtk_widget_hide(GTK_WIDGET(vscale2));
-      gtk_widget_hide(GTK_WIDGET(vruler));
-      view_type=RES_VIEW;
-      interpolated=FALSE;//for sonogram return
-      draw_pixm();
-     }
-  }
-return;
-}
-///////////////////////////////////////////////////////////
-void set_interpolated_view() //switch between interpolated & non-interpolated
-{
-  if(floaded==1) {
-    if(interpolated==TRUE) {interpolated=FALSE;}
-    else {
-      interpolated=TRUE;
-    }
+  if(floaded) {
+    gtk_widget_show(GTK_WIDGET(vscale1));
+    gtk_widget_show(GTK_WIDGET(vscale2));
+    view_type=SON_VIEW;
+    gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend/1000.,(float)v->viewstart/1000.,
+			 (float)v->viewstart/1000.,(float)v->diff/1000.);
+    gtk_widget_show(GTK_WIDGET(vruler));
+    scale_type=SMR_SCALE;
+    if(!smr_done) atsh_compute_SMR(ats_sound, 0, atshed->fra);
     draw_pixm();
   }
-  return;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+void set_res_view(void) //Show residual data, if any, on a Bark scale
+{
+  if(floaded && FILE_HAS_NOISE) {
+    gtk_widget_hide(GTK_WIDGET(vscale1));
+    gtk_widget_hide(GTK_WIDGET(vscale2));
+    gtk_widget_hide(GTK_WIDGET(vruler));
+    view_type=RES_VIEW;
+    interpolated=FALSE;//for sonogram return
+    draw_pixm();
+  }
+}
+///////////////////////////////////////////////////////////
+void set_interpolated_view(void) //switch between interpolated & non-interpolated
+{
+  if(floaded) {
+    if(interpolated) interpolated=FALSE;
+    else interpolated=TRUE;
+    draw_pixm();
+  }
 }
 
 ///////////////////////////////////////////////////////////
@@ -485,11 +478,11 @@ GdkModifierType state;
        freq_step=(float)main_graph->allocation.height / (float) v->diff;
        position->f1  = v->viewstart + (v->diff - (int)((float) y / freq_step));
        
-       if(scale_type==AMP_SCALE) sprintf(info,"Amplitude Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
+       if(scale_type==AMP_SCALE) sprintf(info,"Sinusoidal Amplitude Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
                                          position->from+1, 
                                          ats_sound->time[0][position->from], 
                                          position->f1);
-       else sprintf(info,"SMR Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
+       else sprintf(info,"Sinusoidal SMR Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
                     position->from+1, 
                     ats_sound->time[0][position->from], 
                     position->f1);
@@ -512,7 +505,7 @@ GdkModifierType state;
                ats_sound->band_energy[rband-1][position->from] ); 
      }
    }
- 
+   gtk_statusbar_pop(GTK_STATUSBAR(statusbar), context_id);
    gtk_statusbar_push(GTK_STATUSBAR(statusbar), context_id, info);
    
    set_hruler((double)h->viewstart, (double)h->viewend, (double)position->from, (double)h->diff); 
