@@ -1319,10 +1319,10 @@ GLOBALS *pcglob;
 
 static OENTRY localops[] = {
   	{ "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
-  	{ "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL}
-  	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd}
+  	{ "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL},
+  	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
 	{ "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
-	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
+	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi}
 };
 
 long opcode_size(void)
