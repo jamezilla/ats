@@ -37,12 +37,12 @@ typedef struct atsstruct
 	double  type;   /* Ats Frame type 1-4 */
 } ATSSTRUCT;
 
-typedef struct _atsfiledata
+
+typedef struct _atsinfo
 {
-	ATS_DATA_LOC ** atsdata; //temp data
-	double ** atsdatanoise;  //temp data
-	ATSSTRUCT atshead;	//the ATS file header
-}	ATSFILEDATA;
+	OPDS    h;
+	float   *ireturn, *ifileno, *ilocation; //the return value, the ats file and a location selection
+}	ATSINFO;
 
 
 /* structures to pass data to the opcodes */

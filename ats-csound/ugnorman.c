@@ -87,7 +87,96 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 // static variables used for atsbufread and atsbufreadnz
 static	ATSBUFREAD	*atsbufreadaddr = NULL;
 
+//ats info simply reads data out of the header of an atsfile. (i-rate)
 
+void atsinfo (ATSINFO *p){
+	char atsfilname[MAXNAME];
+	ATSSTRUCT * atsh;
+	MEMFIL * memfile;
+	unsigned char *sw_in, sw_out[8];	//for swaping
+	double ret_data;	//data to return
+	int swapped = 0;	//false
+
+	/* copy in ats file name */
+	if (*p->ifileno == sstrcod){
+		strcpy(atsfilname, unquote(p->STRARG));
+	}
+	else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+		strcpy(atsfilname, strsets[(long)*p->ifileno]);
+	else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
+	
+	// load memfile
+	if ( (memfile = ldmemfile(atsfilname)) == NULL){
+		sprintf(errmsg, "ATSINFO: Ats file %s not read (does it exist?)", atsfilname);
+		initerror(errmsg);
+		return;
+	}
+	
+	atsh = (ATSSTRUCT *)memfile->beginp;
+	
+	//make sure that this is an ats file
+	if (atsh->magic != 123){
+		//try to byteswap
+		sw_in = (unsigned char *)&atsh->magic;
+      sw_out[0] = sw_in[7];
+      sw_out[1] = sw_in[6];
+      sw_out[2] = sw_in[5];
+      sw_out[3] = sw_in[4];
+      sw_out[4] = sw_in[3];
+      sw_out[5] = sw_in[2];
+      sw_out[6] = sw_in[1];
+      sw_out[7] = sw_in[0];
+
+		//check to see if it's byteswapped
+		if((int)*((double *)sw_out) == 123){
+			swapped = 1;	//true
+			fprintf(stderr,"ATSINFO: %s is byte-swapped\n", atsfilname);
+		} else {
+			sprintf(errmsg, "ATSINFO: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
+	}
+
+	switch ((int)*p->ilocation) {
+		case 0:	ret_data = atsh->sampr; break;
+		case 1:	ret_data = atsh->frmsz; break;
+		case 2:	ret_data = atsh->winsz; break;
+		case 3:	ret_data = atsh->npartials; break;
+		case 4:	ret_data = atsh->nfrms; break;
+		case 5:	ret_data = atsh->ampmax; break;
+		case 6:	ret_data = atsh->freqmax; break;
+		case 7:	ret_data = atsh->dur; break;
+		case 8:	ret_data = atsh->type; break;
+		default:
+			sprintf(errmsg, "ATSINFO: location is out of bounds: 0-8 are the only possible selections");
+			initerror(errmsg);
+			return;
+	}
+	//if not swapped then just return the data
+	if(!swapped){
+		*p->ireturn = (float)ret_data;
+		return;
+	}
+
+	//otherwise do byteswapping
+	sw_in = (unsigned char *)&ret_data;
+   sw_out[0] = sw_in[7];
+   sw_out[1] = sw_in[6];
+   sw_out[2] = sw_in[5];
+   sw_out[3] = sw_in[4];
+   sw_out[4] = sw_in[3];
+   sw_out[5] = sw_in[2];
+   sw_out[6] = sw_in[1];
+   sw_out[7] = sw_in[0];
+
+	//check to see if it's byteswapped
+	*p->ireturn = (float)*((double *)sw_out);
+	fprintf(stderr,"\n\n return val : %f\n\n", *p->ireturn);
+	return;
+
+
+}
 /************************************************************/
 /*********  ATSREAD       ***********************************/
 /************************************************************/
