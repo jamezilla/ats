@@ -126,11 +126,11 @@ bin_PROGRAMS = atsa atsh
 
 atsa_SOURCES = src/atsa/atsa-nogui.c src/atsa/atsa.c
 atsa_LDADD = libatsa.a
-atsa_CFLAGS = -Isrc/sndlib
+atsa_CFLAGS = -Wall -Isrc/sndlib
 
-atsh_SOURCES = src/atsh/about.c src/atsh/atsh-analysis.c src/atsh/atsh.c src/atsh/atsh-curves.c src/atsh/ats-header.c src/atsh/atsh-files.c src/atsh/atsh-graphics.c src/atsh/atsh.h src/atsh/atsh-mask.c src/atsh/atsh-sel.c src/atsh/atsh-undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
+atsh_SOURCES = src/atsh/about.c src/atsh/analysis.c src/atsh/atsh.c src/atsh/curves.c src/atsh/header.c src/atsh/files.c src/atsh/graphics.c src/atsh/atsh.h src/atsh/mask.c src/atsh/sel.c src/atsh/undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
 atsh_LDADD = libatsa.a @GTK_LIBS@
-atsh_CFLAGS = -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@
+atsh_CFLAGS = -Wall -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@
 
 EXTRA_DIST = README TODO doc \
 src/sndlib/clm.c src/sndlib/clm.h src/sndlib/clm-strings.h src/sndlib/config.guess src/sndlib/config.h.in src/sndlib/config.sub src/sndlib/configure src/sndlib/headers.c src/sndlib/install-sh src/sndlib/io.c src/sndlib/makefile.in src/sndlib/README src/sndlib/sndlib-config.in src/sndlib/sndlib.h src/sndlib/sndlib-strings.h src/sndlib/sound.c
@@ -159,11 +159,10 @@ am_atsa_OBJECTS = atsa-atsa-nogui.$(OBJEXT) atsa-atsa.$(OBJEXT)
 atsa_OBJECTS = $(am_atsa_OBJECTS)
 atsa_DEPENDENCIES = libatsa.a
 atsa_LDFLAGS =
-am_atsh_OBJECTS = atsh-about.$(OBJEXT) atsh-atsh-analysis.$(OBJEXT) \
-	atsh-atsh.$(OBJEXT) atsh-atsh-curves.$(OBJEXT) \
-	atsh-ats-header.$(OBJEXT) atsh-atsh-files.$(OBJEXT) \
-	atsh-atsh-graphics.$(OBJEXT) atsh-atsh-mask.$(OBJEXT) \
-	atsh-atsh-sel.$(OBJEXT) atsh-atsh-undo.$(OBJEXT) \
+am_atsh_OBJECTS = atsh-about.$(OBJEXT) atsh-analysis.$(OBJEXT) \
+	atsh-atsh.$(OBJEXT) atsh-curves.$(OBJEXT) atsh-header.$(OBJEXT) \
+	atsh-files.$(OBJEXT) atsh-graphics.$(OBJEXT) \
+	atsh-mask.$(OBJEXT) atsh-sel.$(OBJEXT) atsh-undo.$(OBJEXT) \
 	atsh-get_sparams.$(OBJEXT) atsh-list_view.$(OBJEXT) \
 	atsh-my_curve.$(OBJEXT) atsh-popup.$(OBJEXT) \
 	atsh-progress.$(OBJEXT) atsh-synth-funcs.$(OBJEXT) \
@@ -177,22 +176,20 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/atsa-atsa-nogui.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsa-atsa.Po ./$(DEPDIR)/atsh-about.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-ats-header.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-analysis.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-curves.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-files.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-graphics.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-mask.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-sel.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh-undo.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-analysis.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-atsh.Po ./$(DEPDIR)/atsh-curves.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-files.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-get_sparams.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-help.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-graphics.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-header.Po ./$(DEPDIR)/atsh-help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-list_view.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-mask.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-my_curve.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-popup.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-progress.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-sel.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-synth-funcs.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-undo.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libatsa_a-critical-bands.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libatsa_a-other-utils.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libatsa_a-peak-detection.Po \
@@ -300,22 +297,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsa-atsa-nogui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsa-atsa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-about.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-ats-header.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-analysis.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-curves.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-files.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-graphics.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-mask.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-sel.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh-undo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-analysis.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-atsh.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-curves.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-files.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-get_sparams.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-graphics.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-header.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-list_view.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-mask.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-my_curve.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-popup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-progress.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-sel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-synth-funcs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libatsa_a-critical-bands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libatsa_a-other-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libatsa_a-peak-detection.Po@am__quote@
@@ -612,27 +609,27 @@ atsh-about.obj: src/atsh/about.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-about.obj `if test -f 'src/atsh/about.c'; then $(CYGPATH_W) 'src/atsh/about.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/about.c'; fi`
 
-atsh-atsh-analysis.o: src/atsh/atsh-analysis.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-analysis.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-analysis.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-analysis.o `test -f 'src/atsh/atsh-analysis.c' || echo '$(srcdir)/'`src/atsh/atsh-analysis.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-analysis.Tpo" "$(DEPDIR)/atsh-atsh-analysis.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-analysis.Tpo"; exit 1; \
+atsh-analysis.o: src/atsh/analysis.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-analysis.o -MD -MP -MF "$(DEPDIR)/atsh-analysis.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-analysis.o `test -f 'src/atsh/analysis.c' || echo '$(srcdir)/'`src/atsh/analysis.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-analysis.Tpo" "$(DEPDIR)/atsh-analysis.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-analysis.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-analysis.c' object='atsh-atsh-analysis.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-analysis.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-analysis.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/analysis.c' object='atsh-analysis.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-analysis.Po' tmpdepfile='$(DEPDIR)/atsh-analysis.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-analysis.o `test -f 'src/atsh/atsh-analysis.c' || echo '$(srcdir)/'`src/atsh/atsh-analysis.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-analysis.o `test -f 'src/atsh/analysis.c' || echo '$(srcdir)/'`src/atsh/analysis.c
 
-atsh-atsh-analysis.obj: src/atsh/atsh-analysis.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-analysis.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-analysis.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-analysis.obj `if test -f 'src/atsh/atsh-analysis.c'; then $(CYGPATH_W) 'src/atsh/atsh-analysis.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-analysis.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-analysis.Tpo" "$(DEPDIR)/atsh-atsh-analysis.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-analysis.Tpo"; exit 1; \
+atsh-analysis.obj: src/atsh/analysis.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-analysis.obj -MD -MP -MF "$(DEPDIR)/atsh-analysis.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-analysis.obj `if test -f 'src/atsh/analysis.c'; then $(CYGPATH_W) 'src/atsh/analysis.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/analysis.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-analysis.Tpo" "$(DEPDIR)/atsh-analysis.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-analysis.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-analysis.c' object='atsh-atsh-analysis.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-analysis.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-analysis.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/analysis.c' object='atsh-analysis.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-analysis.Po' tmpdepfile='$(DEPDIR)/atsh-analysis.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-analysis.obj `if test -f 'src/atsh/atsh-analysis.c'; then $(CYGPATH_W) 'src/atsh/atsh-analysis.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-analysis.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-analysis.obj `if test -f 'src/atsh/analysis.c'; then $(CYGPATH_W) 'src/atsh/analysis.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/analysis.c'; fi`
 
 atsh-atsh.o: src/atsh/atsh.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh.o -MD -MP -MF "$(DEPDIR)/atsh-atsh.Tpo" \
@@ -656,159 +653,159 @@ atsh-atsh.obj: src/atsh/atsh.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh.obj `if test -f 'src/atsh/atsh.c'; then $(CYGPATH_W) 'src/atsh/atsh.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh.c'; fi`
 
-atsh-atsh-curves.o: src/atsh/atsh-curves.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-curves.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-curves.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-curves.o `test -f 'src/atsh/atsh-curves.c' || echo '$(srcdir)/'`src/atsh/atsh-curves.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-curves.Tpo" "$(DEPDIR)/atsh-atsh-curves.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-curves.Tpo"; exit 1; \
+atsh-curves.o: src/atsh/curves.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-curves.o -MD -MP -MF "$(DEPDIR)/atsh-curves.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-curves.o `test -f 'src/atsh/curves.c' || echo '$(srcdir)/'`src/atsh/curves.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-curves.Tpo" "$(DEPDIR)/atsh-curves.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-curves.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-curves.c' object='atsh-atsh-curves.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-curves.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-curves.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/curves.c' object='atsh-curves.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-curves.Po' tmpdepfile='$(DEPDIR)/atsh-curves.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-curves.o `test -f 'src/atsh/atsh-curves.c' || echo '$(srcdir)/'`src/atsh/atsh-curves.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-curves.o `test -f 'src/atsh/curves.c' || echo '$(srcdir)/'`src/atsh/curves.c
 
-atsh-atsh-curves.obj: src/atsh/atsh-curves.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-curves.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-curves.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-curves.obj `if test -f 'src/atsh/atsh-curves.c'; then $(CYGPATH_W) 'src/atsh/atsh-curves.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-curves.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-curves.Tpo" "$(DEPDIR)/atsh-atsh-curves.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-curves.Tpo"; exit 1; \
+atsh-curves.obj: src/atsh/curves.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-curves.obj -MD -MP -MF "$(DEPDIR)/atsh-curves.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-curves.obj `if test -f 'src/atsh/curves.c'; then $(CYGPATH_W) 'src/atsh/curves.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/curves.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-curves.Tpo" "$(DEPDIR)/atsh-curves.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-curves.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-curves.c' object='atsh-atsh-curves.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-curves.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-curves.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/curves.c' object='atsh-curves.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-curves.Po' tmpdepfile='$(DEPDIR)/atsh-curves.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-curves.obj `if test -f 'src/atsh/atsh-curves.c'; then $(CYGPATH_W) 'src/atsh/atsh-curves.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-curves.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-curves.obj `if test -f 'src/atsh/curves.c'; then $(CYGPATH_W) 'src/atsh/curves.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/curves.c'; fi`
 
-atsh-ats-header.o: src/atsh/ats-header.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-ats-header.o -MD -MP -MF "$(DEPDIR)/atsh-ats-header.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-ats-header.o `test -f 'src/atsh/ats-header.c' || echo '$(srcdir)/'`src/atsh/ats-header.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-ats-header.Tpo" "$(DEPDIR)/atsh-ats-header.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-ats-header.Tpo"; exit 1; \
+atsh-header.o: src/atsh/header.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-header.o -MD -MP -MF "$(DEPDIR)/atsh-header.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-header.o `test -f 'src/atsh/header.c' || echo '$(srcdir)/'`src/atsh/header.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-header.Tpo" "$(DEPDIR)/atsh-header.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-header.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/ats-header.c' object='atsh-ats-header.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-ats-header.Po' tmpdepfile='$(DEPDIR)/atsh-ats-header.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/header.c' object='atsh-header.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-header.Po' tmpdepfile='$(DEPDIR)/atsh-header.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-ats-header.o `test -f 'src/atsh/ats-header.c' || echo '$(srcdir)/'`src/atsh/ats-header.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-header.o `test -f 'src/atsh/header.c' || echo '$(srcdir)/'`src/atsh/header.c
 
-atsh-ats-header.obj: src/atsh/ats-header.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-ats-header.obj -MD -MP -MF "$(DEPDIR)/atsh-ats-header.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-ats-header.obj `if test -f 'src/atsh/ats-header.c'; then $(CYGPATH_W) 'src/atsh/ats-header.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/ats-header.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-ats-header.Tpo" "$(DEPDIR)/atsh-ats-header.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-ats-header.Tpo"; exit 1; \
+atsh-header.obj: src/atsh/header.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-header.obj -MD -MP -MF "$(DEPDIR)/atsh-header.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-header.obj `if test -f 'src/atsh/header.c'; then $(CYGPATH_W) 'src/atsh/header.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/header.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-header.Tpo" "$(DEPDIR)/atsh-header.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-header.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/ats-header.c' object='atsh-ats-header.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-ats-header.Po' tmpdepfile='$(DEPDIR)/atsh-ats-header.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/header.c' object='atsh-header.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-header.Po' tmpdepfile='$(DEPDIR)/atsh-header.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-ats-header.obj `if test -f 'src/atsh/ats-header.c'; then $(CYGPATH_W) 'src/atsh/ats-header.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/ats-header.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-header.obj `if test -f 'src/atsh/header.c'; then $(CYGPATH_W) 'src/atsh/header.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/header.c'; fi`
 
-atsh-atsh-files.o: src/atsh/atsh-files.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-files.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-files.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-files.o `test -f 'src/atsh/atsh-files.c' || echo '$(srcdir)/'`src/atsh/atsh-files.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-files.Tpo" "$(DEPDIR)/atsh-atsh-files.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-files.Tpo"; exit 1; \
+atsh-files.o: src/atsh/files.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-files.o -MD -MP -MF "$(DEPDIR)/atsh-files.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-files.o `test -f 'src/atsh/files.c' || echo '$(srcdir)/'`src/atsh/files.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-files.Tpo" "$(DEPDIR)/atsh-files.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-files.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-files.c' object='atsh-atsh-files.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-files.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-files.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/files.c' object='atsh-files.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-files.Po' tmpdepfile='$(DEPDIR)/atsh-files.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-files.o `test -f 'src/atsh/atsh-files.c' || echo '$(srcdir)/'`src/atsh/atsh-files.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-files.o `test -f 'src/atsh/files.c' || echo '$(srcdir)/'`src/atsh/files.c
 
-atsh-atsh-files.obj: src/atsh/atsh-files.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-files.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-files.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-files.obj `if test -f 'src/atsh/atsh-files.c'; then $(CYGPATH_W) 'src/atsh/atsh-files.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-files.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-files.Tpo" "$(DEPDIR)/atsh-atsh-files.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-files.Tpo"; exit 1; \
+atsh-files.obj: src/atsh/files.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-files.obj -MD -MP -MF "$(DEPDIR)/atsh-files.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-files.obj `if test -f 'src/atsh/files.c'; then $(CYGPATH_W) 'src/atsh/files.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/files.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-files.Tpo" "$(DEPDIR)/atsh-files.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-files.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-files.c' object='atsh-atsh-files.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-files.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-files.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/files.c' object='atsh-files.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-files.Po' tmpdepfile='$(DEPDIR)/atsh-files.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-files.obj `if test -f 'src/atsh/atsh-files.c'; then $(CYGPATH_W) 'src/atsh/atsh-files.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-files.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-files.obj `if test -f 'src/atsh/files.c'; then $(CYGPATH_W) 'src/atsh/files.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/files.c'; fi`
 
-atsh-atsh-graphics.o: src/atsh/atsh-graphics.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-graphics.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-graphics.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-graphics.o `test -f 'src/atsh/atsh-graphics.c' || echo '$(srcdir)/'`src/atsh/atsh-graphics.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-graphics.Tpo" "$(DEPDIR)/atsh-atsh-graphics.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-graphics.Tpo"; exit 1; \
+atsh-graphics.o: src/atsh/graphics.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-graphics.o -MD -MP -MF "$(DEPDIR)/atsh-graphics.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-graphics.o `test -f 'src/atsh/graphics.c' || echo '$(srcdir)/'`src/atsh/graphics.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-graphics.Tpo" "$(DEPDIR)/atsh-graphics.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-graphics.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-graphics.c' object='atsh-atsh-graphics.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-graphics.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-graphics.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/graphics.c' object='atsh-graphics.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-graphics.Po' tmpdepfile='$(DEPDIR)/atsh-graphics.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-graphics.o `test -f 'src/atsh/atsh-graphics.c' || echo '$(srcdir)/'`src/atsh/atsh-graphics.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-graphics.o `test -f 'src/atsh/graphics.c' || echo '$(srcdir)/'`src/atsh/graphics.c
 
-atsh-atsh-graphics.obj: src/atsh/atsh-graphics.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-graphics.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-graphics.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-graphics.obj `if test -f 'src/atsh/atsh-graphics.c'; then $(CYGPATH_W) 'src/atsh/atsh-graphics.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-graphics.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-graphics.Tpo" "$(DEPDIR)/atsh-atsh-graphics.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-graphics.Tpo"; exit 1; \
+atsh-graphics.obj: src/atsh/graphics.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-graphics.obj -MD -MP -MF "$(DEPDIR)/atsh-graphics.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-graphics.obj `if test -f 'src/atsh/graphics.c'; then $(CYGPATH_W) 'src/atsh/graphics.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/graphics.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-graphics.Tpo" "$(DEPDIR)/atsh-graphics.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-graphics.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-graphics.c' object='atsh-atsh-graphics.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-graphics.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-graphics.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/graphics.c' object='atsh-graphics.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-graphics.Po' tmpdepfile='$(DEPDIR)/atsh-graphics.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-graphics.obj `if test -f 'src/atsh/atsh-graphics.c'; then $(CYGPATH_W) 'src/atsh/atsh-graphics.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-graphics.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-graphics.obj `if test -f 'src/atsh/graphics.c'; then $(CYGPATH_W) 'src/atsh/graphics.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/graphics.c'; fi`
 
-atsh-atsh-mask.o: src/atsh/atsh-mask.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-mask.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-mask.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-mask.o `test -f 'src/atsh/atsh-mask.c' || echo '$(srcdir)/'`src/atsh/atsh-mask.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-mask.Tpo" "$(DEPDIR)/atsh-atsh-mask.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-mask.Tpo"; exit 1; \
+atsh-mask.o: src/atsh/mask.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-mask.o -MD -MP -MF "$(DEPDIR)/atsh-mask.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-mask.o `test -f 'src/atsh/mask.c' || echo '$(srcdir)/'`src/atsh/mask.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-mask.Tpo" "$(DEPDIR)/atsh-mask.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-mask.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-mask.c' object='atsh-atsh-mask.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-mask.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-mask.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/mask.c' object='atsh-mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-mask.Po' tmpdepfile='$(DEPDIR)/atsh-mask.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-mask.o `test -f 'src/atsh/atsh-mask.c' || echo '$(srcdir)/'`src/atsh/atsh-mask.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-mask.o `test -f 'src/atsh/mask.c' || echo '$(srcdir)/'`src/atsh/mask.c
 
-atsh-atsh-mask.obj: src/atsh/atsh-mask.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-mask.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-mask.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-mask.obj `if test -f 'src/atsh/atsh-mask.c'; then $(CYGPATH_W) 'src/atsh/atsh-mask.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-mask.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-mask.Tpo" "$(DEPDIR)/atsh-atsh-mask.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-mask.Tpo"; exit 1; \
+atsh-mask.obj: src/atsh/mask.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-mask.obj -MD -MP -MF "$(DEPDIR)/atsh-mask.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-mask.obj `if test -f 'src/atsh/mask.c'; then $(CYGPATH_W) 'src/atsh/mask.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/mask.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-mask.Tpo" "$(DEPDIR)/atsh-mask.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-mask.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-mask.c' object='atsh-atsh-mask.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-mask.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-mask.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/mask.c' object='atsh-mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-mask.Po' tmpdepfile='$(DEPDIR)/atsh-mask.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-mask.obj `if test -f 'src/atsh/atsh-mask.c'; then $(CYGPATH_W) 'src/atsh/atsh-mask.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-mask.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-mask.obj `if test -f 'src/atsh/mask.c'; then $(CYGPATH_W) 'src/atsh/mask.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/mask.c'; fi`
 
-atsh-atsh-sel.o: src/atsh/atsh-sel.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-sel.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-sel.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-sel.o `test -f 'src/atsh/atsh-sel.c' || echo '$(srcdir)/'`src/atsh/atsh-sel.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-sel.Tpo" "$(DEPDIR)/atsh-atsh-sel.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-sel.Tpo"; exit 1; \
+atsh-sel.o: src/atsh/sel.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-sel.o -MD -MP -MF "$(DEPDIR)/atsh-sel.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-sel.o `test -f 'src/atsh/sel.c' || echo '$(srcdir)/'`src/atsh/sel.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-sel.Tpo" "$(DEPDIR)/atsh-sel.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-sel.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-sel.c' object='atsh-atsh-sel.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-sel.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-sel.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/sel.c' object='atsh-sel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-sel.Po' tmpdepfile='$(DEPDIR)/atsh-sel.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-sel.o `test -f 'src/atsh/atsh-sel.c' || echo '$(srcdir)/'`src/atsh/atsh-sel.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-sel.o `test -f 'src/atsh/sel.c' || echo '$(srcdir)/'`src/atsh/sel.c
 
-atsh-atsh-sel.obj: src/atsh/atsh-sel.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-sel.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-sel.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-sel.obj `if test -f 'src/atsh/atsh-sel.c'; then $(CYGPATH_W) 'src/atsh/atsh-sel.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-sel.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-sel.Tpo" "$(DEPDIR)/atsh-atsh-sel.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-sel.Tpo"; exit 1; \
+atsh-sel.obj: src/atsh/sel.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-sel.obj -MD -MP -MF "$(DEPDIR)/atsh-sel.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-sel.obj `if test -f 'src/atsh/sel.c'; then $(CYGPATH_W) 'src/atsh/sel.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/sel.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-sel.Tpo" "$(DEPDIR)/atsh-sel.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-sel.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-sel.c' object='atsh-atsh-sel.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-sel.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-sel.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/sel.c' object='atsh-sel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-sel.Po' tmpdepfile='$(DEPDIR)/atsh-sel.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-sel.obj `if test -f 'src/atsh/atsh-sel.c'; then $(CYGPATH_W) 'src/atsh/atsh-sel.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-sel.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-sel.obj `if test -f 'src/atsh/sel.c'; then $(CYGPATH_W) 'src/atsh/sel.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/sel.c'; fi`
 
-atsh-atsh-undo.o: src/atsh/atsh-undo.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-undo.o -MD -MP -MF "$(DEPDIR)/atsh-atsh-undo.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-undo.o `test -f 'src/atsh/atsh-undo.c' || echo '$(srcdir)/'`src/atsh/atsh-undo.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-undo.Tpo" "$(DEPDIR)/atsh-atsh-undo.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-undo.Tpo"; exit 1; \
+atsh-undo.o: src/atsh/undo.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-undo.o -MD -MP -MF "$(DEPDIR)/atsh-undo.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-undo.o `test -f 'src/atsh/undo.c' || echo '$(srcdir)/'`src/atsh/undo.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-undo.Tpo" "$(DEPDIR)/atsh-undo.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-undo.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-undo.c' object='atsh-atsh-undo.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-undo.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-undo.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/undo.c' object='atsh-undo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-undo.Po' tmpdepfile='$(DEPDIR)/atsh-undo.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-undo.o `test -f 'src/atsh/atsh-undo.c' || echo '$(srcdir)/'`src/atsh/atsh-undo.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-undo.o `test -f 'src/atsh/undo.c' || echo '$(srcdir)/'`src/atsh/undo.c
 
-atsh-atsh-undo.obj: src/atsh/atsh-undo.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-atsh-undo.obj -MD -MP -MF "$(DEPDIR)/atsh-atsh-undo.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-atsh-undo.obj `if test -f 'src/atsh/atsh-undo.c'; then $(CYGPATH_W) 'src/atsh/atsh-undo.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-undo.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-atsh-undo.Tpo" "$(DEPDIR)/atsh-atsh-undo.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-atsh-undo.Tpo"; exit 1; \
+atsh-undo.obj: src/atsh/undo.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-undo.obj -MD -MP -MF "$(DEPDIR)/atsh-undo.Tpo" \
+@am__fastdepCC_TRUE@	  -c -o atsh-undo.obj `if test -f 'src/atsh/undo.c'; then $(CYGPATH_W) 'src/atsh/undo.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/undo.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-undo.Tpo" "$(DEPDIR)/atsh-undo.Po"; \
+@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-undo.Tpo"; exit 1; \
 @am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/atsh-undo.c' object='atsh-atsh-undo.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-atsh-undo.Po' tmpdepfile='$(DEPDIR)/atsh-atsh-undo.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/undo.c' object='atsh-undo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-undo.Po' tmpdepfile='$(DEPDIR)/atsh-undo.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-atsh-undo.obj `if test -f 'src/atsh/atsh-undo.c'; then $(CYGPATH_W) 'src/atsh/atsh-undo.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/atsh-undo.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-undo.obj `if test -f 'src/atsh/undo.c'; then $(CYGPATH_W) 'src/atsh/undo.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/undo.c'; fi`
 
 atsh-get_sparams.o: src/atsh/get_sparams.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-get_sparams.o -MD -MP -MF "$(DEPDIR)/atsh-get_sparams.Tpo" \

@@ -2,7 +2,7 @@
 AC_PREREQ(2.57)
 
 # initialize everything
-AC_INIT(ats, 1.0)
+AC_INIT(ats, 1.1pre)
 AC_CONFIG_SRCDIR(src/atsa/atsa.c)
 AM_INIT_AUTOMAKE(foreign)
 

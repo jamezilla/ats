@@ -30,6 +30,9 @@ extern int floaded, view_type, scale_type, ned, led, undo;
 extern SELECTION selection, position;
 ATS_SOUND *ats_sound = NULL;
 extern ATS_HEADER atshed;
+extern GtkWidget *main_graph;
+int need_byte_swap = FALSE;
+short outype = WAV16;
 
 typedef struct {
   void (*func)();
@@ -480,7 +483,7 @@ void atsin(char *pointer)
     Popup(info);
     *ats_title=0;
     floaded=FALSE;
-    draw_default();
+    draw_default(main_graph);
     init_scalers(FALSE);
     show_file_name(NULL);
     return;
@@ -503,7 +506,7 @@ void atsin(char *pointer)
       floaded=FALSE;
       need_byte_swap=FALSE;
       init_scalers(FALSE);
-      draw_default();
+      draw_default(main_graph);
       show_file_name(NULL);
       return;
     } 
@@ -537,22 +540,12 @@ void atsin(char *pointer)
     fclose(atsfin);
     floaded=FALSE;
     init_scalers(FALSE);
-    draw_default();
+    draw_default(main_graph);
     show_file_name(NULL);
     return; 
   }
   //////////////////////////
  
-  //     if(!ats_sound) {
-  //       Popup("Could not allocate enough memory for ATS data");
-  //       *ats_title=0;
-  //       fclose(atsfin);
-  //       floaded=FALSE;
-  //       init_scalers(FALSE);
-  //       draw_default();
-  //       return; 
-  //     }
-
   if(ats_sound != NULL) free_sound(ats_sound);
   ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
   init_sound(ats_sound, (int)atshed.sr, (int)atshed.fs, (int)atshed.ws, (int)atshed.fra+1, (double)atshed.dur, (int)atshed.par, FILE_HAS_NOISE);

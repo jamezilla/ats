@@ -20,7 +20,7 @@ void v_setup();
 GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
 void Create_menu (GtkWidget *menubar);
 
-GtkTooltips *tooltips;
+//GtkTooltips *tooltips;
 GtkWidget *toolbar, *statusbar;
 gint context_id;
 GtkWidget *main_graph;
@@ -83,10 +83,6 @@ int main(int argc, char *argv[])
 
     
     entry=(GtkWidget**)g_malloc(sizeof(GtkWidget*)*6);
-    /* --- Initialize tooltips. --- */
-    tooltips = gtk_tooltips_new();
-    /* --- allocate memory for global data --- */
-    //    atshed =(ATS_HEADER*)malloc(sizeof(ATS_HEADER));
 
     undat =(UNDO_DATA*)malloc(sizeof(UNDO_DATA));
 
@@ -95,15 +91,10 @@ int main(int argc, char *argv[])
     timenv=(ENVELOPE*)malloc(sizeof(ENVELOPE));
     sdata= (SMSEL_DATA*)malloc(sizeof(SMSEL_DATA));
 
-    vertex1=FALSE;
-    vertex2=FALSE;
-    outype =WAV16;
+    vertex1 = vertex2 = FALSE;
+    //    outype =WAV16;
 
-    interpolated=TRUE;
-    need_byte_swap=FALSE; 
-
-  /* --- Create the window with menus/toolbars. --- */
-  //see if we have an ats file delivered by command line
+  /* see if we have an ats file delivered by command line */
   if(argc > 1) CreateMainWindow(argv[1]); //pass the filename to main function
   else CreateMainWindow(NULL); //no filename delivered by command line
 
@@ -135,7 +126,10 @@ gint EndProgram ()
   
   //  gdk_pixmap_unref(pixmap);
   gdk_gc_unref(draw_pen);
-  
+
+  //probably dont need to destoy anything here
+  //these will be destroyed by their parent
+  //make sure they actually have a parent  
   if(fWedit)
     gtk_widget_destroy (GTK_WIDGET (fWedit)); //Kill Frequency edit Window
   if(aWedit)
@@ -299,6 +293,7 @@ void CreateMainWindow (char *cmdl_filename)
 GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func, gpointer data)
 {
   GtkWidget *menuitem;
+  GtkTooltips *tooltips = gtk_tooltips_new();
 
   /* If there's a name, create the item and put a Signal handler on it. */
   if (szName && strlen (szName)) {

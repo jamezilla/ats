@@ -7,7 +7,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #define MAX_COLOR_VALUE 65535 //this is the max value the color can hold (unsigned short)
 
-void draw_default(GtkWidget *widget);
+
 
 float res_data[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
 extern GtkWidget *main_graph;
@@ -21,7 +21,7 @@ extern gint context_id;
 extern int floaded;
 extern short smr_done;
 GdkPixmap *pixmap = NULL;
-int view_type = NULL_VIEW, scale_type = AMP_SCALE;
+int view_type = NULL_VIEW, scale_type = AMP_SCALE, interpolated = TRUE;
 extern SELECTION selection, position;
 extern ATS_SOUND *ats_sound;
 extern ATS_HEADER atshed;
@@ -435,7 +435,7 @@ void set_smr_view(void) //SPECTRAL view switch between AMP & SMR plot
 /////////////////////////////////////////////////////////////////////////////////
 void set_res_view(void) //Show residual data, if any, on a Bark scale
 {
-  if(floaded && FILE_HAS_NOISE) {
+  if(floaded && (FILE_HAS_NOISE)) {
     gtk_widget_hide(GTK_WIDGET(vscale1));
     gtk_widget_hide(GTK_WIDGET(vscale2));
     gtk_widget_hide(GTK_WIDGET(vruler));

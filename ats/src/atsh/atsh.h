@@ -230,8 +230,8 @@ float maxtim;
 float frame_step, freq_step;
 float valexp;
 int   vertex1, vertex2;
-short outype;
-int   interpolated, need_byte_swap;
+//short outype;
+//int interpolated;
 
 GtkWidget *fWedit;
 GtkWidget *aWedit;
@@ -349,7 +349,7 @@ void set_spec_view(void);
 void set_smr_view(void);
 void set_res_view(void);
 void set_interpolated_view(void);
-
+void draw_default(GtkWidget *widget);
 void update_value(GtkAdjustment *adj);
 void unzoom(void);
 void zoom_sel(void);
