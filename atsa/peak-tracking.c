@@ -27,70 +27,73 @@ void sort_candidates(ATS_CANDS *cands, ATS_PEAK peak, float SMR_cont);
  * SMR_cont: contribution of SMR to tracking
  * n_partials: pointer to the number of partials before tracking
  */
-ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials)
+ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials)
 {
   ATS_CANDS *track_candidates = (ATS_CANDS *)malloc(*peaks_size*sizeof(ATS_CANDS));
   double lo, hi;
-  int k, i, j, used;
+  int k, i, j, used, goback;
   ATS_FRAME *returned_peaks = (ATS_FRAME *)malloc(2*sizeof(ATS_FRAME));
 
   returned_peaks[0].peaks = returned_peaks[1].peaks = NULL;
   returned_peaks[0].n_peaks = returned_peaks[1].n_peaks = 0;
 
-  if(tracks_size && *peaks_size) {
-    qsort(peaks, *peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
-    for (k=0; k<*peaks_size; k++) {
-      peaks[k].track = -1;
-      /* find frq limits for candidates */
-      lo = peaks[k].frq - (.5 * peaks[k].frq * frq_dev);
-      hi = peaks[k].frq + (.5 * peaks[k].frq * frq_dev);
-      /* get possible candidates */
-      track_candidates[k].size = 0;
-      track_candidates[k].cands = find_candidates(tracks, tracks_size, lo, hi, &track_candidates[k].size);
-      if(track_candidates[k].size) {
-        sort_candidates(&track_candidates[k], peaks[k], SMR_cont);
-        peaks[k].track = track_candidates[k].cands[0].track;
-        if(k && (peaks[k].track == peaks[k-1].track))
-          if(track_candidates[k].cands[0].amp < track_candidates[k-1].cands[0].amp)
-            peaks[k-1].track = -1; 
-      } else {
-        peaks[k].track = (*n_partials)++;
-        returned_peaks[1].peaks = push_peak(&peaks[k], returned_peaks[1].peaks, &returned_peaks[1].n_peaks);
+  /* sort data to prepare for matching */
+  qsort(tracks, *tracks_size, sizeof(ATS_PEAK), peak_frq_inc);
+  qsort(peaks, *peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
+
+  /* find candidates for each peak and set each peak to best candidate */
+  for (k=0; k<*peaks_size; k++) {
+    //peaks[k].track = -1;
+    /* find frq limits for candidates */
+    lo = peaks[k].frq - (.5 * peaks[k].frq * frq_dev);
+    hi = peaks[k].frq + (.5 * peaks[k].frq * frq_dev);
+    /* get possible candidates */
+    track_candidates[k].size = 0;
+    track_candidates[k].cands = find_candidates(tracks, *tracks_size, lo, hi, &track_candidates[k].size);
+    if(track_candidates[k].size) {
+      sort_candidates(&track_candidates[k], peaks[k], SMR_cont);
+      peaks[k].track = track_candidates[k].cands[0].track;
+    } 
+  }      
+
+  /* compare adjacent peaks track numbers to insure unique track numbers */
+  do {
+    goback = 0;
+    for (j=0; j<(*peaks_size - 1); j++) 
+      if((peaks[j].track == peaks[j+1].track) && (peaks[j].track > -1)) {
+        if(track_candidates[j].cands[0].amp > track_candidates[j+1].cands[0].amp) {
+          track_candidates[j].cands[0].amp = ATSA_HFREQ;
+          qsort(track_candidates[j].cands, track_candidates[j].size, sizeof(ATS_PEAK), peak_amp_inc);
+          if(track_candidates[j].cands[0].amp < ATSA_HFREQ) {
+            peaks[j].track = track_candidates[j].cands[0].track;
+            goback = 1;
+          } else peaks[j].track = -1;
+        } else {
+          track_candidates[j+1].cands[0].amp =  ATSA_HFREQ;
+          qsort(track_candidates[j+1].cands, track_candidates[j+1].size, sizeof(ATS_PEAK), peak_amp_inc);
+          if(track_candidates[j+1].cands[0].amp < ATSA_HFREQ)
+            peaks[j+1].track = track_candidates[j+1].cands[0].track;
+          else peaks[j+1].track = -1;
+        }
       }
-    }      
-  }
+  } while (goback);
 
   /* by this point, all peaks will either have a unique track number, or -1 
      now we need to take care of those left behind */
   for(k=0; k<*peaks_size; k++)
-    if(peaks[k].track < 0) {
-      for(i=1; i<track_candidates[k].size; i++) {
-        used = 0;        
-        for(j=1; j<*peaks_size; j++) 
-          if(track_candidates[k].cands[i].track == peaks[j].track) {
-            used = 1;
-            break;
-          }
-        if(!used) {
-          peaks[k].track = track_candidates[k].cands[i].track;
-          break;
-        }
-      }
-      if(peaks[k].track < 0) {
-        peaks[k].track = (*n_partials)++;
-        returned_peaks[1].peaks = push_peak(&peaks[k], returned_peaks[1].peaks, &returned_peaks[1].n_peaks);
-      }
+    if(peaks[k].track == -1) {
+      peaks[k].track = (*n_partials)++;
+      returned_peaks[1].peaks = push_peak(&peaks[k], returned_peaks[1].peaks, &returned_peaks[1].n_peaks);
     }
 
   /* check for tracks that didnt get assigned */
-  for(i=0; i<tracks_size; i++) {
+  for(i=0; i<*tracks_size; i++) {
     used = 0;
-    for(j=0; j<*peaks_size; j++) {
+    for(j=0; j<*peaks_size; j++)
       if(tracks[i].track == peaks[j].track) {
         used = 1;
         break;
       }
-    }
     if(!used) returned_peaks[0].peaks = push_peak(&tracks[k], returned_peaks[0].peaks, &returned_peaks[0].n_peaks);
   }
 

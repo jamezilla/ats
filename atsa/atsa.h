@@ -357,7 +357,7 @@ ATS_PEAK *peak_detection(ATS_FFT *ats_fft, int lowest_bin, int highest_bin, floa
  * SMR_cont: contribution of SMR to tracking
  * n_partials: pointer to the number of partials before tracking
  */
-ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials);
+ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials);
 
 /* update_tracks
  * =============

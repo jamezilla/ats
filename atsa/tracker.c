@@ -224,10 +224,10 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
 	if ((tracks = update_tracks(tracks, &tracks_size, anargs->track_len, frame_n, ana_frames, anargs->last_peak_cont)) != NULL) {
 	  /* track peaks and get leftover */
 	  //           qsort(tracks, tracks_size, sizeof(ATS_PEAK), peak_smr_dec);
-          qsort(tracks, tracks_size, sizeof(ATS_PEAK), peak_frq_inc);
-          unmatched_peaks = NULL;
+          //qsort(tracks, tracks_size, sizeof(ATS_PEAK), peak_frq_inc);
+          //unmatched_peaks = NULL;
 	  /* do peak matching */
-          unmatched_peaks = peak_tracking(tracks, tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
+          unmatched_peaks = peak_tracking(tracks, &tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
 	  /* kill unmatched peaks from previous frame */
           if(unmatched_peaks[0].peaks != NULL) {
 	    for(k=0; k<unmatched_peaks[0].n_peaks; k++) {
