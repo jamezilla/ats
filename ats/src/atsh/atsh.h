@@ -45,11 +45,6 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define TABLE_LENGTH 16384
 #define CURVE_LENGTH 100.
 
-#define MAX_COLOR_VALUE 65535 //this is the max value the color can hold (unsigned short)
-
-#define GRAPH_W 800 
-#define GRAPH_H 400 
-
 #define NULL_VIEW  0
 #define RES_VIEW   1
 #define SON_VIEW   2
@@ -217,26 +212,26 @@ GtkWidget     *statusbar;
 
 ATS_HEADER *atshed;
 //SPARAMS *sparams;
-SELECTION *selection, *position;
+//SELECTION *selection, *position;
 ENVELOPE  *ampenv, *freenv, *timenv;
 SMSEL_DATA *sdata;
 
-ATS_SOUND *ats_sound;
+
 
 float  *frbuf;
-float  *avec;
-float  *fvec;
+//float  *avec;
+//float  *fvec;
 float  *tvec;
 
 int stopper;
-int   ned, led, undo;
-int   aveclen, tveclen;
+//int   ned, led, undo;
+int tveclen;
 float maxtim;
 float frame_step, freq_step;
 float valexp;
-int   view_type, scale_type, vertex1, vertex2;
+int   vertex1, vertex2;
 short outype;
-int   depth, interpolated, need_byte_swap, draw;
+int   interpolated, need_byte_swap;
 
 GtkWidget *fWedit;
 GtkWidget *aWedit;
@@ -273,7 +268,7 @@ void show_file_name(char *name);
 void init_scalers(gint how);
 void h_setup(void);
 
-void set_avec(void);
+
 void edit_freq(GtkWidget *widget, gpointer data);
 void edit_amp (GtkWidget *widget, gpointer data);
 void edit_tim (GtkWidget *widget, gpointer data);
@@ -346,7 +341,6 @@ void change_color (int nRed, int nGreen, int nBlue);
 void draw_selection_line(int x);
 void draw_selection(void);
 void erase_selection(int pfrom, int pto);
-void draw_default(void);
 void draw_pixm(void);
 void repaint(gpointer data);
 void set_selection(int from, int to, int x1, int x2, int width);

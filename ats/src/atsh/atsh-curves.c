@@ -8,6 +8,21 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 extern SPARAMS sparams;
 extern short smr_done;
+extern int scale_type;
+extern SELECTION selection, position;
+float *avec = NULL, *fvec = NULL;
+int aveclen = 0;
+extern ATS_SOUND *ats_sound;
+
+void set_avec(int len);
+
+void set_avec(int len)
+{  //selection.to - selection.from
+  aveclen=len + 1;
+  
+  avec=(float*)realloc(avec, sizeof(float) * aveclen);   
+  fvec=(float*)realloc(fvec, sizeof(float) * aveclen); 
+}
 
 /////////////////////////////////////////////////////////////////////////////
 int get_nbp(GtkWidget *curve) 
@@ -86,7 +101,7 @@ void ismoving(GtkWidget *widget, GdkEventMotion *event, ENVELOPE *data)
   
   range=GTK_MY_CURVE(widget)->max_y - GTK_MY_CURVE(widget)->min_y;
   val= GTK_MY_CURVE(widget)->min_y +(range - (( range / height ) * (float)ypos));
-  fra =selection->from + (int) (((float)aveclen / width) * (float)xpos);
+  fra =selection.from + (int) (((float)aveclen / width) * (float)xpos);
   
   sprintf(info,"Frame=%d Time=%7.2f Value=%7.2f",fra+1,ats_sound->time[0][fra],val);
   gtk_label_set_text(GTK_LABEL(data->info_label),info);
@@ -201,6 +216,7 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
   int nValue=0, todo=aveclen * (int)atshed->par;
 
   StartProgress("Changing Frequency...",FALSE);
+  set_avec(selection.to - selection.from);
   gtk_my_curve_get_vector(GTK_MY_CURVE(data->curve), aveclen, fvec);
   
   backup_edition(FRE_EDIT);
@@ -217,22 +233,22 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
     for(x=0; x < aveclen; ++x) {
       if(selected[i]== TRUE) {
 	if(data->tflag==TRUE) { //SCALE
-	  ats_sound->frq[i][x+selection->from]*=(double)fabs(fvec[x]); //no negative values allowed
+	  ats_sound->frq[i][x+selection.from]*=(double)fabs(fvec[x]); //no negative values allowed
 	}
 	else { //ADD
-	   ats_sound->frq[i][x+selection->from]+=(double)fvec[x];
+	   ats_sound->frq[i][x+selection.from]+=(double)fvec[x];
 	}
-	if(ats_sound->frq[i][x+selection->from] > niq)        
-	  ats_sound->frq[i][x+selection->from]=niq; 
+	if(ats_sound->frq[i][x+selection.from] > niq)        
+	  ats_sound->frq[i][x+selection.from]=niq; 
 	//clip freq. if out of range 
-	if(ats_sound->frq[i][x+selection->from] < 0.)
-	  ats_sound->frq[i][x+selection->from]=0.;
-	if(ats_sound->frq[i][x+selection->from] > atshed->mf) 
-	  ats_sound->frq[i][x+selection->from]=atshed->mf;
+	if(ats_sound->frq[i][x+selection.from] < 0.)
+	  ats_sound->frq[i][x+selection.from]=0.;
+	if(ats_sound->frq[i][x+selection.from] > atshed->mf) 
+	  ats_sound->frq[i][x+selection.from]=atshed->mf;
 	
       }
-      if(ats_sound->frq[i][x+selection->from] > atshed->mf) {
-	atshed->mf=ats_sound->frq[i][x+selection->from];
+      if(ats_sound->frq[i][x+selection.from] > atshed->mf) {
+	atshed->mf=ats_sound->frq[i][x+selection.from];
       } //update max.freq.
       ++nValue;
       UpdateProgress(nValue,todo);
@@ -241,7 +257,7 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
     
   EndProgress();
   if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
-    atsh_compute_SMR(ats_sound,selection->from,selection->to);
+    atsh_compute_SMR(ats_sound,selection.from,selection.to);
   }
   else {
     smr_done=FALSE;
@@ -257,7 +273,9 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
   int i, x;
   int nValue=0, todo=aveclen * (int)atshed->par;
 
+
   StartProgress("Changing Amplitude...", FALSE);
+  set_avec(selection.to - selection.from);
   gtk_my_curve_get_vector(GTK_MY_CURVE(data->curve),aveclen,avec);    
 
     backup_edition(AMP_EDIT);
@@ -265,19 +283,19 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
       for(x=0; x < aveclen; ++x) {
 	if(selected[i]== TRUE) {
 	  if(data->tflag==TRUE) { //SCALE
-	    ats_sound->amp[i][x+selection->from]*=fabs(avec[x]); //no negative values alowwed
+	    ats_sound->amp[i][x+selection.from]*=fabs(avec[x]); //no negative values alowwed
 	  }
 	  else { //ADD
-	    ats_sound->amp[i][x+selection->from]+=avec[x];
+	    ats_sound->amp[i][x+selection.from]+=avec[x];
 	  }
-	  if(ats_sound->amp[i][x+selection->from] > 1.) 
-	    ats_sound->amp[i][x+selection->from]=1.; 
+	  if(ats_sound->amp[i][x+selection.from] > 1.) 
+	    ats_sound->amp[i][x+selection.from]=1.; 
 	  //clip to normalized values
-	  if(ats_sound->amp[i][x+selection->from] < 0.) 
-	    ats_sound->amp[i][x+selection->from]=0.;
+	  if(ats_sound->amp[i][x+selection.from] < 0.) 
+	    ats_sound->amp[i][x+selection.from]=0.;
 	}
-	if(ats_sound->amp[i][x+selection->from] > atshed->ma) {
-	  atshed->ma=ats_sound->amp[i][x+selection->from];
+	if(ats_sound->amp[i][x+selection.from] > atshed->ma) {
+	  atshed->ma=ats_sound->amp[i][x+selection.from];
 	} //update max.amp.
 	++nValue;
 	UpdateProgress(nValue,todo);
@@ -286,7 +304,7 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
 
     EndProgress();
     if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
-      atsh_compute_SMR(ats_sound,selection->from , selection->to);
+      atsh_compute_SMR(ats_sound,selection.from , selection.to);
     }
     else {
       smr_done=FALSE;

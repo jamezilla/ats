@@ -21,12 +21,14 @@ extern char res_title[];
 extern char apf_title[];
 extern char undo_file[];
 
-extern ANARGS *anargs;
+extern ANARGS anargs;
 extern GtkObject *valadj;
 short tbflag;
 extern SPARAMS sparams;
 extern short smr_done;
-extern int floaded;
+extern int floaded, view_type, scale_type, ned, led, undo;
+extern SELECTION selection, position;
+ATS_SOUND *ats_sound = NULL;
 
 typedef struct {
   void (*func)();
@@ -626,9 +628,9 @@ void atsin(char *pointer)
     smr_done=FALSE;
 
     //the horizontal selection parameters 
-    selection->from=selection->to=0;
-    selection->f1=selection->f2=0;
-    selection->x1=selection->y1=selection->x2=selection->y2=0;
+    selection.from=selection.to=0;
+    selection.f1=selection.f2=0;
+    selection.x1=selection.y1=selection.x2=selection.y2=0;
     vertex1=vertex2=FALSE;
  
 
@@ -785,7 +787,7 @@ void getap(char *pointer)
     return;
   }
   
-  if(fread(anargs,1,sizeof(ANARGS),in)==0) {
+  if(fread(&anargs,1,sizeof(ANARGS),in)==0) {
     *info=0; 
     strcat(info, "Error: Could not read ");
     strcat(info, apf_title);
@@ -816,7 +818,7 @@ void savap(char *pointer)
     return;
   }
 
-  if(fwrite(anargs,1,sizeof(ANARGS),out)==0) {
+  if(fwrite(&anargs,1,sizeof(ANARGS),out)==0) {
     *info=0; 
     strcat(info, "Error: Could not write on ");
     strcat(info, apf_title);

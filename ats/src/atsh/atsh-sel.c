@@ -12,8 +12,10 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "atsh.h"
 
 extern GtkWidget     *main_graph;
-extern VIEW_PAR *h, *v;
+extern VIEW_PAR h, v;
 extern int floaded;
+extern SELECTION selection, position;
+extern ATS_SOUND *ats_sound;
 
 ///////////////////////////////////////////////////////
 void set_met(GtkWidget *widget, gpointer data)
@@ -67,10 +69,10 @@ void do_smartsel (GtkWidget *widget, gpointer data)
     SWAP_INT(sdata->from,sdata->to)
   }
 
-  set_selection(h->viewstart, h->viewend,0,main_graph->allocation.width,
+  set_selection(h.viewstart, h.viewend,0,main_graph->allocation.width,
 		     main_graph->allocation.width);
   vertex1=0; vertex2=1; //something IS selected
-  set_avec();
+  //set_avec(selection.to - selection.from);
 
   for(i=0; i<(int)atshed->par; i++) { //unselect all
     selected[i]=FALSE;
@@ -80,7 +82,7 @@ void do_smartsel (GtkWidget *widget, gpointer data)
 
     if(i >(int)atshed->par-1 || i >(int)sdata->to) break;
     
-    for(x=h->viewstart; x < h->viewend; x++) {  //amplitude evaluation
+    for(x=h.viewstart; x < h.viewend; x++) {  //amplitude evaluation
       amp    =ats_sound->amp[i][x];
       switch(sdata->met) {
       case 0: //peak
@@ -101,7 +103,7 @@ void do_smartsel (GtkWidget *widget, gpointer data)
       }
       break;
     case 1: //RMS POW
-      rmspow= (float)sqrt((double)ampsum / (double)h->diff ); 
+      rmspow= (float)sqrt((double)ampsum / (double)h.diff ); 
       if(rmspow >= linamp) {
 	selected[i]=TRUE;	
       }	

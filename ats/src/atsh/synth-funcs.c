@@ -35,6 +35,7 @@ extern float *sine_table;
 extern char out_title[];
 extern char ats_title[];
 extern SPARAMS sparams;
+extern ATS_SOUND *ats_sound;
 
 //randi output random numbers in the range of 1,-1
 //getting a new number at frequency freq and interpolating

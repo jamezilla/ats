@@ -5,10 +5,13 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 
+extern ATS_SOUND *ats_sound;
 extern UNDO_DATA *undat;
-extern int floaded;
+extern int floaded, scale_type, aveclen;
 extern short smr_done;
 extern char undo_file[];
+int ned = 0, led = 1, undo = TRUE;
+extern SELECTION selection, position;
 
 ////////////////////////////////////////////////////////////////////////////
 void do_undo(GtkWidget *widget,gpointer data)
@@ -80,15 +83,15 @@ void do_undo(GtkWidget *widget,gpointer data)
     }    
  
  
- selection->from=undat[led].from;
- selection->to=undat[led].to;
- selection->f1=undat[led].f1;
- selection->f2=undat[led].f2;
+ selection.from=undat[led].from;
+ selection.to=undat[led].to;
+ selection.f1=undat[led].f1;
+ selection.f2=undat[led].f2;
  vertex1=FALSE; vertex2=TRUE; //something IS selected  
- set_avec();
+ // set_avec(selection.to - selection.from);
  fclose(pundo);
  if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
-   atsh_compute_SMR(ats_sound,selection->from,selection->to);
+   atsh_compute_SMR(ats_sound,selection.from,selection.to);
  }
  else {
    smr_done=FALSE;
@@ -117,10 +120,10 @@ fseek(pundo, 0L, SEEK_END);
 //store edition data
  undat=(UNDO_DATA*)realloc(undat,( ned + 1 ) * sizeof(UNDO_DATA));
  
- undat[ned].from=selection->from;
- undat[ned].to  =selection->to;
- undat[ned].f1  =selection->f1;
- undat[ned].f2  =selection->f2;
+ undat[ned].from=selection.from;
+ undat[ned].to  =selection.to;
+ undat[ned].f1  =selection.f1;
+ undat[ned].f2  =selection.f2;
  undat[ned].ed_kind= eddie;
  undat[ned].nsel  =0;
  //g_print("saving(%d): from=%d to=%d",ned,undat[ned].from,undat[ned].to);
@@ -146,10 +149,10 @@ fseek(pundo, 0L, SEEK_END);
        if (selected[x]==TRUE){ 
 	 switch (undat[ned].ed_kind) {
 	 case AMP_EDIT:
-	   daux=ats_sound->amp[x][selection->from + i];
+	   daux=ats_sound->amp[x][selection.from + i];
 	   break;
 	 case FRE_EDIT:
-	   daux=ats_sound->frq[x][selection->from + i];
+	   daux=ats_sound->frq[x][selection.from + i];
 	   break;
 	 }
 	 if(fwrite(&daux,1,sizeof(double),pundo)==FALSE) {

@@ -9,14 +9,16 @@ extern char out_title[];
 extern char ats_title[];
 extern SPARAMS sparams;
 extern int floaded;
+extern SELECTION selection, position;
+extern ATS_SOUND *ats_sound;
 
 void allorsel(GtkWidget *widget, gpointer data)
 {
   if (GTK_TOGGLE_BUTTON (widget)->active) {
     sparams.allorsel=TRUE;
     if(SOMETHING_SELECTED) {
-      sparams.beg=ats_sound->time[0][selection->from];
-      sparams.end=ats_sound->time[0][selection->to]+ ats_sound->time[0][1];
+      sparams.beg=ats_sound->time[0][selection.from];
+      sparams.end=ats_sound->time[0][selection.to]+ ats_sound->time[0][1];
     }
   } else {
     sparams.allorsel=FALSE;

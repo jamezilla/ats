@@ -135,6 +135,7 @@ typedef struct {
   float SMR_cont;
   float SMR_thres;
   float min_seg_SMR;
+  int type;
   /* parameters computed from command line */
   int first_smp;
   int cycle_smp;
@@ -146,7 +147,6 @@ typedef struct {
   int lowest_bin;
   int highest_bin;
   int frames;
-  int type;
 } ANARGS;
 
 /* ATS_FFT

@@ -6,17 +6,19 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "atsh.h"
 
 extern char ats_title[];
+extern SELECTION selection, position;
+extern ATS_SOUND *ats_sound;
 
 /////////////////////////////////////////////////////////////////////////////
 void from_now(GtkWidget *widget, GtkAdjustment *adj)
 {
-  selection->from=(int)adj->value;
+  selection.from=(int)adj->value;
 
-  if(selection->from > selection->to ) {selection->from = selection->to;}
-  sprintf(ffro," (from frame = %d ", selection->from+1);
+  if(selection.from > selection.to ) {selection.from = selection.to;}
+  sprintf(ffro," (from frame = %d ", selection.from+1);
   gtk_label_set_text(GTK_LABEL(fr_from),ffro); 
     
-  set_avec();
+  //set_avec(selection.to - selection.from);
   //backup_edition(SEL_EDIT);
 
   clist_update(adj);
@@ -25,12 +27,12 @@ void from_now(GtkWidget *widget, GtkAdjustment *adj)
 /////////////////////////////////////////////////////////////////////////////
 void to_now(GtkWidget *widget, GtkAdjustment *adj)
 {
-  selection->to=(int)adj->value;
-  if(selection->to < selection->from) {selection->to = selection->from;}
-  sprintf(fto," to frame = %d )", selection->to+1);
+  selection.to=(int)adj->value;
+  if(selection.to < selection.from) {selection.to = selection.from;}
+  sprintf(fto," to frame = %d )", selection.to+1);
   gtk_label_set_text(GTK_LABEL(fr_to),fto); 
   
-  set_avec();
+  //set_avec(selection.to - selection.from);
   //backup_edition(SEL_EDIT);
   clist_update(adj);
   return;
@@ -102,7 +104,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
 
       gtk_clist_append( (GtkCList *) clist,ats_data);
       
-      if(selected[indx]==1 &&  (int)adj->value >= selection->from && (int)adj->value <=selection->to) {
+      if(selected[indx]==1 &&  (int)adj->value >= selection.from && (int)adj->value <=selection.to) {
 	for(x = 0; x < 4; ++x) {
 	  gtk_clist_select_row((GtkCList*)clist,indx,x);
 	}
@@ -111,7 +113,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
  }
     
  gtk_clist_thaw((GtkCList*)clist);
- set_avec();
+ //set_avec(selection.to - selection.from);
  //backup_edition(SEL_EDIT);
 
 return;
@@ -241,13 +243,13 @@ int list_view()
     //gtk_box_pack_start (GTK_BOX (hbox1), vsep, TRUE, TRUE, 30);
     //gtk_widget_show (vsep);
 
-    sprintf(ffro," (from frame = %d ", selection->from+1);
+    sprintf(ffro," (from frame = %d ", selection.from+1);
     fr_from = gtk_label_new (ffro);
     gtk_box_pack_start (GTK_BOX (hbox1), fr_from, FALSE, FALSE,5);
     gtk_misc_set_alignment(GTK_MISC(fr_from),0.,.8);
     gtk_widget_show (fr_from);         
     
-    sprintf(fto," to frame = %d )", selection->to+1);
+    sprintf(fto," to frame = %d )", selection.to+1);
     fr_to = gtk_label_new (fto);
     gtk_box_pack_start (GTK_BOX (hbox1), fr_to, FALSE, TRUE, 5);
     gtk_misc_set_alignment(GTK_MISC(fr_to),0.,.8);
@@ -272,7 +274,7 @@ int list_view()
     //SCALER   
     adj1 = gtk_adjustment_new (0.0, 0.0,atshed->fra, 1., 10., 1.0);
     hbox3 = gtk_hbox_new(FALSE, 0);
-    gtk_adjustment_set_value(GTK_ADJUSTMENT(adj1), selection->from);
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(adj1), selection.from);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, TRUE, 0);
     gtk_widget_show(hbox3);
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
