@@ -1,10 +1,12 @@
 CC = gcc
 DEFS = -DLINUX
 CFLAGS = -I. -ggdb -O2 -Wall
-LIBS = ./atsa-sndlib/sndlib.a
+#LIBS = ./atsa-sndlib/sndlib.a /usr/local/lib/libfftw3.a /usr/lib/libm.a
+LIBS = ./atsa-sndlib/sndlib.a -lfftw3 -lm
 #if you have/use gls you need to also include -lgsl -lgslcblas in this line
 NOGUI_LIBS = -lm atsa.a
 LD = ld
+#LD_FLAGS = -r -L/usr/local/lib -L/usr/lib
 LD_FLAGS = -r
 
 .c.o:

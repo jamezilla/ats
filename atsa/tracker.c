@@ -4,6 +4,7 @@
  */
 
 #include "atsa.h"
+#include <fftw3.h>
 
 /* private function prototypes */
 int compute_frames(ANARGS *anargs);
@@ -40,6 +41,11 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   ATS_PEAK *peaks, *tracks = NULL, cpy_peak;
   ATS_FRAME *ana_frames = NULL, *unmatched_peaks = NULL;
   mus_sample_t **bufs;
+
+  /* fftw stuff */
+  fftw_plan plan;
+  fftw_complex *fftw_in;
+  FILE *fftw_wisdom_file;
   /* open input file
      we get srate and total_samps in file in anargs */
   if ((fd = mus_sound_open_input(soundfile))== -1) {
@@ -196,14 +202,32 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   filptr = anargs->first_smp - M_2;   
   /* read sound into memory */
   mus_sound_read(fd, 0, sflen-1, 1, bufs);     
+
+  /* fftw stuff */
+  fftw_in = fftw_malloc(sizeof(fftw_complex) * anargs->fft_size);
+  //  fftw_out = fftw_malloc(sizeof(fftw_complex) * anargs->fft_size);
+  fftw_wisdom_file = fopen("fftw-wisdom", "r");
+  if(fftw_wisdom_file == NULL) {
+    fftw_wisdom_file = fopen("fftw-wisdom", "w");
+    plan = fftw_plan_dft_1d(fft_struct.size, fftw_in, fftw_in, FFTW_FORWARD, FFTW_PATIENT);
+    fftw_export_wisdom_to_file(fftw_wisdom_file);
+    fclose(fftw_wisdom_file);
+  } else {
+    fftw_import_wisdom_from_file(fftw_wisdom_file);
+    plan = fftw_plan_dft_1d(fft_struct.size, fftw_in, fftw_in, FFTW_FORWARD, FFTW_PATIENT);
+    fclose(fftw_wisdom_file);
+  }
+  
   /* main loop */
   for (frame_n=0; frame_n<anargs->frames; frame_n++) {
     /* clear fft arrays */
-    for(k=0; k<anargs->fft_size; k++) fft_struct.fdr[k] = fft_struct.fdi[k] = 0.0f;
+    //for(k=0; k<anargs->fft_size; k++) fft_struct.fdr[k] = fft_struct.fdi[k] = 0.0f;
+    for(k=0; k<anargs->fft_size; k++) fftw_in[k][0] = fftw_in[k][1] = 0.0f;
     /* multiply by window */
     for (k=0; k<anargs->win_size; k++) {
       if ((filptr >= 0) && (filptr < sflen)) 
-        fft_struct.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+        //fft_struct.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+        fftw_in[(k+first_point)%anargs->fft_size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
       filptr++;
     }
     /* we keep sample numbers of window midpoints in win_samps array */
@@ -211,7 +235,12 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
     /* move file pointer back */
     filptr = filptr - anargs->win_size + anargs->hop_smp;
     /* take the fft */
-    fft(fft_struct.fdr, fft_struct.fdi, fft_struct.size, 1);
+    //    fft(fft_struct.fdr, fft_struct.fdi, fft_struct.size, 1);
+    fftw_execute(plan);
+    for(k=0; k<fft_struct.size; k++) {
+      fft_struct.fdr[k] = fftw_in[k][0];
+      fft_struct.fdi[k] = fftw_in[k][1];
+    }
     /* peak detection */
     peaks_size = 0;
     peaks = peak_detection(&fft_struct, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
@@ -270,6 +299,10 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   free(fft_struct.fdi);
   free(window);
   free(tracks);
+  /* fftw stuff */
+  fftw_destroy_plan(plan);
+  fftw_free(fftw_in);
+
   /* init sound */
   fprintf(stderr, "Initializing sound...\n");
   sound = (ATS_SOUND *)malloc(sizeof(ATS_SOUND));
