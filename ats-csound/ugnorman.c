@@ -85,15 +85,30 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 // static variables used for atsbufread and atsbufreadnz
 static	ATSBUFREAD	*atsbufreadaddr = NULL;
 
+//byte swaps a double
+double bswap(double * swap_me)
+{
+	unsigned char *sw_in, sw_out[8];	//for swaping
+	sw_in = (unsigned char *)swap_me;
+   sw_out[0] = sw_in[7];
+   sw_out[1] = sw_in[6];
+   sw_out[2] = sw_in[5];
+   sw_out[3] = sw_in[4];
+   sw_out[4] = sw_in[3];
+   sw_out[5] = sw_in[2];
+   sw_out[6] = sw_in[1];
+   sw_out[7] = sw_in[0];
+	return *((double *)sw_out);
+}
+
 //ats info simply reads data out of the header of an atsfile. (i-rate)
 
 void atsinfo (ATSINFO *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
 	MEMFIL * memfile;
-	unsigned char *sw_in, sw_out[8];	//for swaping
 	double ret_data;	//data to return
-	int swapped = 0;	//false
+	int swapped = 0;	//false (a flag to indicate if this data needs to be byte swapped
 
 	/* copy in ats file name */
 	if (*p->ifileno == sstrcod){
@@ -114,19 +129,8 @@ void atsinfo (ATSINFO *p){
 	
 	//make sure that this is an ats file
 	if (atsh->magic != 123){
-		//try to byteswap
-		sw_in = (unsigned char *)&atsh->magic;
-      sw_out[0] = sw_in[7];
-      sw_out[1] = sw_in[6];
-      sw_out[2] = sw_in[5];
-      sw_out[3] = sw_in[4];
-      sw_out[4] = sw_in[3];
-      sw_out[5] = sw_in[2];
-      sw_out[6] = sw_in[1];
-      sw_out[7] = sw_in[0];
-
 		//check to see if it's byteswapped
-		if((int)*((double *)sw_out) == 123){
+		if(123 == (int)(bswap(&atsh->magic))){
 			swapped = 1;	//true
 			fprintf(stderr,"ATSINFO: %s is byte-swapped\n", atsfilname);
 		} else {
@@ -158,20 +162,8 @@ void atsinfo (ATSINFO *p){
 	}
 
 	//otherwise do byteswapping
-	sw_in = (unsigned char *)&ret_data;
-   sw_out[0] = sw_in[7];
-   sw_out[1] = sw_in[6];
-   sw_out[2] = sw_in[5];
-   sw_out[3] = sw_in[4];
-   sw_out[4] = sw_in[3];
-   sw_out[5] = sw_in[2];
-   sw_out[6] = sw_in[1];
-   sw_out[7] = sw_in[0];
-
-	//check to see if it's byteswapped
-	*p->ireturn = (float)*((double *)sw_out);
+	*p->ireturn = (float)bswap(&ret_data);
 	return;
-
 
 }
 /************************************************************/
