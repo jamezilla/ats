@@ -56,30 +56,23 @@ typedef struct _atsfiledata
 typedef struct _atsread
 {       OPDS    h;
         float   *kfreq, *kamp, *ktimpnt, *ifileno, *ipartial; //outputs (2) and inputs
-        double  maxFr;
+        int  maxFr;	// indicates the maximun frame
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
-	double  timefrmInc;
-        char * filename;
-	
-	AUXCH   auxch;
+	double * datastart;	//points to the start of the data
+	int	partialloc, frmInc;	//tells the location of the partal to output and the number of doubles to increment to get to the next frame
         MEMFIL * atsmemfile;
-	
-	ATS_DATA_LOC ** datap;	// pointer to the data that we get from the ats file (freq and amp array)
+	double timefrmInc;
 }       ATSREAD;
 
 typedef struct _atsreadnz
 {       OPDS    h;
         float   *kenergy, *ktimpnt, *ifileno, *inzbin; //outputs (1) and inputs
-        double  maxFr;
+        int  maxFr;
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
-        double  timefrmInc;
-        char * filename;
-        
-        AUXCH   auxch;
+	double * datastart;	//points to the start of the data
+        int nzbandloc, frmInc;
 	MEMFIL * atsmemfile;
-
-	double ** datap;	// pointer to the data that we get from the ats file energy
-
+        double  timefrmInc;
 }       ATSREADNZ;
 
 typedef struct _atsadd
@@ -217,3 +210,25 @@ typedef struct _atscrossnz
         float   *oscphase;      // for creating noise
 	ATSSTRUCT atshead;
 }       ATSCROSSNZ;                     
+
+typedef struct _atssinnoi
+{       OPDS    h;
+        float   *aoutput, *xtimpnt, *xsinlev, *xnzlev, *xfmod, *ifileno, *ifn, *iptls; // audio output and k & i inputs
+        float   *iptloffset, *iptlincr; // optional arguments
+        
+	FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
+        AUXCH   auxch;
+        MEMFIL * atsmemfile;
+        
+	double  maxFr;
+	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
+        double  timefrmInc;
+        double	MaxAmp;         // maximum amplitude in anaylsis file
+        char * filename;
+
+	int prevpartials;	//stores the partials of previous calls
+	ATS_DATA_LOC ** datap;
+        double  *oscphase;      // oscillator phase
+	ATS_DATA_LOC * buf;
+
+}       ATSSINNOI;
