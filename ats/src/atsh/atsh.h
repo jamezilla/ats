@@ -451,8 +451,8 @@ void revert_sel();
 
 //ABOUT WINDOW FUNCTIONS
 void show_header (void);
-void hclose(GtkWidget *widget, gpointer data);
-void create_hsep();
+//void hclose(GtkWidget *widget, gpointer data);
+//void create_hsep();
 void about(void);
 
 //FILE FUNCTIONS
