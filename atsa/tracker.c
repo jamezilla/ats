@@ -193,10 +193,13 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   fft.rate = anargs->srate;
 #ifdef FFTW
   fft.data = fftw_malloc(sizeof(fftw_complex) * fft.size);
-  if((fftw_wisdom_file = fopen("fftw-wisdom", "r")) != NULL) {
+  if(fftw_import_system_wisdom()) fprintf(stderr, "system wisdom loaded!\n");
+  else fprintf(stderr, "cannot locate system wisdom!\n");
+  if((fftw_wisdom_file = fopen("ats-wisdom", "r")) != NULL) {
     fftw_import_wisdom_from_file(fftw_wisdom_file);
+    fprintf(stderr, "ats-wisdom loaded!\n");
     fclose(fftw_wisdom_file);
-  } else fprintf(stderr, "cannot locate fftw-wisdom!\n");
+  } else fprintf(stderr, "cannot locate ats-wisdom!\n");
   plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
 #else
   fft.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
@@ -338,7 +341,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
     fprintf(stderr, "done!\n");
   }
 #ifdef FFTW
-  fftw_wisdom_file = fopen("fftw-wisdom", "w");
+  fftw_wisdom_file = fopen("ats-wisdom", "w");
   fftw_export_wisdom_to_file(fftw_wisdom_file);
   fclose(fftw_wisdom_file);
 #endif
