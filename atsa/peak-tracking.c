@@ -31,7 +31,7 @@ ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, in
 {
   ATS_CANDS *track_candidates = (ATS_CANDS *)malloc(*peaks_size*sizeof(ATS_CANDS));
   double lo, hi;
-  int k, i, j, used, goback;
+  int k, j, used, goback;
   ATS_FRAME *returned_peaks = (ATS_FRAME *)malloc(2*sizeof(ATS_FRAME));
 
   returned_peaks[0].peaks = returned_peaks[1].peaks = NULL;
@@ -43,7 +43,6 @@ ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, in
 
   /* find candidates for each peak and set each peak to best candidate */
   for (k=0; k<*peaks_size; k++) {
-    //peaks[k].track = -1;
     /* find frq limits for candidates */
     lo = peaks[k].frq - (.5 * peaks[k].frq * frq_dev);
     hi = peaks[k].frq + (.5 * peaks[k].frq * frq_dev);
@@ -87,10 +86,10 @@ ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, in
     }
 
   /* check for tracks that didnt get assigned */
-  for(i=0; i<*tracks_size; i++) {
+  for(k=0; k<*tracks_size; k++) {
     used = 0;
     for(j=0; j<*peaks_size; j++)
-      if(tracks[i].track == peaks[j].track) {
+      if(tracks[k].track == peaks[j].track) {
         used = 1;
         break;
       }
