@@ -226,7 +226,10 @@ void draw_pixm()//draws the spectrum on a pixmap
 	for(j=0; j < (int)atshed->par; ++j) {
 	  if(ats_sound->amp[j][i] > 0. ) {
 	    val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
-	      if(selected[j]==1 && i >= selection->from && i <= selection->to) {
+	    //	    val=ats_sound->smr[j][i] < 0.0? depth :  
+	    //	      depth - (int)(pow(db2amp_spl(ats_sound->smr[j][i]), valexp) *(float)depth);
+	   
+	    if(selected[j]==1 && i >= selection->from && i <= selection->to) {
 		val=depth - (int)(ats_sound->amp[j][i] * (float)depth);
 		change_color(val,0,0);
 	      }

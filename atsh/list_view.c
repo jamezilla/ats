@@ -84,17 +84,21 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
     
  for ( indx=0 ; indx < (int)atshed->par ; indx++ ) {
           
-      *nbuf=*abuf=*fbuf=*pbuf=0;
+      *nbuf=*abuf=*fbuf=*pbuf=*sbuf=0;
       sprintf(nbuf," %d ",indx+1);
       sprintf(abuf," %8.5f ",ats_sound->amp[indx][loff]);
       sprintf(fbuf," %8.3f ",ats_sound->frq[indx][loff]);
+      sprintf(sbuf," %8.3f ",ats_sound->smr[indx][loff]);
+
       if (FILE_HAS_PHASE) {
 	sprintf(pbuf," %8.5f ",ats_sound->pha[indx][loff]);
       }
+      
       ats_data[0]=nbuf;
       ats_data[1]=abuf;
       ats_data[2]=fbuf;
-      ats_data[3]=pbuf;
+      ats_data[3]=sbuf;
+      ats_data[4]=pbuf;
 
       gtk_clist_append( (GtkCList *) clist,ats_data);
       
@@ -138,6 +142,7 @@ int temp=0, i;
   g_free(abuf);
   g_free(fbuf);
   g_free(pbuf);
+  g_free(sbuf);
   g_free(n_text);
   g_free(ffro);
   g_free(fto);
@@ -158,6 +163,7 @@ void init_str()
   abuf=(gchar*)g_malloc(32*sizeof(gchar));
   fbuf=(gchar*)g_malloc(32*sizeof(gchar));
   pbuf=(gchar*)g_malloc(32*sizeof(gchar));
+  sbuf=(gchar*)g_malloc(32*sizeof(gchar));
   n_text=(gchar*)g_malloc(32*sizeof(gchar));
   fto=(gchar*)g_malloc(64*sizeof(gchar));
   ffro=(gchar*)g_malloc(64*sizeof(gchar));
@@ -185,7 +191,7 @@ int list_view()
     GtkWidget *window;
     GtkWidget *vbox, *hbox1, *hbox2, *hbox3;
     GtkWidget *scrolled_window;
-    gchar *titles[4] = { "Partial #", "Amplitude", "Frequency", "Phase" };
+    gchar *titles[5] = { "Partial #", "Amplitude", "Frequency","SMR", "Phase"};
     GtkWidget *sc_tittle, *ti_tittle; 
     GtkObject *adj1;
     GtkWidget *scrollbar;
@@ -303,7 +309,7 @@ int list_view()
     
     /////////////////////////////////////////
      /* Create the CList*/
-    clist = gtk_clist_new_with_titles( 4, titles);
+    clist = gtk_clist_new_with_titles( 5, titles);
 
     /* selection made */
     gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_EXTENDED);
@@ -314,7 +320,7 @@ int list_view()
 		       GTK_SIGNAL_FUNC(unselection_made),
 		       NULL);
     gtk_clist_set_shadow_type (GTK_CLIST(clist), GTK_SHADOW_OUT);
-    for(i=0; i<4; ++i) {
+    for(i=0; i<5; ++i) {
       gtk_clist_set_column_width (GTK_CLIST(clist), i, 75 );
     }
     

@@ -296,8 +296,8 @@ GtkWidget **entrys;
 GtkWidget *window1;
 typProgressData *pdata;
 //from list view
-gchar  *ats_data[4];
-gchar  *nbuf,*abuf,*fbuf,*pbuf,*n_text, *fto, *ffro;
+gchar  *ats_data[5];
+gchar  *nbuf,*abuf,*fbuf,*pbuf, *sbuf,*n_text, *fto, *ffro;
 gint offset, maxval, first;
 GtkWidget *clist;
 GtkObject *adj1;
@@ -493,4 +493,20 @@ GtkObject *create_adj(GtkWidget *window, GtkWidget *table, float min, float max,
 		      int p1, int p2, int p3, int p4, char *ID);
 void set_met(GtkWidget *widget, gpointer data);
 
+//ATS MASKING FUNCTIONS
 
+/* make_peaks
+ * ==========
+ * creates peaks from data in a frame
+ * and store them in *peaks
+ */
+void make_peaks(ATS_SOUND *sound, ATS_PEAK *peaks, int frame);
+
+/* atsh_compute_SMR
+ * ================
+ * computes the SMR data for a set of frames
+ * *sound: pointer to an ATS_SOUND structure
+ * from_frame: initial frame
+ * to_frame: last frame
+ */
+void atsh_compute_SMR(ATS_SOUND *sound, int from_frame, int to_frame);

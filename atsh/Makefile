@@ -10,7 +10,7 @@ ATSA_LOC = ../atsa
 	$(CC) -c $(DEFS) $(GTK_CFLAGS) $(CFLAGS) $<
 
 HEADERS = $(ATSA_LOC)/atsa.h
-OBJ = atsh.o popup.o my_curve.o atsh-graphics.o ats-header.o about.o atsh-undo.o atsh-files.o synth-funcs.o get_sparams.o list_view.o atsh-curves.o atsh-misc.o progress.o atsh-sel.o atsh-analysis.o
+OBJ = atsh.o popup.o my_curve.o atsh-graphics.o ats-header.o about.o atsh-undo.o atsh-files.o synth-funcs.o get_sparams.o list_view.o atsh-curves.o atsh-misc.o progress.o atsh-sel.o atsh-analysis.o atsh-mask.o
 
 all: 	atsa atsh
 

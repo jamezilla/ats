@@ -268,7 +268,7 @@ void CreateMainWindow (char *cmdl_filename)
     gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main1", hbox_main1,
                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (hbox_main1);
-    gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main1, FALSE, FALSE,13); ///DO NOT CHANGE!!!
+    gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main1, FALSE, FALSE,13); ///12 DO NOT CHANGE!!!
     ///////////////////////////////
     ///////////////////////////////
     hbox_main2 = gtk_hbox_new (FALSE, 0);
@@ -359,7 +359,7 @@ void CreateMainWindow (char *cmdl_filename)
      gtk_scale_set_draw_value(GTK_SCALE(vscale1),FALSE);
      gtk_scale_set_digits (GTK_SCALE(vscale1),0);  
      gtk_signal_connect (GTK_OBJECT(vadj1), "value_changed", GTK_SIGNAL_FUNC (v_scroll),GINT_TO_POINTER(1) );   
-     gtk_box_pack_start (GTK_BOX (hbox_main2), vscale1, FALSE, FALSE, 15); //FF 8
+     gtk_box_pack_start (GTK_BOX (hbox_main2), vscale1, FALSE, FALSE, 8); //FF 8
 
      /************/
      vscale2 = gtk_vscale_new (GTK_ADJUSTMENT (vadj2));
@@ -379,9 +379,10 @@ void CreateMainWindow (char *cmdl_filename)
      gtk_widget_ref (valscale);
      gtk_object_set_data_full (GTK_OBJECT (win_main), "valscale", valscale,
                            (GtkDestroyNotify) gtk_widget_unref);
-     gtk_box_pack_start (GTK_BOX (hbox_main2), valscale, FALSE, FALSE,8);
+     gtk_box_pack_start (GTK_BOX (hbox_main2), valscale, FALSE, FALSE,20); //FF5
      gtk_scale_set_digits (GTK_SCALE (valscale), 0);
      gtk_range_set_update_policy (GTK_RANGE (valscale), GTK_UPDATE_DISCONTINUOUS);
+     gtk_scale_set_draw_value(GTK_SCALE (valscale),FALSE);
      gtk_signal_connect (GTK_OBJECT(valadj), "value_changed", GTK_SIGNAL_FUNC(update_value), NULL);
      
      /////////////////////////////////
@@ -390,9 +391,9 @@ void CreateMainWindow (char *cmdl_filename)
      gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_inf", vbox_inf,
                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_widget_show (vbox_inf);
-     gtk_box_pack_start (GTK_BOX (vbox_main2), vbox_inf, FALSE, FALSE,5); //DO NOT CHANGE!!!
+     gtk_box_pack_start (GTK_BOX (vbox_main2), vbox_inf, FALSE, FALSE,7); //DO NOT CHANGE!!!7
      ///////////////////////////////
-     label= gtk_label_new("\n FRAME=\n =\n FREQ.=");
+     label= gtk_label_new("");//("\n FRAME=  \n =\n FREQ.=  ");
      gtk_widget_ref (label);
      gtk_object_set_data_full (GTK_OBJECT (win_main), "label",label,
                            (GtkDestroyNotify) gtk_widget_unref);
@@ -705,13 +706,13 @@ void show_file_name(GtkWidget *window,char *name)
   char *str;
 
   if(name == NULL) {
-    gtk_window_set_title(GTK_WINDOW(window), "ATSH: NONE");
+    gtk_window_set_title(GTK_WINDOW(window), "ATSH - NONE");
     
   }
   else {
     str=(char*)malloc(1200*sizeof(char));
     *str=0;
-    strcat(str, "ATSH: ");
+    strcat(str, "ATSH - ");
     strcat(str, name);
     gtk_window_set_title(GTK_WINDOW(window), str);
     free(str);
