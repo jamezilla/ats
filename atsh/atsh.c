@@ -81,7 +81,7 @@ gint EndProgram ()
  */
 int main (int argc, char *argv[])
 {
-  unsigned int npid=0;
+  unsigned int npid=0, i;
   char *suffix;
   
 
@@ -115,6 +115,9 @@ int main (int argc, char *argv[])
     fvec=(float*)malloc(sizeof(float));
     ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
     init_sound(ats_sound, 44100 , 2205, 2205, 1,.05,1);
+//     ats_sound->band_energy = (void *)malloc(NB_RES * sizeof(void *));
+//     for(i=0; i<NB_RES; i++)
+//       ats_sound->band_energy[i] = (double *)malloc(atshed->fra * sizeof(double));
 
     selected=(short*)malloc(sizeof(short));
     info=(char*)malloc(sizeof(char)*1024);
