@@ -90,7 +90,7 @@ typedef struct _atsadd
         double	MaxAmp;         // maximum amplitude in anaylsis file
 	int firstpartial, partialinc, frmInc;
 	double * datastart;
-	int prevpartials;	//stores the partials of previous calls
+	int memsize;	//stores the size of memeory in the aux alloc
         double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
 }       ATSADD;

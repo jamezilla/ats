@@ -349,7 +349,7 @@ void atsaddset(ATSADD *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
        	FUNC *ftp, *AmpGateFunc; 
-	int i;
+	int i, memsize;
         
 	// set up function table for synthesis
         if ((ftp = ftfind(p->ifn)) == NULL){
@@ -396,13 +396,14 @@ void atsaddset(ATSADD *p){
                	initerror(errmsg);
                	return;
         }
-	
-	// allocate space so we can store the data for later use
-	if(p->auxch.auxp == NULL || (int)*(p->iptls) > p->prevpartials)
+	//calculate how much memory we have to allocate for this
+	memsize = (int)(atsh->nfrms) * (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
+	// allocate space if we need it
+	if(p->auxch.auxp == NULL || memsize > p->memsize)
 	{
-		p->prevpartials = (int)*(p->iptls);
 		// need room for a buffer and an array of oscillator phase increments
-		auxalloc(((int)(atsh->nfrms) * (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double)), &p->auxch);
+		auxalloc(memsize, &p->auxch);
+		p->memsize = memsize;
 	}
 	
 	// set up the buffer, phase, etc.
