@@ -20,18 +20,14 @@ int residual_get_N(int M, int min_fft_size, int factor)
 {
   int def_size;
   def_size = factor * M;
-  while( def_size < min_fft_size ){
-    def_size = ppp2(def_size+1);
-  }
+  while(def_size < min_fft_size) def_size = ppp2(def_size+1);
   return(def_size);
 }
 
 void residual_get_bands(double fft_mag, double *true_bands, int *limits, int bands)
 {
   int k;
-  for(k = 0 ; k < bands ; k++){
-    limits[k] = floor(true_bands[k] / fft_mag);
-  }
+  for(k=0; k<bands; k++) limits[k] = floor(true_bands[k] / fft_mag);
 }
 
 
@@ -46,9 +42,7 @@ double residual_compute_time_domain_energy(ATS_FFT *fft_struct)
   //     0 Hz and Nyquist only (0 -> N/2)
   int n; 
   double sum=0.0;
-  for(n = 0 ; n < fft_struct->size ; n++){
-    sum += fabs( fft_struct->fdr[n] * fft_struct->fdr[n] );
-  }
+  for(n=0; n<fft_struct->size; n++) sum += fabs(fft_struct->fdr[n] * fft_struct->fdr[n]);
   return(sum);
 }
   
@@ -60,9 +54,8 @@ double residual_get_band_energy(int lo, int hi, ATS_FFT *fft_struct, double norm
   double sum = 0.0;
   if(lo<0) lo = 0;
   if(hi> floor(fft_struct->size * 0.5)) hi = floor(fft_struct->size * 0.5);
-  for(k = lo ; k < hi ; k++){
+  for(k = lo ; k < hi ; k++)
     sum += MAG_SQUARED( fft_struct->fdr[k], fft_struct->fdi[k], norm);
-  }
   return( sum/(double)fft_struct->size );
 }
 
@@ -75,9 +68,8 @@ void residual_compute_band_energy(ATS_FFT *fft_struct, int *band_limits, int ban
   //       k=0
   // N=fft size, K=bins in band
   int b;
-  for(b = 0 ; b<bands-1 ; b++){
+  for(b = 0 ; b<bands-1 ; b++)
     band_energy[b] = residual_get_band_energy(band_limits[b], band_limits[b+1], fft_struct, norm);
-  }
 }
 
 /* residual_analysis
@@ -89,9 +81,9 @@ void residual_compute_band_energy(ATS_FFT *fft_struct, int *band_limits, int ban
 void residual_analysis(char *file, ATS_SOUND *sound)
 {
   int fil, file_sampling_rate, sflen, hop, M, N, frames, *band_limits;
-  int smp=0, M_2, st_pt, filptr, i, frame_n, k, b;
+  int smp=0, M_2, st_pt, filptr, i, frame_n, k;
   double norm=1.0, threshold, fft_mag, **band_arr, *band_energy;
-  double time_domain_energy=0.0, freq_domain_energy=0.0, sum=0.0, e_ratio=1.0;
+  double time_domain_energy=0.0, freq_domain_energy=0.0, sum=0.0;
   double edges[ATSA_CRITICAL_BANDS+1] = ATSA_CRITICAL_BAND_EDGES;
   ATS_FFT fft_struct;
   mus_sample_t **bufs;
@@ -179,7 +171,7 @@ void residual_analysis(char *file, ATS_SOUND *sound)
  */
 void band_energy_to_res(ATS_SOUND *sound, int frame)
 {
-  int j, k, par, first_par, last_par;
+  int j, k, par, first_par, last_par=0;
   double sum;
   double edges[ATSA_CRITICAL_BANDS+1] = ATSA_CRITICAL_BAND_EDGES;  
   par = 0;

@@ -42,8 +42,6 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
   fclose(outfile);
   /* free ATS_SOUND memory */
   free_sound(sound);
-  /* finally sound */
-  free(sound);
   return(0);
 }
 

@@ -32,7 +32,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
 {
   int fd, M_2, first_point, filptr, n_partials = 0;
   int frame_n, k, sflen, *win_samps, peaks_size, tracks_size = 0;
-  int i, j, frame, i_tmp;
+  int i, frame, i_tmp;
   float *window, norm, sfdur, f_tmp;
   /* declare structures and buffers */
   ATS_SOUND *sound = NULL;

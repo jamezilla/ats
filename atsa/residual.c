@@ -132,8 +132,8 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
  */
 void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate)
 {
-  int i, frm, frm_1, frm_2, par, out_fil, frames, partials, frm_samps, out_smp=0, ptout;
-  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth, tmp, *sine_table;
+  int i, frm, frm_1, frm_2, par, frames, partials, frm_samps, out_smp=0, ptout;
+  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth;
   mus_sample_t **obuf;
 
   fprintf(stderr, "Computing residual...\n");

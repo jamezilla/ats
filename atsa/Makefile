@@ -24,4 +24,7 @@ sndlib:
 	cd atsa-sndlib ; ./configure --with-doubles ; make
 
 clean:
-	rm -f *.o atsa.a atsa ; cd atsa-sndlib ; make clean
+	rm -f *.o atsa.a atsa
+
+sndlibclean:
+	cd atsa-sndlib ; make clean
