@@ -2,11 +2,11 @@
 AC_PREREQ(2.57)
 
 # initialize everything
-AC_INIT(ats, 0.8)
+AC_INIT(ats, 1.0)
 AC_CONFIG_SRCDIR(src/atsa/atsa.c)
 AM_INIT_AUTOMAKE(foreign)
 
-#AC_CONFIG_AUX_DIR(config)
+#AC_CONFIG_AUX_DIR(src)
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.

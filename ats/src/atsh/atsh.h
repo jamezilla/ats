@@ -37,7 +37,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include <sys/stat.h>
 #include <unistd.h>
 #include <gtk/gtk.h>
-#include "atsa.h"
+#include "../atsa/atsa.h"
 
 #define IN_NAME  0
 #define OUT_NAME 1
