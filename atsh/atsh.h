@@ -463,6 +463,7 @@ void getap(char *pointer);
 void savap(char *pointer);
 
 //ANALYSIS WINDOW FUNCTIONS
+void retrieve_file_names();
 void change_ats_type(GtkWidget *widget, gpointer data);
 void select_out_atsfile(GtkWidget *widget, gpointer *data);
 void select_in_soundfile(GtkWidget *widget, gpointer *data);

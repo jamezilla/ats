@@ -1,8 +1,9 @@
+
 Synthesis:
 1-Add second synthesis metod (modulation of sinusoidal partials) for the residual
 2-Add DC Blocker to the residual
 3-Substractive Synthesis
-4-Rethink Time envelope
+4-Rethink Time envelope (possibly have a time transformation function)
 
 
 Edition:
@@ -11,7 +12,7 @@ Edition:
 3-Region deleting
 4-Add dismiss button to list view.
 5-SMR/Amplitude display.
-6-Smart sellection using frequency with harmonic factor and SMR threshold.
+6-Smart selection using frequency with harmonic factor and SMR threshold.
 
 -synthesis/parameters: remove 'use all partials' button and make it synthesize only what is selected, or everything if nothing selected.  allow editing of the file field.  come up with better language than 'deterministic' and 'residual'.  do we need a freq scalar?
 -synthesis/resynthesize: make the progress bar and 'done' popup just one form, so that the prog bar stays on screen until dismissed, and the 'done' info gets written to the prog bar form.  
@@ -19,7 +20,7 @@ Edition:
 -view/data on header: beautify output
 
 - change title bar to say 'ATSH - filename' and keep it updated with file names
-- label the zoom bars and contrast bar
+- label the zoom bars and contrast bar or separate the two zoom bars out of the contrast one. Take out the number on the latter.
 - move the frame and frequency info from bottom right corner to bottom centered, or maybe to status bar (if one exists)
 
 //////////////////////////////////////////////////////
@@ -42,21 +43,16 @@ Synthesis
  -Playback controls (when implemented)
 
 View
- (keep everything the same)
+ Replace Sinusoidal and Noise by
+a call to a Configuration View Window
 
 Help
  -Documentation (launch the html documentation)
  -About (keep same)
 
-////////////////////////////////////////////////
-
-
-Analysis:
-1-Re-order analysis parameters
-2-Amp. threshold default should be -72
 
 ATSA:
-
+all good for now!
 
 GENERAL:
-1-Optimize MAKEFILE
+1-Optimize MAKEFILE --- some done, do we need more?

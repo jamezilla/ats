@@ -176,6 +176,7 @@ int main (int argc, char *argv[])
     *out_tittle=*res_tittle=0;
     strcat(out_tittle, DEFAULT_OUTPUT_FILE);
     strcat(res_tittle, DEFAULT_OUTPUT_RES_FILE);
+    *apf_tittle=0;
 
     atsh_anargs=(ANARGS*)malloc(sizeof(ANARGS));
 

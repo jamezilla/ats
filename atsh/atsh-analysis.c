@@ -14,6 +14,32 @@ extern char *in_tittle;
 extern char *out_ats_tittle;
 extern char *ats_tittle;
 extern ANARGS *atsh_anargs;
+
+///////////////////////////////////////////////////////
+void retrieve_file_names()
+{
+  char *str;
+
+  str=(char*)malloc(1024*sizeof(char));
+
+  *str=0;        
+  str=gtk_editable_get_chars(GTK_EDITABLE(afile_label),0,-1);
+  *out_ats_tittle =0;
+  strcat(out_ats_tittle, str);
+
+  *str=0;        
+  str=gtk_editable_get_chars(GTK_EDITABLE(isfile_label),0,-1);
+  *in_tittle =0;
+  strcat(in_tittle, str);
+
+  *str=0;        
+  str=gtk_editable_get_chars(GTK_EDITABLE(rfile_label),0,-1);
+  *res_tittle =0;
+  strcat(res_tittle, str);
+
+  free(str);
+  return;
+}
 ///////////////////////////////////////////////////////
 void update_aparameters()
 {
@@ -262,6 +288,8 @@ void do_analysis (GtkWidget *widget, gpointer data)
   *previous=0;
   strcat(previous, ats_tittle);
 
+  retrieve_file_names();
+
   if(*out_ats_tittle==0) {
     Popup("ERROR: ATS Output file undefined, select it first");
     return; 
@@ -270,7 +298,11 @@ void do_analysis (GtkWidget *widget, gpointer data)
     Popup("ERROR: Input Soundfile undefined, select it first");  
     return; 
   }     
-
+  if(*res_tittle==0) {
+    Popup("ERROR: Output Residual/Deterministic Soundfile undefined, select it first");  
+    return; 
+  }  
+   
   //relase memory of previous file if any 
   unload_ats_file();
 
@@ -285,7 +317,7 @@ void do_analysis (GtkWidget *widget, gpointer data)
 
   /* call tracker */
   fprintf(stderr, "tracking...\n");
-  //gtk_label_set_text(GTK_LABEL (statlab),"ANALYZING...WAIT...");
+  //gtk_label_set_text(GTK_LABEL (statlab),"ANALYZING...WAIT...");  
   sound = tracker(atsh_anargs, in_tittle, res_tittle);
 
   /* save sound */
@@ -319,7 +351,7 @@ void do_analysis (GtkWidget *widget, gpointer data)
 ///////////////////////////////////////////////////////
 void destroy_wanalysis (GtkWidget *widget, gpointer data)
 {
-
+  retrieve_file_names();
   gtk_widget_destroy (GTK_WIDGET (data));
   return;
 
@@ -411,7 +443,7 @@ GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidge
     gtk_signal_connect (GTK_OBJECT (entry), "changed",GTK_SIGNAL_FUNC(set_aparam),GINT_TO_POINTER(flag));
   }
   else { //is a text
-    gtk_entry_set_editable (GTK_ENTRY (entry),FALSE);
+    gtk_entry_set_editable (GTK_ENTRY (entry),TRUE);
     gtk_entry_set_text(GTK_ENTRY (entry), strbuf);
   }  
   

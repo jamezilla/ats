@@ -19,7 +19,7 @@ extern char *out_ats_tittle;
 char *ats_tittle;
 extern ANARGS *atsh_anargs;
 extern GtkObject *valadj;
-
+short tbflag;
 
 typedef struct {
   void (*func)();
@@ -143,10 +143,17 @@ return(size);
 ///////////////////////////////////////////////////////////
 void set_filter(GtkWidget *widget, gpointer data)
 {
-
-gtk_file_selection_complete(GTK_FILE_SELECTION(filew),(gchar*)data);
-
-return;
+  
+  if(tbflag==TRUE) {
+    gtk_file_selection_complete(GTK_FILE_SELECTION(filew),(gchar*)data);
+    tbflag=FALSE;
+  }
+  else {
+    gtk_file_selection_complete(GTK_FILE_SELECTION(filew),"*.*");
+    tbflag=TRUE;
+  }
+  
+  return;
 }
 ///////////////////////////////////////////////////////////
 /*
@@ -236,6 +243,8 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
     GtkWidget *optionmenu1,  *optionmenu1_menu, *menuitem;
     filew=NULL;
     
+    tbflag=TRUE;
+
     /* --- Create a new file selection widget --- */
     filew = gtk_file_selection_new (sTitle);
 
@@ -254,7 +263,7 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
     *filt=0;
     strcat(filt, "show only ");
     strcat(filt, filter);
-    strcat(filt, " files");
+    strcat(filt, " files / show all");
    
     if (strcmp(filter,"*.ats")==0) {
     filterbutton= gtk_button_new_with_label (filt);

@@ -190,9 +190,9 @@ void get_sparams ()
     }
 
     param_list=alocstring(nfields,20);
-    param_list[0]="Deterministic Amplitude";
-    param_list[1]="Residual Amplitude";
-    param_list[2]="Frequency Scalar";
+    param_list[0]="Sinusoidal output gain";
+    param_list[1]="Noise output gain";
+    param_list[2]="Frequency scalar";
     param_list[3]="Sampling Rate";
 
     // --- Create the top level window
