@@ -22,12 +22,10 @@ void    atscrossnzset(void*), atscrossnz(void*);
 { "atsadd",    S(ATSADD),       5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
 { "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
 { "atssinnoi",    S(ATSSINNOI),   5,     "a", "kkkkSiop", atssinnoiset,     NULL,   atssinnoi},
+{ "atsinfo",    S(ATSINFO),   1,     "i", "Si", atsinfo, NULL, NULL},
 
-taken out for now:
 { "atsbufread", S(ATSBUFREAD),  3,      "", "kkSiop", atsbufreadset, atsbufread, NULL},
 { "atscross", S(ATSCROSS),      5,      "a", "kkSikkiop", atscrossset,  NULL,   atscross},
-{ "atsbufreadnz", S(ATSBUFREADNZ), 3,   "", "kS", atsbufreadnzset, atsbufreadnz, NULL},
-{ "atscrossnz", S(ATSCROSSNZ),  5,      "a", "kSikkiop", atscrossnzset, NULL, atscrossnz}
 
 put ugnorman.c ugnorman.h and ugnorman.o in the correct place in your make file as well.
 
@@ -172,7 +170,6 @@ void atsinfo (ATSINFO *p){
 
 	//check to see if it's byteswapped
 	*p->ireturn = (float)*((double *)sw_out);
-	fprintf(stderr,"\n\n return val : %f\n\n", *p->ireturn);
 	return;
 
 
