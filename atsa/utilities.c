@@ -86,9 +86,9 @@ void optimize_sound(ANARGS *anargs, ATS_SOUND *sound)
 void fill_sound_gaps(ATS_SOUND *sound, int min_gap_len)
 {
   int i, j, k, next_val, next_zero, prev_val, gap_size;
-  double f_inc, a_inc, s_inc, mag; 
-  mag = TWOPI / (double)sound->srate;
-  fprintf(stderr, "Filling sound gaps...\n");
+  double f_inc, a_inc, s_inc, mag = TWOPI / (double)sound->srate;
+
+  fprintf(stderr, "Filling sound gaps...");
   for(i = 0 ; i < sound->partials ; i++){
     /* first we fix the freq gap before attack */
     next_val = find_next_val_arr(sound->frq[i], 0, sound->frames);
@@ -144,6 +144,7 @@ void fill_sound_gaps(ATS_SOUND *sound, int min_gap_len)
       }
     }
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* trim_partials
@@ -159,7 +160,7 @@ void trim_partials(ATS_SOUND *sound, int min_seg_len, float min_seg_smr)
 {
   int i, j, k, seg_beg, seg_end, seg_size, count=0;
   double val=0.0, smr_av=0.0;
-  fprintf(stderr, "Trimming short partials...\n");
+  fprintf(stderr, "Trimming short partials...");
   for(i = 0 ; i < sound->partials ; i++){
     k = 0;
     while( k < sound->frames ){
@@ -199,6 +200,7 @@ void trim_partials(ATS_SOUND *sound, int min_seg_len, float min_seg_smr)
       }
     }
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* auxiliary functions to fill_sound_gaps and trim_partials */
@@ -245,7 +247,7 @@ void set_av(ATS_SOUND *sound)
 {
   int i, j, count;
   double val;
-  fprintf(stderr,"Computing averages..\n");
+  fprintf(stderr,"Computing averages...");
   for( i = 0 ; i < sound->partials ; i++){
     /* smr */
     val=0.0;
@@ -279,6 +281,7 @@ void set_av(ATS_SOUND *sound)
     /* set track# */
     sound->av[i].track = i;
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* init_sound

@@ -99,9 +99,10 @@ void residual_analysis(char *file, ATS_SOUND *sound)
   mus_sample_t **bufs;
 #ifdef FFTW
   fftw_plan plan;
+  //  FILE *fftw_wisdom_file;
 #endif
   if ((fil = mus_sound_open_input(file))== -1) {
-    fprintf(stderr, "%s: %s\n", file, strerror(errno));
+    fprintf(stderr, "\n%s: %s\n", file, strerror(errno));
     exit(1);
   }
   file_sampling_rate = mus_sound_srate(file);
@@ -116,7 +117,10 @@ void residual_analysis(char *file, ATS_SOUND *sound)
   fft.rate = file_sampling_rate;
 #ifdef FFTW
   fft.data = fftw_malloc(sizeof(fftw_complex) * fft.size);
+  //fftw_wisdom_file = fopen("fftw-wisdom", "r");
+  //  fftw_import_wisdom_from_file(fftw_wisdom_file);
   plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
+  //  fclose(fftw_wisdom_file);
 #else
   fft.fdr = (double *)malloc(N * sizeof(double));
   fft.fdi = (double *)malloc(N * sizeof(double));
@@ -134,8 +138,6 @@ void residual_analysis(char *file, ATS_SOUND *sound)
   filptr = M_2 * -1;
   /* read sound into memory */
   mus_sound_read(fil, 0, sflen-1, 2, bufs);     
-
-  fprintf(stderr, "Analyzing residual...\n");
 
   for(frame_n = 0 ; frame_n < frames ; frame_n++){ 
     for(i=0; i<N; i++) {
@@ -211,7 +213,7 @@ void band_energy_to_res(ATS_SOUND *sound, int frame)
   partialbandamp = malloc(sizeof(double) * sound->partials);
   bandnum = malloc(sizeof(int) * sound->partials);
   if(partialbandamp == NULL || bandnum == NULL) {
-    fprintf(stderr, "%s: malloc() returned NULL\n", __PRETTY_FUNCTION__);
+    fprintf(stderr, "\n%s: malloc() returned NULL\n", __PRETTY_FUNCTION__);
     return;
   }
   /* initialize the sum per band */

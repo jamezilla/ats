@@ -44,6 +44,9 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
 	    mus_sound_chans(soundfile));
     return(NULL);
   }
+
+  fprintf(stderr, "tracking...\n");
+
   /* get sample rate and # of frames from file header */
   anargs->srate = mus_sound_srate(soundfile);
   sflen = mus_sound_frames(soundfile);
@@ -190,18 +193,11 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   fft.rate = anargs->srate;
 #ifdef FFTW
   fft.data = fftw_malloc(sizeof(fftw_complex) * fft.size);
-  fftw_wisdom_file = fopen("fftw-wisdom", "r");
-  if(fftw_wisdom_file == NULL) {
-    fprintf(stderr, "Optimizing FFTW and saving in file fftw-wisdom...\n");
-    fftw_wisdom_file = fopen("fftw-wisdom", "w");
-    plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
-    fftw_export_wisdom_to_file(fftw_wisdom_file);
-    fclose(fftw_wisdom_file);
-  } else {
+  if((fftw_wisdom_file = fopen("fftw-wisdom", "r")) != NULL) {
     fftw_import_wisdom_from_file(fftw_wisdom_file);
-    plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
     fclose(fftw_wisdom_file);
-  }
+  } else fprintf(stderr, "cannot locate fftw-wisdom!\n");
+  plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
 #else
   fft.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
   fft.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
@@ -299,7 +295,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   free(fft.fdi);
 #endif
   /* init sound */
-  fprintf(stderr, "Initializing sound...\n");
+  fprintf(stderr, "Initializing ATS data...");
   sound = (ATS_SOUND *)malloc(sizeof(ATS_SOUND));
   init_sound(sound, anargs->srate, (int)(anargs->hop_size * anargs->win_size), 
              anargs->win_size, anargs->frames, anargs->duration, n_partials,
@@ -317,6 +313,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
         }
     }
   }
+  fprintf(stderr, "done!\n");
   /* free up ana_frames memory */
   /* first, free all peaks in each slot of ana_frames... */
   for (k=0; k<anargs->frames; k++) free(ana_frames[k].peaks);  
@@ -325,15 +322,27 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* optimize sound */
   optimize_sound(anargs, sound);
   /* compute  residual */
-  if( anargs->type == 3 || anargs->type == 4 )
+  if( anargs->type == 3 || anargs->type == 4 ) {
+    fprintf(stderr, "Computing residual...");
     compute_residual(bufs, sflen, resfile, sound, win_samps, anargs->srate);
+    fprintf(stderr, "done!\n");
+  }
   /* free the rest of the memory */
   free(win_samps);
   free(bufs[0]);
   free(bufs);
   /* analyze residual */
-  if( anargs->type == 3 || anargs->type == 4 )
+  if( anargs->type == 3 || anargs->type == 4 ) {
+    fprintf(stderr, "Analyzing residual...");
     residual_analysis(ATSA_RES_FILE, sound);
+    fprintf(stderr, "done!\n");
+  }
+#ifdef FFTW
+  fftw_wisdom_file = fopen("fftw-wisdom", "w");
+  fftw_export_wisdom_to_file(fftw_wisdom_file);
+  fclose(fftw_wisdom_file);
+#endif
+  fprintf(stderr, "tracking completed.\n");
   return(sound);
 }
 
