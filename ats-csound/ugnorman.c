@@ -904,27 +904,74 @@ void atsaddnz(ATSADDNZ *p){
 void band_energy_to_res(ATSSINNOI *p)
 {
   int i, j, k, par, first_par, last_par=0;
+  float edges[] = ATSA_CRITICAL_BAND_EDGES;
+  double * curframe = p->datastart;
+  double bandsum[25];
+  double partialfreq;
+  double partialamp;
+  double ** partialband;
+  int * bandnum;
+
+  partialband = (double **)malloc(sizeof(double *) * (int)p->atshead->npartials);
+  bandnum = (int *)malloc(sizeof(int) * (int)p->atshead->npartials);
+
+  for(i = 0; i < (int)p->atshead->nfrms; i++)
+  {
+        /* init sums */
+        for(k = 0; k < 25; k++)
+                bandsum[k] = 0;
+        /* find sums per band */        
+
+        for(j = 0; j < (int)p->atshead->npartials; j++)
+        {
+                partialfreq =  *(curframe + 2 + j * (int)p->partialinc);
+                partialamp = *(curframe + 1 + j * (int)p->partialinc);
+                for(k = 0; k < 25; k++)
+                {
+                        if( (partialfreq < edges[k+1]) && (partialfreq >= edges[k]))
+                        {
+                                bandsum[k] += partialamp;
+                                bandnum[j] = k;
+                                partialband[j] = (curframe + (int)p->firstband + k);
+                                break;
+                        }
+                }
+        }
+
+        /* compute energy per partial */
+        for(j = 0; j < (int)p->atshead->npartials; j++)
+        {
+		if(bandsum[bandnum[j]] > 0.0)
+                	*(p->nzdata + i * (int)p->atshead->npartials + j) = (*(curframe + 1 + j * (int)p->partialinc) * *(partialband[j])) / bandsum[bandnum[j]];
+		else
+			*(p->nzdata + i * (int)p->atshead->npartials + j) = 0.0;
+        }
+        curframe += p->frmInc;
+  }
+
+  free(partialband); 
+  free(bandnum);
+}
+
+void band_energy_to_res2(ATSSINNOI *p)
+{
+  int i, j, k, par, first_par, last_par=0;
   double sum;
   float edges[] = ATSA_CRITICAL_BAND_EDGES;
   double * partial;
   double * band;
   double * curframe = p->datastart;
   
-  partial = (double *)(curframe + 1);
-  band = (double *)(p->firstband + curframe);
-  par = 0;
-  
   for(i = 0; i < (int)p->atshead->nfrms; i++)
   {
-  /* find partials by band */
+  	par = 0;
+	partial = (double *)(curframe + 1);
+	band = (double *)(p->firstband + curframe);
+	/* find partials by band */
   	for(j=0 ; j<25 ; j++)
   	{
   		first_par = par;
  	   	sum = 0.0;
-		//fprintf(stderr, "band: %i %f freq: %f\n", j, (float)*band, (float)*(partial + 1));
- 	   	//if( (float)*band > 0.0)
-		//	fprintf(stderr,"band greater than zero %f par: %i\n", (float)*band, par);
-			
 		while( (par < (int)p->atshead->npartials) &&
  	         	( (float)*band > 0.0) &&
  	         	( (float)*(partial + 1) >= edges[j]) &&
@@ -948,17 +995,13 @@ void band_energy_to_res(ATSSINNOI *p)
       			}
     		}
 		//go to next noise band
-		if(j < 24)
-			band++;
+		band++;
   	}
-	if(i < (int)(p->atshead->nfrms - 1))
-	{
-		curframe += p->frmInc;
-		partial = (double *)(curframe + 1);
-		band = (double *)(p->firstband + curframe);
-	}
+	curframe += p->frmInc;
    }
 }
+
+
 
 void fetchSINNOIpartials(ATSSINNOI *, float);
 
@@ -1015,7 +1058,7 @@ void atssinnoiset(ATSSINNOI *p)
 	{
 		if(p->nzdata != NULL)
 			mfree(p->nzdata);
-		p->nzdata = (double *)mmalloc(sizeof(double) * (int)(atsh->npartials));
+		p->nzdata = (double *)mmalloc(sizeof(double) * nzmemsize);
 	}
 	
 	p->maxFr = (int)atsh->nfrms - 1;
@@ -1079,7 +1122,7 @@ void atssinnoiset(ATSSINNOI *p)
 	// initialize band limited noise parameters
 	for(i = 0; i < (int)*p->iptls; i++)
 	{
-		randiats_setup(esr, *(p->datastart + 2 + i * (int)*p->iptlincr + (int)*p->iptloffset), &(p->randinoise[i]));
+		randiats_setup(esr, 10, &(p->randinoise[i]));
 	}
 	//initilize oscphase
 	for(i = 0; i < (int)*p->iptls; i++)
@@ -1150,17 +1193,18 @@ void atssinnoi(ATSSINNOI *p)
 			amp = oscbuf[i].amp;
 			freq = (float)oscbuf[i].freq * *p->kfreq;
 			inc = TWOPI * freq / esr;
-			nzamp = *(p->nzbuf + i);
-			nzfreq   =(freq< 500.? 50. : freq * .05);
+			nzamp = *(p->nzbuf + i);			
+			nzfreq   = (freq < 500. ? 50. : freq * .05);
 			do
 			{
 				//calc sine wave
-				sinewave = sin(phase) * amp;
+				sinewave = cos(phase) * amp;
 				phase += inc;
+					
 				//calc noise
-				noise = nzamp * sinewave * randifats(&(p->randinoise[i]), nzfreq );
+				noise = sinewave * randifats(&(p->randinoise[i]), nzfreq);
 				//calc output
-				*ar += (float)sinewave * *p->ksinamp + (float)noise * *p->knzamp;
+				*ar += (float)sinewave * *p->ksinamp + (float)(noise * nzamp) * *p->knzamp;
 				ar++;
 			}
 			while(--nsmps);
