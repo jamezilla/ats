@@ -1,4 +1,4 @@
-Sat May  8 18:41:46 PDT 2004
+Fri May 21 07:57:23 PDT 2004
 
 This is the atsread function for PD (pure-data) by Miller Puckette It reads
 data and outputs data from atsfiles based on a time pointer.  See the
@@ -23,7 +23,10 @@ directory (which should also be in your pd path hopefully).
 
 web-sites of interest:
 
-ATS: 	http://sourceforge.net/projects/atsa/ PureData: http://www.pure-data.org/
+ATS: 	http://sourceforge.net/projects/atsa/ 
+http://www.dxarts.washington.edu/ats/
+
+PureData: www.pure-data.info
 http://crca.ucsd.edu/~msp/software.html
 
 This software is free for non-commercial use, use it at your own risk, I assume
