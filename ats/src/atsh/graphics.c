@@ -24,6 +24,7 @@ GdkPixmap *pixmap = NULL;
 int view_type = NULL_VIEW, scale_type = AMP_SCALE;
 extern SELECTION selection, position;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 //////////////////////////////////////////////////////////////////////////////
 gint configure_event(GtkWidget *widget, GdkEventConfigure *event)
@@ -95,7 +96,7 @@ void erase_selection(int pfrom, int pto)//erase previous selection
   	
    nextx+=frame_step;
 	
-   for(j=0; j < atshed->par; ++j) {
+   for(j=0; j < atshed.par; ++j) {
      if(ats_sound->amp[j][i] > 0. ) {
        if(scale_type==AMP_SCALE) { //using amp values
 	 val=MAX_COLOR_VALUE - (int)(pow(ats_sound->amp[j][i], valexp) *(float)MAX_COLOR_VALUE);
@@ -155,10 +156,10 @@ void draw_selection()//draw current selection
   nextx=curx;
 
   for(i=selection.from; i < selection.to+offset; i++) {
-    if(i > (int)atshed->fra-1) break; 
+    if(i > (int)atshed.fra-1) break; 
     nextx+=frame_step;
     
-    for(j=0; j < atshed->par; ++j) {
+    for(j=0; j < atshed.par; ++j) {
       
       if(ats_sound->amp[j][i] > 0.) {
 	
@@ -241,7 +242,7 @@ void draw_pixm()//draws the spectrum on a pixmap
 	
 	nextx+=frame_step;
 	
-	for(j=0; j < (int)atshed->par; ++j) {
+	for(j=0; j < (int)atshed.par; ++j) {
 	  if(ats_sound->amp[j][i] > 0. ) {
 	    if(scale_type==AMP_SCALE) { //using amp values
 	      val=MAX_COLOR_VALUE - (int)(pow(ats_sound->amp[j][i], valexp) *(float)MAX_COLOR_VALUE);
@@ -304,7 +305,7 @@ void draw_pixm()//draws the spectrum on a pixmap
 	
 	for(j=0; j <ATSA_CRITICAL_BANDS; ++j) {
 	  linear_res= (float)sqrt((float)ats_sound->band_energy[j][i]/
-				  ((float)atshed->ws * (float)ATSA_NOISE_VARIANCE));
+				  ((float)atshed.ws * (float)ATSA_NOISE_VARIANCE));
 	  val=MAX_COLOR_VALUE - (int)((float)pow(linear_res, valexp) * (float)MAX_COLOR_VALUE);
 	  change_color(val,val,val);
 	  cury -= band_step;
@@ -320,7 +321,7 @@ void draw_pixm()//draws the spectrum on a pixmap
        curx=nextx=cury=nexty=0.;
        for(i=h.viewstart-1; i < h.viewend; ++i) {
 	 nextx+=frame_step;
-	 for(j=0; j < (int)atshed->par; ++j) {
+	 for(j=0; j < (int)atshed.par; ++j) {
 	   
 	   if(selected[j]==1 && i >= selection.from && i <= selection.to && ats_sound->amp[j][i] > 0.) {
 	     if(scale_type==AMP_SCALE) {
@@ -425,7 +426,7 @@ void set_smr_view(void) //SPECTRAL view switch between AMP & SMR plot
 			 (float)v.viewstart/1000.,(float)v.diff/1000.);
     gtk_widget_show(GTK_WIDGET(vruler));
     scale_type=SMR_SCALE;
-    if(!smr_done) atsh_compute_SMR(ats_sound, 0, atshed->fra);
+    if(!smr_done) atsh_compute_SMR(ats_sound, 0, atshed.fra);
     draw_pixm();
   }
 }
@@ -517,10 +518,10 @@ void unzoom()
   if(floaded) {
   
     //init only horizontal scalers 
-    set_hruler((double)1.,(double)atshed->fra,(double)1.,(double)atshed->fra);
+    set_hruler((double)1.,(double)atshed.fra,(double)1.,(double)atshed.fra);
   
     h.viewstart=1;
-    h.viewend=(int)atshed->fra;
+    h.viewend=(int)atshed.fra;
     h.diff=h.viewend - h.viewstart;      
     h.prev=h.diff; 
     h_setup();
@@ -551,7 +552,7 @@ void sel_only()
 
   if(floaded==0 || view_type==RES_VIEW) { return; }
  
-  for(i=0; i<(int)atshed->par; i++) { //check whether something is selected
+  for(i=0; i<(int)atshed.par; i++) { //check whether something is selected
     if (selected[i]==1) ++temp;
   }
   if(temp==0) { return; } //nothing selected...do nothing  
@@ -591,7 +592,7 @@ if (event->button == 1 && pixmap != NULL) {
    selection.y1=(int)event->y;
    selection.width=main_graph->allocation.width;
 
-   for(i=0; i<(int)atshed->par; i++) {
+   for(i=0; i<(int)atshed.par; i++) {
      selected[i]=0;
    }
    
@@ -628,13 +629,13 @@ if (event->button == 1 && pixmap != NULL) {
 
    //set_avec(selection.to - selection.from);
    
-   for(i=0; i<(int)atshed->par; ++i) { //deselect all
+   for(i=0; i<(int)atshed.par; ++i) { //deselect all
      selected[i]=0;
    }
    if(selection.from != selection.to) {
      temp=0;
      for(i=selection.from; i < selection.to; ++i) {
-       for(j=0; j < (int)atshed->par; ++j) {     
+       for(j=0; j < (int)atshed.par; ++j) {     
 	 if(selected[j]==0) {
 	   if((int)ats_sound->frq[j][i] >= selection.f1 && 
 	      (int)ats_sound->frq[j][i] <= selection.f2) {
@@ -643,11 +644,11 @@ if (event->button == 1 && pixmap != NULL) {
 	   }        
 	 }
        }
-       if(temp == (int)atshed->par-1) { break; }
+       if(temp == (int)atshed.par-1) { break; }
      }
    }
    else { //just one frame
-     for(j=0; j < (int)atshed->par; ++j) {     	
+     for(j=0; j < (int)atshed.par; ++j) {     	
 	   if((int)ats_sound->frq[j][selection.from] >= selection.f1 && 
 	      (int)ats_sound->frq[j][selection.from] <= selection.f2) {
 	     selected[j]=1;
@@ -672,8 +673,8 @@ else {//Either Button 2 or 3
   if(STARTING_SELECTION) { //do nothing
     return TRUE;
   } 
-  mingap	=	atshed->mf;
-  for(i=0; i<(int)atshed->par; ++i) { //locate the closer frame and partial     
+  mingap	=	atshed.mf;
+  for(i=0; i<(int)atshed.par; ++i) { //locate the closer frame and partial     
     gap= fabs(position.f1 -(ats_sound->frq[i][(int)position.from]));
     if(gap < mingap) {
       mingap=gap;
@@ -684,13 +685,13 @@ else {//Either Button 2 or 3
     if(position.from < selection.from || position.from > selection.to) {
       vertex1=0;
       vertex2=0;
-      for(i=0; i<(int)atshed->par; i++) {
+      for(i=0; i<(int)atshed.par; i++) {
 	selected[i]=0;
       }
     }
   }
   if(NOTHING_SELECTED) { //set selection WIDTH to all
-    for(i=0; i<(int)atshed->par; i++) {
+    for(i=0; i<(int)atshed.par; i++) {
       selected[i]=0;
     }
     set_selection(h.viewstart, h.viewend,0,main_graph->allocation.width,
@@ -717,7 +718,7 @@ int i;
 
 if(floaded==0 || view_type==RES_VIEW) { return; }
 
-for(i=0; i<(int)atshed->par; i++) { //select all
+for(i=0; i<(int)atshed.par; i++) { //select all
      selected[i]=1;
 }
 
@@ -734,7 +735,7 @@ int i;
 
 if(floaded==0 || view_type==RES_VIEW) { return; }
 
-for(i=0; i<(int)atshed->par; i++) { //deselect all
+for(i=0; i<(int)atshed.par; i++) { //deselect all
      selected[i]=0;
    }
  vertex1=vertex2=0; //nothing selected 
@@ -749,13 +750,13 @@ void sel_even()
 int i;
 if(floaded==0 || view_type==RES_VIEW) { return; }
  
- for(i=0; i<(int)atshed->par; i++) { //select all
+ for(i=0; i<(int)atshed.par; i++) { //select all
    selected[i]=1;
  }
  
  set_selection(h.viewstart, h.viewend,0,main_graph->allocation.width,
 		     main_graph->allocation.width);
- for(i=0; i<(int)atshed->par-1; i+=2) { //DEdeselect all odd
+ for(i=0; i<(int)atshed.par-1; i+=2) { //DEdeselect all odd
    selected[i]=0;
    
 }
@@ -769,12 +770,12 @@ void sel_odd()
 int i;
 if(floaded==0 || view_type==RES_VIEW) { return; }
 
- for(i=0; i<(int)atshed->par; i++) { //deselect all
+ for(i=0; i<(int)atshed.par; i++) { //deselect all
    selected[i]=0;
  }
  set_selection(h.viewstart, h.viewend,0,main_graph->allocation.width,
 		     main_graph->allocation.width);
- for(i=0; i<(int)atshed->par-1; i+=2) { //select all odd
+ for(i=0; i<(int)atshed.par-1; i+=2) { //select all odd
    selected[i]=1;
    
 }
@@ -791,7 +792,7 @@ int i;
 if(floaded==0 || view_type==RES_VIEW) { return; }
  if(NOTHING_SELECTED) {return;} 
 
- for(i=0; i<(int)atshed->par; i++) { //revert
+ for(i=0; i<(int)atshed.par; i++) { //revert
    
    selected[i]+=1;
    if(selected[i] > 1) {

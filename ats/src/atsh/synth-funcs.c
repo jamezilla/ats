@@ -36,6 +36,7 @@ extern char out_title[];
 extern char ats_title[];
 extern SPARAMS sparams;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 //randi output random numbers in the range of 1,-1
 //getting a new number at frequency freq and interpolating
@@ -292,7 +293,7 @@ void do_synthesis()
 
   //do residual data transfer
   if (FILE_HAS_NOISE)
-    for(i=0; i<(int)atshed->fra; ++i) band_energy_to_res(ats_sound, i);
+    for(i=0; i<(int)atshed.fra; ++i) band_energy_to_res(ats_sound, i);
 
   //NOW CHECK WHAT TO DO...
   if(sparams.amp > 0.) sflag |= SYNTH_DET;  //deterministic synthesis only
@@ -330,7 +331,7 @@ void do_synthesis()
     
     //locate the frame for the beggining and end of segments
     if(i == 0){
-      if(dify < 0.) bframe= locate_frame((int)atshed->fra-1,cyval, dify);
+      if(dify < 0.) bframe= locate_frame((int)atshed.fra-1,cyval, dify);
       else bframe= locate_frame(0,cyval, dify);
     }
     eframe= locate_frame(bframe, nyval, dify);
@@ -362,8 +363,8 @@ void do_synthesis()
 
   switch(sflag) { //see which memory resources do we need and allocate them
   case SYNTH_DET: 
-    dospt = (float *) malloc( (int)atshed->par * sizeof(float));
-    for(z=0; z<(int)atshed->par; ++z) dospt[z]=0.;
+    dospt = (float *) malloc( (int)atshed.par * sizeof(float));
+    for(z=0; z<(int)atshed.par; ++z) dospt[z]=0.;
     break;
     
   case SYNTH_RES: 
@@ -377,9 +378,9 @@ void do_synthesis()
     break;
 
   case SYNTH_BOTH: 
-    dospt = (float *) malloc( (int)atshed->par * sizeof(float));
-    rarray= (RANDI *) malloc( (int)atshed->par * sizeof(RANDI));
-    for(z=0; z<(int)atshed->par; ++z) {
+    dospt = (float *) malloc( (int)atshed.par * sizeof(float));
+    rarray= (RANDI *) malloc( (int)atshed.par * sizeof(RANDI));
+    for(z=0; z<(int)atshed.par; ++z) {
       rfreq=(ats_sound->frq[z][tdata[0].from] < 500.? 50. : ats_sound->frq[z][tdata[0].from] * bw);
       randi_setup(sparams.sr,rfreq,&rarray[z]);
       dospt[z]=0.;
@@ -398,14 +399,14 @@ void do_synthesis()
     for(j=0; j < tdata[i].size;   j++) {
 
       next=(tdata[i].from < tdata[i].to ? curr+1 : curr-1 );	        
-      if(next < 0 || next >= (int)atshed->fra) break;
+      if(next < 0 || next >= (int)atshed.fra) break;
 
       dt=fabs(ats_sound->time[0][next] - ats_sound->time[0][curr]);
       frame_samps=dt * sparams.sr * tdata[i].tfac ;      
 
       switch (sflag) {
       case SYNTH_DET: { //deterministic synthesis only
-	for(x = 0; x < (int)atshed->par; x++) {                       
+	for(x = 0; x < (int)atshed.par; x++) {                       
 	  synth_deterministic_only(ats_sound->amp[x][curr], 
 				   ats_sound->amp[x][next], 
 				   ats_sound->frq[x][curr] * sparams.freq,
@@ -416,22 +417,22 @@ void do_synthesis()
       }	
       case SYNTH_RES: { //residual synthesis only
 	for(x = 0; x < (int)ATSA_CRITICAL_BANDS; x++) {
-	  synth_residual_only(ENG_RMS(ats_sound->band_energy[x][curr], atshed->ws), 
-			      ENG_RMS(ats_sound->band_energy[x][next],atshed->ws) ,
+	  synth_residual_only(ENG_RMS(ats_sound->band_energy[x][curr], atshed.ws), 
+			      ENG_RMS(ats_sound->band_energy[x][next],atshed.ws) ,
 			      res_band_centers[x],frame_samps,x,rospt,&rarray[x]);  
 	}
 	break;
       }
       case SYNTH_BOTH: { //residual and deterministic synthesis  
-	for(x = 0; x < (int)atshed->par; x++) {
+	for(x = 0; x < (int)atshed.par; x++) {
 	  rfreq=(ats_sound->frq[x][curr] < 500.? 50. : ats_sound->frq[x][curr]* bw);
 	  synth_both(ats_sound->amp[x][curr], 
 		     ats_sound->amp[x][next], 
 		     ats_sound->frq[x][curr] * sparams.freq,
 		     ats_sound->frq[x][next] * sparams.freq, 
 		     frame_samps,x, dospt,
-		     ENG_RMS(ats_sound->res[x][curr] * sparams.ramp, atshed->ws), 
-		     ENG_RMS(ats_sound->res[x][next] * sparams.ramp, atshed->ws),
+		     ENG_RMS(ats_sound->res[x][curr] * sparams.ramp, atshed.ws), 
+		     ENG_RMS(ats_sound->res[x][next] * sparams.ramp, atshed.ws),
 		     &rarray[x]);     	  	         
 	}
 	break;
@@ -503,7 +504,7 @@ int locate_frame(int from_frame, float time, float dif)
   
   //These two cases are obvious
   if(time <= ats_sound->time[0][1]) return(0);
-  if(time >= ats_sound->time[0][(int)atshed->fra-1]) return((int)atshed->fra-1);
+  if(time >= ats_sound->time[0][(int)atshed.fra-1]) return((int)atshed.fra-1);
 
   //not obvious cases...
   do{
@@ -524,7 +525,7 @@ int locate_frame(int from_frame, float time, float dif)
   } while(i > 0);
   
   if(frame < 0) frame=0;
-  if(frame > (int)atshed->fra-1) frame=(int)atshed->fra-1;
+  if(frame > (int)atshed.fra-1) frame=(int)atshed.fra-1;
 
   return(frame);
 }

@@ -16,6 +16,7 @@ extern VIEW_PAR h, v;
 extern int floaded;
 extern SELECTION selection, position;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 ///////////////////////////////////////////////////////
 void set_met(GtkWidget *widget, gpointer data)
@@ -74,13 +75,13 @@ void do_smartsel (GtkWidget *widget, gpointer data)
   vertex1=0; vertex2=1; //something IS selected
   //set_avec(selection.to - selection.from);
 
-  for(i=0; i<(int)atshed->par; i++) { //unselect all
+  for(i=0; i<(int)atshed.par; i++) { //unselect all
     selected[i]=FALSE;
   }
 
   for(i=sdata->from; i < sdata->to+1; i+=sdata->step){
 
-    if(i >(int)atshed->par-1 || i >(int)sdata->to) break;
+    if(i >(int)atshed.par-1 || i >(int)sdata->to) break;
     
     for(x=h.viewstart; x < h.viewend; x++) {  //amplitude evaluation
       amp    =ats_sound->amp[i][x];
@@ -280,9 +281,9 @@ void create_sel_dlg (void)
 ////////////////////////////////////////////////////////////////////
 
   
-  from_adj=create_adj(window1, table1, 1., atshed->par,  sdata->from,  1,2,0,1, "1");
-  to_adj  =create_adj(window1, table1, 1., atshed->par,  sdata->to  ,  1,2,1,2, "2");
-  step_adj=create_adj(window1, table1, 1., atshed->par-1,sdata->step,  1,2,2,3, "3");
+  from_adj=create_adj(window1, table1, 1., atshed.par,  sdata->from,  1,2,0,1, "1");
+  to_adj  =create_adj(window1, table1, 1., atshed.par,  sdata->to  ,  1,2,1,2, "2");
+  step_adj=create_adj(window1, table1, 1., atshed.par-1,sdata->step,  1,2,2,3, "3");
   tres_adj=create_adj(window1, table1, -120., 0.,sdata->tres,          1,2,3,4, "4");
 
   gtk_signal_connect (GTK_OBJECT (OK), "clicked",GTK_SIGNAL_FUNC (do_smartsel),window1);

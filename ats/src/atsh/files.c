@@ -29,6 +29,7 @@ extern short smr_done;
 extern int floaded, view_type, scale_type, ned, led, undo;
 extern SELECTION selection, position;
 ATS_SOUND *ats_sound = NULL;
+extern ATS_HEADER atshed;
 
 typedef struct {
   void (*func)();
@@ -488,14 +489,14 @@ void atsin(char *pointer)
   length=my_filelength(atsfin);
   //g_print (" (%d BYTES) \n", length);
   
-  fread(atshed,sizeof(ATS_HEADER),1,atsfin);
+  fread(&atshed,sizeof(ATS_HEADER),1,atsfin);
 
   //here we try to deal with the BIG/LITTLE ENDIAN stuff 
-  if(atshed->mag != magic) { 
-    aux=atshed->mag;		
-    atshed->mag =byte_swap(&aux);
+  if(atshed.mag != magic) { 
+    aux=atshed.mag;		
+    atshed.mag =byte_swap(&aux);
 
-    if((int)atshed->mag != (int)magic) { 
+    if((int)atshed.mag != (int)magic) { 
       Popup("ERROR:ATS MAGIC NUMBER NOT FOUND IN HEADER...");
       *ats_title=0;
       fclose(atsfin);
@@ -508,7 +509,7 @@ void atsin(char *pointer)
     } 
     else {
       need_byte_swap=TRUE;               //now we know that we must swap the bytes 
-      byte_swap_header(atshed,FALSE);    //swap bytes of header data first
+      byte_swap_header(&atshed,FALSE);    //swap bytes of header data first
     }  
  
   }
@@ -524,9 +525,9 @@ void atsin(char *pointer)
   }
 
   sizef =  sizeof(ATS_HEADER) +
-    ((int)atshed->par * (int)atshed->fra * sizeof(double) * n1) +
-    (sizeof(double) * (int)atshed->fra) + 
-    (ATSA_CRITICAL_BANDS * (int)atshed->fra * sizeof(double) * n2);
+    ((int)atshed.par * (int)atshed.fra * sizeof(double) * n1) +
+    (sizeof(double) * (int)atshed.fra) + 
+    (ATSA_CRITICAL_BANDS * (int)atshed.fra * sizeof(double) * n2);
 
 
 
@@ -554,20 +555,20 @@ void atsin(char *pointer)
 
   if(ats_sound != NULL) free_sound(ats_sound);
   ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
-  init_sound(ats_sound, (int)atshed->sr, (int)atshed->fs, (int)atshed->ws, (int)atshed->fra+1, (double)atshed->dur, (int)atshed->par, FILE_HAS_NOISE);
+  init_sound(ats_sound, (int)atshed.sr, (int)atshed.fs, (int)atshed.ws, (int)atshed.fra+1, (double)atshed.dur, (int)atshed.par, FILE_HAS_NOISE);
 
-  selected=(short*)realloc(selected, (int)atshed->par * sizeof(short) + 1);
+  selected=(short*)realloc(selected, (int)atshed.par * sizeof(short) + 1);
     
   //all partials are UNselected by default
-  for(i=0; i<(int)atshed->par; i++) selected[i]=FALSE;
+  for(i=0; i<(int)atshed.par; i++) selected[i]=FALSE;
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  normfac= 1. / atshed->ma;
+  normfac= 1. / atshed.ma;
   ///EVERYTHING SEEMS TO BE OK, THEN LOAD THE DATA...
     fseek(atsfin,sizeof(ATS_HEADER),SEEK_SET);
   
 
-    for(i=0; i<(int)atshed->fra; ++i) {
+    for(i=0; i<(int)atshed.fra; ++i) {
    
       fread(&aux,1,sizeof(double),atsfin);  //read just one time value per frame
    
@@ -575,7 +576,7 @@ void atsin(char *pointer)
       else ats_sound->time[0][i]=aux; 
 
 
-      for (x=0; x<(int)atshed->par; ++x) {
+      for (x=0; x<(int)atshed.par; ++x) {
    
 	fread(&aux,1,sizeof(double),atsfin);  //read amp value for each partial 
 	if(need_byte_swap==TRUE) {
@@ -620,7 +621,7 @@ void atsin(char *pointer)
     //// find out max. dt
     maxtim=0.;
 					  
-    for(i=0; i<(int)atshed->fra - 1; ++i) {
+    for(i=0; i<(int)atshed.fra - 1; ++i) {
       dt=ats_sound->time[0][1+i] - ats_sound->time[0][i];
       if(dt > maxtim) {maxtim=dt;} //find out max. dt.
     }
@@ -653,13 +654,13 @@ void atsin(char *pointer)
     sparams.freq = 1.;
     sparams.max_stretch= 1.;
     sparams.beg = 0.;
-    sparams.end = ats_sound->time[0][(int)atshed->fra-1] + ats_sound->time[0][1];
+    sparams.end = ats_sound->time[0][(int)atshed.fra-1] + ats_sound->time[0][1];
     sparams.allorsel=FALSE;
 
     //initialization of smart selection data
 
     sdata->from=  1;
-    sdata->to=(int)atshed->par; 
+    sdata->to=(int)atshed.par; 
     sdata->step=  1;
     sdata->tres=  -96.;
     sdata->met =  FALSE;
@@ -704,14 +705,14 @@ void atsout(char *pointer)
   }
 
   //write header
-  fwrite(atshed,1,sizeof(ATS_HEADER),atsfin);
+  fwrite(&atshed,1,sizeof(ATS_HEADER),atsfin);
   //write data
-  for(i=0; i<(int)atshed->fra; ++i) {
+  for(i=0; i<(int)atshed.fra; ++i) {
   
     aux=(double)ats_sound->time[0][i];
     fwrite(&aux,1,sizeof(double),atsfin);
  
-    for (x=0; x<(int)atshed->par; ++x) {
+    for (x=0; x<(int)atshed.par; ++x) {
 
       aux=(double)ats_sound->amp[x][i]; 
       fwrite(&aux,1,sizeof(double),atsfin); 

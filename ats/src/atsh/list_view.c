@@ -8,6 +8,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 extern char ats_title[];
 extern SELECTION selection, position;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 /////////////////////////////////////////////////////////////////////////////
 void from_now(GtkWidget *widget, GtkAdjustment *adj)
@@ -55,7 +56,7 @@ void redraw_screen()
 {
 int temp=0, i;
  
- for(i=0; i<(int)atshed->par; i++) { //check whether something is selected
+ for(i=0; i<(int)atshed.par; i++) { //check whether something is selected
    if (selected[i]==TRUE) {
      ++temp; //it is...
      break;
@@ -84,7 +85,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
  gtk_clist_clear((GtkCList*)clist);
  gtk_clist_freeze((GtkCList*)clist); 
     
- for ( indx=0 ; indx < (int)atshed->par ; indx++ ) {
+ for ( indx=0 ; indx < (int)atshed.par ; indx++ ) {
           
       *nbuf=*abuf=*fbuf=*pbuf=*sbuf=0;
       sprintf(nbuf," %d ",indx+1);
@@ -124,7 +125,7 @@ void delete_window (GtkWidget *widget, gpointer data)
 {
 int temp=0, i;
  
- for(i=0; i<(int)atshed->par; i++) { //check whether something is selected
+ for(i=0; i<(int)atshed.par; i++) { //check whether something is selected
     if (selected[i]==TRUE) {
       ++temp;
       break; //it is...
@@ -209,7 +210,7 @@ int list_view()
     
     init_str();
     offset=0;
-    maxval=(atshed->par > 35.? 35:(int)atshed->par ); //clip the max val for clist to 35.
+    maxval=(atshed.par > 35.? 35:(int)atshed.par ); //clip the max val for clist to 35.
     window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_set_usize(GTK_WIDGET(window),450,22 * maxval);
 
@@ -272,7 +273,7 @@ int list_view()
  
 
     //SCALER   
-    adj1 = gtk_adjustment_new (0.0, 0.0,atshed->fra, 1., 10., 1.0);
+    adj1 = gtk_adjustment_new (0.0, 0.0,atshed.fra, 1., 10., 1.0);
     hbox3 = gtk_hbox_new(FALSE, 0);
     gtk_adjustment_set_value(GTK_ADJUSTMENT(adj1), selection.from);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, TRUE, 0);

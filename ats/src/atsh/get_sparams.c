@@ -11,6 +11,7 @@ extern SPARAMS sparams;
 extern int floaded;
 extern SELECTION selection, position;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 void allorsel(GtkWidget *widget, gpointer data)
 {
@@ -24,7 +25,7 @@ void allorsel(GtkWidget *widget, gpointer data)
     sparams.allorsel=FALSE;
     if(SOMETHING_SELECTED) {
       sparams.beg=0.;
-      sparams.end=ats_sound->time[0][(int)atshed->fra - 1] + ats_sound->time[0][1];
+      sparams.end=ats_sound->time[0][(int)atshed.fra - 1] + ats_sound->time[0][1];
     }
   }
 }

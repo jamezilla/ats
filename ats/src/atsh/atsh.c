@@ -3,7 +3,7 @@ ATSH.C
 Oscar Pablo Di Liscia / Juan Pampin
  */
 
-#ifdef HAVE_CONFIG_H    //WE NEED THIS TO MAKE UNDER WINDOWS 
+#ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
@@ -44,7 +44,7 @@ GtkWidget *hruler, *vruler;
 UNDO_DATA *undat;
 GtkWidget **entry;
 
-
+extern ATS_HEADER atshed;
 extern float *avec, *fvec;
 SELECTION selection, position;
 VIEW_PAR h, v;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     /* --- Initialize tooltips. --- */
     tooltips = gtk_tooltips_new();
     /* --- allocate memory for global data --- */
-    atshed =(ATS_HEADER*)malloc(sizeof(ATS_HEADER));
+    //    atshed =(ATS_HEADER*)malloc(sizeof(ATS_HEADER));
 
     undat =(UNDO_DATA*)malloc(sizeof(UNDO_DATA));
 
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 gint EndProgram ()
 {
   
-  free(atshed);
+  //  free(atshed);
   free(sine_table);
   if(!entry)g_free(entry);
 
@@ -405,18 +405,18 @@ void Create_menu (GtkWidget *menubar)
 void init_scalers(gint show)
 {
   if(floaded) {
-    gtk_ruler_set_range (GTK_RULER (hruler),1.,atshed->fra, 1.,atshed->fra);
+    gtk_ruler_set_range (GTK_RULER (hruler),1.,atshed.fra, 1.,atshed.fra);
     //FROM frame value
     h.viewstart=1;
-    h.viewend=(int)atshed->fra;
+    h.viewend=(int)atshed.fra;
     h.prev = h.diff = h.viewend - h.viewstart;      
     h_setup();
    
-    gtk_ruler_set_range (GTK_RULER (vruler),((atshed->mf*ATSH_FREQ_OFFSET) - 1.)/1000., 
-                         1., 0.,((atshed->mf*ATSH_FREQ_OFFSET )- 1.)/1000.);
+    gtk_ruler_set_range (GTK_RULER (vruler),((atshed.mf*ATSH_FREQ_OFFSET) - 1.)/1000., 
+                         1., 0.,((atshed.mf*ATSH_FREQ_OFFSET )- 1.)/1000.);
     v.viewstart=1;
-    v.viewend=(int)(atshed->mf*ATSH_FREQ_OFFSET);
-    v.prev = v.diff = (int)(atshed->mf*ATSH_FREQ_OFFSET);
+    v.viewend=(int)(atshed.mf*ATSH_FREQ_OFFSET);
+    v.prev = v.diff = (int)(atshed.mf*ATSH_FREQ_OFFSET);
     v_setup();
   }
 
@@ -451,7 +451,7 @@ void h_scroll(GtkObject *adj, gpointer data)
       h.viewend    = h.viewstart + ((int)GTK_ADJUSTMENT(hadj2)->value)-1;  
       h.diff       = h.viewend - h.viewstart;      
       
-      GTK_ADJUSTMENT(hadj2)->upper= (atshed->fra - GTK_ADJUSTMENT(hadj1)->value) + 1;
+      GTK_ADJUSTMENT(hadj2)->upper= (atshed.fra - GTK_ADJUSTMENT(hadj1)->value) + 1;
       gtk_adjustment_changed(GTK_ADJUSTMENT(hadj2));
       set_hruler((double)h.viewstart, (double)h.viewend, (double)h.viewstart, (double)h.diff);
       break;
@@ -460,7 +460,7 @@ void h_scroll(GtkObject *adj, gpointer data)
     {
       h.viewend    = h.viewstart +((int)GTK_ADJUSTMENT(hadj2)->value)-1;
       h.diff=h.viewend - h.viewstart;
-      GTK_ADJUSTMENT(hadj1)->upper=(atshed->fra - GTK_ADJUSTMENT(hadj2)->value) + 1;
+      GTK_ADJUSTMENT(hadj1)->upper=(atshed.fra - GTK_ADJUSTMENT(hadj2)->value) + 1;
       gtk_adjustment_changed (GTK_ADJUSTMENT(hadj1));
       set_hruler((double)h.viewstart, (double)h.viewend, (double)h.viewstart, (double)h.diff);
       break;
@@ -477,8 +477,8 @@ void h_setup(void)
   gtk_adjustment_set_value(GTK_ADJUSTMENT(hadj1),1.);
   //size of view
   GTK_ADJUSTMENT(hadj2)->lower=1.;
-  GTK_ADJUSTMENT(hadj2)->upper=atshed->fra;
-  gtk_adjustment_set_value(GTK_ADJUSTMENT(hadj2),atshed->fra);
+  GTK_ADJUSTMENT(hadj2)->upper=atshed.fra;
+  gtk_adjustment_set_value(GTK_ADJUSTMENT(hadj2),atshed.fra);
   draw_pixm();
 }
 /////////////////////////////////////////////////////////////////////////////////
@@ -493,7 +493,7 @@ void v_scroll(GtkObject *adj, gpointer data)
       v.viewend    = (v.viewstart + ((int)GTK_ADJUSTMENT(vadj2)->value));  
       v.diff       = ((int)GTK_ADJUSTMENT(vadj2)->value);      
       
-      GTK_ADJUSTMENT(vadj2)->upper= (atshed->mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj1)->value ;
+      GTK_ADJUSTMENT(vadj2)->upper= (atshed.mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj1)->value ;
       gtk_adjustment_changed(GTK_ADJUSTMENT(vadj2));
       if(VIEWING_DET) {
 	gtk_ruler_set_range(GTK_RULER (vruler),(float)v.viewend/1000.,(float)v.viewstart/1000.,
@@ -504,7 +504,7 @@ void v_scroll(GtkObject *adj, gpointer data)
   case 2: 
     v.viewend    = v.viewstart +((int)GTK_ADJUSTMENT(vadj2)->value);
     v.diff       = (int)GTK_ADJUSTMENT(vadj2)->value; 
-    GTK_ADJUSTMENT(vadj1)->upper=(atshed->mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj2)->value;
+    GTK_ADJUSTMENT(vadj1)->upper=(atshed.mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj2)->value;
     gtk_adjustment_changed (GTK_ADJUSTMENT(vadj1));
     if(VIEWING_DET) {
       gtk_ruler_set_range (GTK_RULER (vruler),(float)v.viewend/1000.,(float)v.viewstart/1000.,
@@ -525,8 +525,8 @@ void v_setup()
   gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj1),1.);
   //size of view
   GTK_ADJUSTMENT(vadj2)->lower=1.;
-  GTK_ADJUSTMENT(vadj2)->upper=(atshed->mf* ATSH_FREQ_OFFSET)-1.;//ojo
-  gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj2),(atshed->mf* ATSH_FREQ_OFFSET));
+  GTK_ADJUSTMENT(vadj2)->upper=(atshed.mf* ATSH_FREQ_OFFSET)-1.;//ojo
+  gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj2),(atshed.mf* ATSH_FREQ_OFFSET));
   draw_pixm();
 }
 
@@ -586,7 +586,7 @@ void set_time_env(ENVELOPE *tim, int do_dur)
 {    
 
   if(NOTHING_SELECTED) {
-    tim->ymax=(float)ats_sound->time[0][(int)atshed->fra-1];
+    tim->ymax=(float)ats_sound->time[0][(int)atshed.fra-1];
     tim->ymin=0.;
   }
   else {
@@ -615,9 +615,9 @@ void set_time_env(ENVELOPE *tim, int do_dur)
 void normalize_amplitude(GtkWidget *widget, gpointer data)
 {
   int i, x, nValue=0;
-  float normval= 1. / (float)atshed->ma;
+  float normval= 1. / (float)atshed.ma;
   float maxamp=0.;
-  int todo= aveclen * 2 * (int)atshed->par;
+  int todo= aveclen * 2 * (int)atshed.par;
 
   if(floaded==FALSE || view_type==RES_VIEW) { return; }
   if(NOTHING_SELECTED) {return;}
@@ -627,7 +627,7 @@ void normalize_amplitude(GtkWidget *widget, gpointer data)
 
   //find out max amplitude of selection
   for(i=selection.from; i < selection.from+aveclen; ++i) {
-    for(x=0; x < (int)atshed->par ; ++x) {
+    for(x=0; x < (int)atshed.par ; ++x) {
       if(ats_sound->amp[x][i] >= maxamp) {
 	maxamp=ats_sound->amp[x][i];  
       }
@@ -640,7 +640,7 @@ void normalize_amplitude(GtkWidget *widget, gpointer data)
 
   normval= 1. / maxamp;
     for(i=selection.from; i < selection.from+aveclen; ++i) {
-      for(x=0; x < (int)atshed->par ; ++x) {
+      for(x=0; x < (int)atshed.par ; ++x) {
 	if(selected[x]== TRUE) {
 	  ats_sound->amp[x][i]*=normval;  
 	}
@@ -649,7 +649,7 @@ void normalize_amplitude(GtkWidget *widget, gpointer data)
       }
     }
 
-    atshed->ma=(double)1.;
+    atshed.ma=(double)1.;
 
     EndProgress();
     draw_pixm();

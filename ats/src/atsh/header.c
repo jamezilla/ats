@@ -6,6 +6,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "atsh.h"
 extern char ats_title[];
 extern int floaded;
+ATS_HEADER atshed;
 
 void show_header (void)
 {
@@ -15,9 +16,9 @@ void show_header (void)
 
   if(floaded) {
     siz = sizeof(double);
-    fra = (int)atshed->fra;
+    fra = (int)atshed.fra;
     len = sizeof(ATS_HEADER) + (siz * fra) + 
-      ((int)atshed->par * fra * siz * (FILE_HAS_PHASE ? 3 : 2)) +
+      ((int)atshed.par * fra * siz * (FILE_HAS_PHASE ? 3 : 2)) +
       (FILE_HAS_NOISE ? (ATSA_CRITICAL_BANDS * fra * siz) : 0);
 
     window = gtk_window_new(GTK_WINDOW_DIALOG);
@@ -39,48 +40,48 @@ void show_header (void)
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Sample Rate: %d Hz",(int)atshed->sr); 
+    sprintf(str,"Sample Rate: %d Hz",(int)atshed.sr); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Frame Size: %d samples (%4.3f s)", (int)atshed->fs, atshed->fs/atshed->sr); 
+    sprintf(str,"Frame Size: %d samples (%4.3f s)", (int)atshed.fs, atshed.fs/atshed.sr); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Window Size: %d",(int)atshed->ws); 
+    sprintf(str,"Window Size: %d",(int)atshed.ws); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Partials per Frame: %d",(int)atshed->par); 
+    sprintf(str,"Partials per Frame: %d",(int)atshed.par); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Frames: %d",(int)atshed->fra); 
+    sprintf(str,"Frames: %d",(int)atshed.fra); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Duration: %7.3f s",(float)atshed->dur); 
+    sprintf(str,"Duration: %7.3f s",(float)atshed.dur); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Maximum Amplitude: %5.3f",(float)atshed->ma); 
+    sprintf(str,"Maximum Amplitude: %5.3f",(float)atshed.ma); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Maximum Frequency: %7.2f Hz",(float)atshed->mf); 
+    sprintf(str,"Maximum Frequency: %7.2f Hz",(float)atshed.mf); 
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);
 
-    sprintf(str,"Type: %d",(int)atshed->typ); 
-    switch ((int)atshed->typ) {
+    sprintf(str,"Type: %d",(int)atshed.typ); 
+    switch ((int)atshed.typ) {
     case 1:
       strcat(str, " (Amplitude and Frequency)");
       break;

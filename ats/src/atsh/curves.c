@@ -13,6 +13,7 @@ extern SELECTION selection, position;
 float *avec = NULL, *fvec = NULL;
 int aveclen = 0;
 extern ATS_SOUND *ats_sound;
+extern ATS_HEADER atshed;
 
 void set_avec(int len);
 
@@ -164,7 +165,7 @@ void setmax_time(GtkWidget *widget, ENVELOPE *data)
   val=(float)atof(str);
   data->ymax=val;
   *str=0;
-  sprintf(str," %12.5f",ats_sound->time[0][(int)atshed->fra-1] );
+  sprintf(str," %12.5f",ats_sound->time[0][(int)atshed.fra-1] );
   stime=(float)atof(str);
   
   if(val  > stime || val <= 0.) {
@@ -212,8 +213,8 @@ void setmin(GtkWidget *widget, ENVELOPE *data)
 void do_fredit (GtkWidget *widget, ENVELOPE *data)
 {
   int i,x;
-  float niq=atshed->sr / 2.;
-  int nValue=0, todo=aveclen * (int)atshed->par;
+  float niq=atshed.sr / 2.;
+  int nValue=0, todo=aveclen * (int)atshed.par;
 
   StartProgress("Changing Frequency...",FALSE);
   set_avec(selection.to - selection.from);
@@ -221,15 +222,15 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
   
   backup_edition(FRE_EDIT);
   if(FILE_HAS_NOISE) {
-    atshed->typ = 3.;    //delete phase information
+    atshed.typ = 3.;    //delete phase information
   }
   else {
-    atshed->typ = 1.; 
+    atshed.typ = 1.; 
   }
   
   sparams.upha=FALSE;
  
-  for(i=0; i < (int)atshed->par;  ++i) {
+  for(i=0; i < (int)atshed.par;  ++i) {
     for(x=0; x < aveclen; ++x) {
       if(selected[i]== TRUE) {
 	if(data->tflag==TRUE) { //SCALE
@@ -243,12 +244,12 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
 	//clip freq. if out of range 
 	if(ats_sound->frq[i][x+selection.from] < 0.)
 	  ats_sound->frq[i][x+selection.from]=0.;
-	if(ats_sound->frq[i][x+selection.from] > atshed->mf) 
-	  ats_sound->frq[i][x+selection.from]=atshed->mf;
+	if(ats_sound->frq[i][x+selection.from] > atshed.mf) 
+	  ats_sound->frq[i][x+selection.from]=atshed.mf;
 	
       }
-      if(ats_sound->frq[i][x+selection.from] > atshed->mf) {
-	atshed->mf=ats_sound->frq[i][x+selection.from];
+      if(ats_sound->frq[i][x+selection.from] > atshed.mf) {
+	atshed.mf=ats_sound->frq[i][x+selection.from];
       } //update max.freq.
       ++nValue;
       UpdateProgress(nValue,todo);
@@ -271,7 +272,7 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
 void do_amedit (GtkWidget *widget, ENVELOPE *data)
 {
   int i, x;
-  int nValue=0, todo=aveclen * (int)atshed->par;
+  int nValue=0, todo=aveclen * (int)atshed.par;
 
 
   StartProgress("Changing Amplitude...", FALSE);
@@ -279,7 +280,7 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
   gtk_my_curve_get_vector(GTK_MY_CURVE(data->curve),aveclen,avec);    
 
     backup_edition(AMP_EDIT);
-    for(i=0; i < (int)atshed->par;  ++i) {
+    for(i=0; i < (int)atshed.par;  ++i) {
       for(x=0; x < aveclen; ++x) {
 	if(selected[i]== TRUE) {
 	  if(data->tflag==TRUE) { //SCALE
@@ -294,8 +295,8 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
 	  if(ats_sound->amp[i][x+selection.from] < 0.) 
 	    ats_sound->amp[i][x+selection.from]=0.;
 	}
-	if(ats_sound->amp[i][x+selection.from] > atshed->ma) {
-	  atshed->ma=ats_sound->amp[i][x+selection.from];
+	if(ats_sound->amp[i][x+selection.from] > atshed.ma) {
+	  atshed.ma=ats_sound->amp[i][x+selection.from];
 	} //update max.amp.
 	++nValue;
 	UpdateProgress(nValue,todo);

@@ -12,6 +12,7 @@ extern short smr_done;
 extern char undo_file[];
 int ned = 0, led = 1, undo = TRUE;
 extern SELECTION selection, position;
+extern ATS_HEADER atshed;
 
 ////////////////////////////////////////////////////////////////////////////
 void do_undo(GtkWidget *widget,gpointer data)
@@ -40,14 +41,14 @@ void do_undo(GtkWidget *widget,gpointer data)
   //find out where data starts and store it in seek_point
   
   for(i=0; i < led; ++i){
-    seek_point += (int)(atshed->par * sizeof(short));
+    seek_point += (int)(atshed.par * sizeof(short));
     seek_point += (int)((undat[i].to - undat[i].from) + 1 ) * sizeof(double) * undat[i].nsel;
   }
 
   //go in seek_point bytes 
   fseek(pundo, (long int)seek_point, SEEK_SET);
   //read the backup data
-  for(i=0; i < (int)atshed->par; ++i) {
+  for(i=0; i < (int)atshed.par; ++i) {
     if(fread(&shaux,1,sizeof(short),pundo)==0) {
       Popup("Could not read on backup file: \nUNDO DISABLED");
       fclose(pundo);
@@ -61,7 +62,7 @@ void do_undo(GtkWidget *widget,gpointer data)
   
     for(i=undat[led].from; i < undat[led].to+1; ++i) { 
     
-      for(x = 0; x < (int)atshed->par; ++x) {
+      for(x = 0; x < (int)atshed.par; ++x) {
 	if(selected[x]==TRUE) {
 	  if(fread(&daux,1,sizeof(double),pundo)==0) {
 	    Popup("Could not read on backup file:(2) \nUNDO DISABLED");
@@ -128,7 +129,7 @@ fseek(pundo, 0L, SEEK_END);
  undat[ned].nsel  =0;
  //g_print("saving(%d): from=%d to=%d",ned,undat[ned].from,undat[ned].to);
  //write first the selected partials data
- for(i = 0; i < (int)atshed->par; ++i) {
+ for(i = 0; i < (int)atshed.par; ++i) {
    shaux=selected[i];
    if(selected[i]==TRUE) {
      ++undat[ned].nsel;
@@ -145,7 +146,7 @@ fseek(pundo, 0L, SEEK_END);
  //ONLY selected partials data are written 
    for(i=0; i < aveclen; ++i) {
      
-     for(x=0; x < (int)atshed->par; ++x) {
+     for(x=0; x < (int)atshed.par; ++x) {
        if (selected[x]==TRUE){ 
 	 switch (undat[ned].ed_kind) {
 	 case AMP_EDIT:

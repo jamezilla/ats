@@ -89,9 +89,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define SWAP_INT(a,b)\
               temp=a; a=b; b=temp;
 
-#define FILE_HAS_PHASE atshed->typ==2. || atshed->typ==4. 
-#define FILE_HAS_NOISE atshed->typ==3. || atshed->typ==4.
-#define FILE_WITHOUT_NOISE atshed->typ==1. || atshed->typ==2. 
+#define FILE_HAS_PHASE atshed.typ==2. || atshed.typ==4. 
+#define FILE_HAS_NOISE atshed.typ==3. || atshed.typ==4.
+#define FILE_WITHOUT_NOISE atshed.typ==1. || atshed.typ==2. 
 #define NOTHING_SELECTED   vertex1==FALSE && vertex2==FALSE
 #define STARTING_SELECTION vertex1==TRUE && vertex2==FALSE
 #define SOMETHING_SELECTED vertex1==FALSE && vertex2==TRUE
@@ -210,7 +210,7 @@ FILE *atsfin, *soundin, *soundout;
 //GtkWidget     *win_main;
 GtkWidget     *statusbar;
 
-ATS_HEADER *atshed;
+
 //SPARAMS *sparams;
 //SELECTION *selection, *position;
 ENVELOPE  *ampenv, *freenv, *timenv;
