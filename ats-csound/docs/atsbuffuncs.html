@@ -1,0 +1,152 @@
+<html><head>
+
+<title>atsbufread, atscross, atsinterpread, atspartialtap</title>
+
+<body bgcolor="white">
+Signal Generators: STFT Resynthesis (Vocoding)
+
+<hr size="1" color="#A9A9A9" noshade="noshade">
+
+<h2>atsbufread, atscross, atsinterpread, atspartialtap</h2>
+
+<pre>            <strong>atsbufread</strong>    ktimepnt, kfmod, iatsfile, ipartials[, ipartialoffset, ipartialincr]</pre>
+<pre> ar         <strong>atscross</strong>      ktimepnt, kfmod, iatsfile, ifn, kmylev, kbuflev, ipartials[, ipartialoffset, ipartialincr]</pre>
+<pre> kamp       <strong>atsinterpread</strong> kfreq</pre>
+<pre> kfrq, kamp <strong>atspartialtap</strong> ipartialnum</pre>
+
+<hr size="2" color="#A9A9A9" noshade="noshade">
+<h3>Description</h3>
+
+<p>
+
+  <strong>atsbufread</strong> is based on pvbufread by Richard Karpen.
+  <strong>atscross</strong>, <strong>atsinterpread</strong> and
+  <strong>atspartialtap</strong> are all dependent on
+  <strong>atsbufread</strong> just as pvcross and pvinterp are on pvbufread.
+  <strong>atsbufread</strong> reads data from and ATS data file and stores it in
+  an internal data table of frequency, amplitude pairs.  The data stored by an
+  <strong>atsbufread</strong> can only be acessed by other unit generators, and
+  therfore, due to the architecture of Csound, an <strong>atsbufread</strong>
+  must come before (but not nessisarilly directly) any dependent unit generator.
+  Besides the fact that <strong>atsbufread</strong> doesn't output any data
+  directly, it works almost exactly as <a
+  href="atssynth.html"><strong>atsadd</strong></a>.  The ugen uses a time
+  pointer (<em>ktimepnt</em>) to index the data in time, <em>ipartials</em>,
+  <em>ipartialoffset</em> and <em>ipartialincr</em> to select which partials to
+  store in the table and <em>kfmod</em> to scale partials in frequency.
+
+</p>
+
+<p>
+  
+  <strong>atscross</strong> uses data from an ATS analysis file (indicated by
+  <em>iatsfile</em>) and data from an <strong>atsbufread</strong> to perform
+  cross synthesis.  <strong>atscross</strong> uses <em>ktimepnt</em>,
+  <em>kfmod</em>, <em>ipartials</em>, <em>ipartialoffset</em> and
+  <em>ipartialincr</em> just like <a href="atssynth.html">
+  <strong>atsadd</strong> </a>.  <strong>atscross</strong> synthesizes a
+  sinewave for each partial selected by the user and uses the frequency of that
+  partial (after scaleing in frequency by <em>kfmod</em>) to index the table
+  created by <strong>atsbufread</strong>.  Interpolation is used to get
+  inbetween values.  <strong>atscross</strong> uses the sum of the amplitude
+  data from its ATS file (scaled by <em>kmylev</em>) and the amplitude data
+  gained from an <strong>atsbufread</strong> (scaled by <em>kbuflev</em>) to
+  scale the ampiltude of each partial it synthesizes.  Setting <em>kmylev</em>
+  to one and <em>kbuflev</em> to zero will make <strong>atscross</strong> act
+  exactly like <strong>atsadd</strong>.  Setting <em>kmylev</em> to zero and
+  <em>kbuflev</em> to one will produce a sound that has all the partials
+  selected by the <strong>atscross</strong> ugen, but with amplitudes taken from
+  an <strong>atsbufread</strong>.  The time pointers of the
+  <strong>atsbufread</strong> and <strong>atscross</strong> do not need to be
+  the same.
+
+</p>
+
+<p>
+
+  <strong>atsinterpread</strong> takes a frequency value (<em>kfreq</em> in Hz).
+  This frequency is used to index the data of an <strong>atsbufread</strong>.
+  The return value is an amplitude gained from the <strong>atsbufread</strong>
+  after interpolation.  <strong>atsinterpread</strong> allows a user to
+  determine the frequency envelople of any <strong>atsbufread</strong>.  This
+  data could be useful for an number of reasons, one might be performing cross
+  synthesis of data from an ATS file and non ATS data.
+
+</p>
+
+<p>
+
+  <strong>atspartialtap</strong> takes a partial number and returns a frequency,
+  amplitude pair.  The frequency and amplitude data comes from an
+  <strong>atsbufread</strong> opcode.  This is more restricted version of <a
+  href="atsread.html"><strong>atsread</strong></a>, since each
+  <strong>atsread</strong> opcode has its own independent time pointer, and
+  <strong>atspartialtap</strong> is restricted to the data given by an
+  <strong>atsbufread</strong>.  Its simplicity is its attractive feature.
+
+</p>
+
+<h3>Initialization</h3>
+
+<p><em>ktimepnt</em> &#8211; a time pointer for reading through the ats
+file</p>
+
+<p><em>kfmod</em> &#8211; an input for performing pitch transposition or
+frequency modulation on all of the synthesized partials, if no fm or pitch
+change is desired then use a 1 for this value</p>
+
+<p><em>iatsfile</em> &#8211; integer or character-string denoting a
+control-file derived from ATS analysis of an audio signal. An integer denotes
+the suffix of a file <em>ats.m</em>; a character-string (in double quotes)
+gives a filename, optionally a full pathname. If not full-path, the file is
+sought first in the current directory, then in the one given by the environment
+variable <strong>SADIR</strong> (if defined).  </p>
+
+<p><em>ifn</em> &#8211; table number of a stored function containing a sine
+wave for atsadd and a cosine for atsaddnz (see examples below for more
+info)</p>
+
+<p><em>ipartials / ibands</em> &#8211; number of partials or noise bands that
+will be used in the resynthesis (the noise has a maximum of 25 bands)</p>
+
+<p><em>ipartialoffset / ibandoffset</em> (optional) &#8211; is the first
+partial or noise band used (defaults to 0).  </p>
+
+<p><em>ipartialincr / ibandincr</em> (optional) &#8211; sets an increment by
+which these synthesis opcodes counts up from
+<em>ipartialoffset/ibandoffset</em> for <em>ibins</em> components in the
+re-synthesis (defaults to 1).  </p>
+
+<p><em>kmylev</em> scales the atscross component of the frequency spectrum
+applied to the partials from the ATS file indicated by the
+<strong>atscross</strong> opcode.  The frequency spectrum infromation comes
+from the <strong>atscross</strong> ATS file.  A value of 1 (and 0 for kbuflev) gives the same results as
+atsadd.</p>
+
+<p><em>kbuflev</em> scales the atsbufread componenet of the frequency spectrum
+applied to the partials from the ATS file indicated by the
+<strong>atscross</strong> opcode.  The frequency spectrum infromation comes
+from the <strong>atsbufread</strong> ATS file.  A value of 1 (and 0 for kmylev)
+results in partials that have frequency information from the ATS file given by
+the <strong>atscross</strong>, but amplitudes imposed by data from the ATS file
+given by <strong>atsbufread</strong></p>
+
+<p><em>kfreq</em> is a frequency value (given in Hertz) used by
+<strong>atsinterpread</strong> as in index into the table produced by an
+<strong>atsbufread</strong> </p>
+
+<p><em>ipartialnum</em> indicates the partial that the
+<strong>atspartialtap</strong> opcode should read from an
+<strong>atsbufread</strong>.  </p>
+
+<h3>Performance</h3>
+<p><em>ktimpnt</em> and <em>kfmod</em> are used in the same way as in
+<strong>pvoc</strong>.  </p>
+
+<h3>Examples</h3>
+
+<h3>Author </h3>
+<p>Alex Norman (an edited version of Richard Karpen's pvadd documentation)<br>
+Seattle, Wash<br>
+2004<br>
+</body></html>
