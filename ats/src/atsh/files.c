@@ -734,37 +734,6 @@ void atsout(char *pointer)
   return;
 }
 ////////////////////////////////////////////////////////////////////////////
-// void stringinit(void)
-// {
-//   in_title     =(char*)malloc(1024*sizeof(char));
-//   out_title    =(char*)malloc(1024*sizeof(char));
-//   out_ats_title=(char*)malloc(1024*sizeof(char));
-//   ats_title    =(char*)malloc(1024*sizeof(char));
-//   undo_file     =(char*)malloc(1024*sizeof(char));
-//   apf_title    =(char*)malloc(1024*sizeof(char));
-//   res_title    =(char*)malloc(1024*sizeof(char));
-
-//   *in_title=*out_title=*out_ats_title=*ats_title=*undo_file=*res_title=0;
-
-//   return;
-// }
-////////////////////////////////////////////////////////////////////////////
-// void stringfree()
-// {
-//   free(in_title);
-//   free(out_title);
-//   free(out_ats_title);
-//   free(ats_title);
-//   free(undo_file);
-//   free(apf_title);
-//   free(res_title);
-// }
-////////////////////////////////////////////////////////////////////////////
-// void edit_audio()
-// {
-//   return;
-// }
-////////////////////////////////////////////////////////////////////////////
 void getap(char *pointer)
 {
   FILE *in;

@@ -60,15 +60,10 @@ void set_params(void)
   sparams.upha=FALSE;
 }
 
-//void delete_event (GtkWidget *widget, gpointer data)
-//{
-// set_params();//retrieve parameters from entry fields
-//  // do_synthesis();
-//}
-
 void ok_button(GtkWidget *widget, gpointer data)
 {
   set_params();  /* retrieve parameters from entry fields */
+
   gtk_widget_destroy(GTK_WIDGET(data));
   do_synthesis();
 }
@@ -154,18 +149,6 @@ void get_sparams(void)
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), voidbox, FALSE, FALSE, 3);
     gtk_widget_show(voidbox);
     
-//     /* Create the toggle button for Partials */
-//     tlabel1 = gtk_label_new ("Selected Partials Only");
-//     button= gtk_toggle_button_new();
-//     gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(button),sparams.allorsel);
-//     gtk_signal_connect (GTK_OBJECT (button), "toggled",
-//                         GTK_SIGNAL_FUNC (allorsel),NULL);
-//     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->vbox), button, FALSE, FALSE, 2);
-//     gtk_container_add (GTK_CONTAINER (button), tlabel1);
-//     gtk_widget_show (tlabel1);
-//     gtk_widget_show (button);
-//     allorsel(GTK_WIDGET(button), NULL);
-
     /* Create the check button for Partials */
     button = gtk_check_button_new_with_label("Selected Partials Only");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), sparams.allorsel);

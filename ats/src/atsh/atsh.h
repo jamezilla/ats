@@ -391,17 +391,17 @@ void getap(char *pointer);
 void savap(char *pointer);
 
 //ANALYSIS WINDOW FUNCTIONS
-void retrieve_file_names(void);
+//void retrieve_file_names(void);
 void change_ats_type(GtkWidget *widget, gpointer data);
 void select_out_atsfile(GtkWidget *widget, gpointer *data);
 void select_in_soundfile(GtkWidget *widget, gpointer *data);
-void set_defaults(GtkWidget *widget, gpointer *data);
+//void set_defaults(GtkWidget *widget, gpointer *data);
 void unload_ats_file(void);
-void change_win_type(GtkWidget *widget, gpointer data);
+//void change_win_type(GtkWidget *widget, gpointer data);
 GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which);
-void set_aparam(GtkWidget *widget, gpointer data);
+//void set_aparam(GtkWidget *widget, gpointer data);
 void do_analysis (GtkWidget *widget, gpointer data);
-void destroy_wanalysis (GtkWidget *widget, gpointer data);
+void cancel_dialog (GtkWidget *widget, gpointer data);
 GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, 
 			GtkWidget *window ,GtkWidget *table, char *ID);
 GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID, float value, char *strbuf, int isint, int width);
