@@ -163,10 +163,10 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   anargs->fft_size = ppp2(2*anargs->win_size);
 
   /* allocate memory for sound, we read the whole sound in memory */
-  /*  bufs = (mus_sample_t **)malloc(sizeof(mus_sample_t**));
-      bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t)); */
-  bufs = malloc(sizeof(mus_sample_t*));
-  bufs[0] = malloc(sflen * sizeof(mus_sample_t));
+  bufs = (mus_sample_t **)malloc(sizeof(mus_sample_t*));
+  bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
+  /*  bufs = malloc(sizeof(mus_sample_t*));
+      bufs[0] = malloc(sflen * sizeof(mus_sample_t)); */
   /* make our window */
   window = make_window(anargs->win_type, anargs->win_size);
   /* get window norm */
