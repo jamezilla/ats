@@ -16,7 +16,8 @@ void v_scroll(GtkObject *adj,gpointer data);
 void v_setup();
 
 GtkTooltips   *tooltips;
-GtkWidget     *toolbar;
+GtkWidget     *toolbar, *statusbar;
+gint context_id;
 GtkWidget     *main_graph;
 GtkWidget     *label;
 char *out_tittle;
@@ -243,41 +244,41 @@ void CreateMainWindow (char *cmdl_filename)
     gtk_signal_connect (GTK_OBJECT (win_main), "delete_event",GTK_SIGNAL_FUNC (EndProgram), NULL);
     /* --- Vbox and Hbox --- */
     hbox_main = gtk_hbox_new (FALSE, 0);
-    gtk_widget_ref (hbox_main);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main", hbox_main,
-                            (GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (hbox_main);
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main", hbox_main,
+//                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (hbox_main);
     gtk_container_add (GTK_CONTAINER (win_main), hbox_main);
 
      /////////////////////////////////
     vbox_main = gtk_vbox_new (FALSE, 0);
-    gtk_widget_ref (vbox_main);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_main", vbox_main,
-                            (GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (vbox_main);
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_main", vbox_main,
+//                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (vbox_main);
     gtk_box_pack_start (GTK_BOX (hbox_main), vbox_main, TRUE, TRUE, 0);
     
     ////////////////////////////////
     vbox_main2 = gtk_vbox_new (FALSE, 0);
-    gtk_widget_ref (vbox_main2);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_main2", vbox_main2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (vbox_main2);
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_main2", vbox_main2,
+//                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (vbox_main2);
     gtk_box_pack_start (GTK_BOX (hbox_main), vbox_main2, FALSE, FALSE,0); 
     ///////////////////////////////
     ///////////////////////////////
     hbox_main1 = gtk_hbox_new (FALSE, 0);////DO NOT CHANGE!!!
-    gtk_widget_ref (hbox_main1);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main1", hbox_main1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (hbox_main1);
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main1", hbox_main1,
+//                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (hbox_main1);
     gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main1, FALSE, FALSE,12); ///12 DO NOT CHANGE!!!
     ///////////////////////////////
     ///////////////////////////////
     hbox_main2 = gtk_hbox_new (FALSE, 0);
-    gtk_widget_ref (hbox_main2);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main2", hbox_main2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (hbox_main2);
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main2", hbox_main2,
+//                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (hbox_main2);
     gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main2, TRUE, TRUE, 0); 
     /////////////////////////////////
@@ -290,8 +291,8 @@ void CreateMainWindow (char *cmdl_filename)
 /////////////////////////////////////////////////////////////////////////////
     main_graph= gtk_drawing_area_new();
     gtk_drawing_area_size(GTK_DRAWING_AREA(main_graph),(int)((float)GRAPH_W ), (int)((float)GRAPH_H ));
-    gtk_widget_ref (main_graph);
-    gtk_object_set_data_full (GTK_OBJECT (win_main), "main_graph", main_graph,(GtkDestroyNotify) gtk_widget_unref);
+    //    gtk_widget_ref (main_graph);
+    //    gtk_object_set_data_full (GTK_OBJECT (win_main), "main_graph", main_graph,(GtkDestroyNotify) gtk_widget_unref);
     gtk_box_pack_start (GTK_BOX (vbox_main),main_graph, TRUE, TRUE, 0);     
     
     gtk_signal_connect(GTK_OBJECT(main_graph), "expose-event", (GtkSignalFunc) expose_event,NULL);
@@ -318,17 +319,17 @@ void CreateMainWindow (char *cmdl_filename)
      
      ///////////RULERS go first///////////
      hruler = gtk_hruler_new ();
-     gtk_widget_ref (GTK_WIDGET(hruler));
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "hruler", hruler,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (GTK_WIDGET(hruler));
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "hruler", hruler,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_box_pack_start (GTK_BOX (vbox_main), GTK_WIDGET(hruler), FALSE, FALSE, 0);
      gtk_ruler_set_range (GTK_RULER (hruler), 1., 1., 1., 1.);
      gtk_ruler_set_metric(GTK_RULER (hruler), GTK_PIXELS);
 
      vruler = gtk_vruler_new ();
-     gtk_widget_ref (GTK_WIDGET(vruler));
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "vruler", vruler,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (GTK_WIDGET(vruler));
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "vruler", vruler,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_box_pack_start (GTK_BOX (hbox_main2), GTK_WIDGET(vruler), FALSE, FALSE,0);
      //gtk_widget_set_usize (GTK_WIDGET(vruler), 20., (int)((float)GRAPH_H * .75));
      gtk_ruler_set_range (GTK_RULER (vruler), 1., 1., 1., 1.);
@@ -336,17 +337,17 @@ void CreateMainWindow (char *cmdl_filename)
      
      /************/
      hscale1 = gtk_hscale_new (GTK_ADJUSTMENT (hadj1));
-     gtk_widget_ref (hscale1);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "hscale1", hscale1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (hscale1);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "hscale1", hscale1,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_scale_set_digits (GTK_SCALE(hscale1),0);
      gtk_signal_connect (GTK_OBJECT(hadj1), "value_changed", GTK_SIGNAL_FUNC (h_scroll), GINT_TO_POINTER(1));
      gtk_box_pack_start (GTK_BOX (vbox_main), hscale1, FALSE, TRUE, 0);
      /************/
      hscale2 = gtk_hscale_new (GTK_ADJUSTMENT (hadj2));
-     gtk_widget_ref (hscale2);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "hscale2", hscale2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (hscale2);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "hscale2", hscale2,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_scale_set_digits (GTK_SCALE(hscale2),0);
      gtk_signal_connect (GTK_OBJECT(hadj2), "value_changed", GTK_SIGNAL_FUNC (h_scroll),GINT_TO_POINTER(2) );
      gtk_scale_set_draw_value(GTK_SCALE(hscale2),FALSE);
@@ -355,21 +356,21 @@ void CreateMainWindow (char *cmdl_filename)
      
      /************/
      vscale1 = gtk_vscale_new (GTK_ADJUSTMENT (vadj1));
-     gtk_widget_ref (vscale1);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "vscale1", vscale1,
-			       (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (vscale1);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "vscale1", vscale1,
+// 			       (GtkDestroyNotify) gtk_widget_unref);
      gtk_scale_set_draw_value(GTK_SCALE(vscale1),FALSE);
-     gtk_scale_set_digits (GTK_SCALE(vscale1),0);  
+     //     gtk_scale_set_digits (GTK_SCALE(vscale1),0);  
      gtk_signal_connect (GTK_OBJECT(vadj1), "value_changed", GTK_SIGNAL_FUNC (v_scroll),GINT_TO_POINTER(1) );   
-     gtk_box_pack_start (GTK_BOX (hbox_main2), vscale1, FALSE, FALSE, 8); //FF 8
+     gtk_box_pack_start (GTK_BOX (hbox_main2), vscale1, FALSE, FALSE, 0); //FF 8
 
      /************/
      vscale2 = gtk_vscale_new (GTK_ADJUSTMENT (vadj2));
-     gtk_widget_ref (vscale2);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "vscale2", vscale2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (vscale2);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "vscale2", vscale2,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_signal_connect (GTK_OBJECT(vadj2), "value_changed", GTK_SIGNAL_FUNC (v_scroll), GINT_TO_POINTER(2));
-     gtk_scale_set_digits (GTK_SCALE(vscale2),0);
+     //     gtk_scale_set_digits (GTK_SCALE(vscale2),0);
      gtk_scale_set_draw_value(GTK_SCALE(vscale2),FALSE);
      gtk_range_set_update_policy(GTK_RANGE(vscale2),GTK_UPDATE_DISCONTINUOUS);
      gtk_box_pack_start (GTK_BOX (hbox_main2), vscale2, FALSE, FALSE, 0); //FF8
@@ -378,9 +379,9 @@ void CreateMainWindow (char *cmdl_filename)
      valadj=gtk_adjustment_new(0., 0., 0., 1., 100., 0.);
      
      valscale = gtk_vscale_new (GTK_ADJUSTMENT (valadj));
-     gtk_widget_ref (valscale);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "valscale", valscale,
-                           (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (valscale);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "valscale", valscale,
+//                            (GtkDestroyNotify) gtk_widget_unref);
      gtk_box_pack_start (GTK_BOX (hbox_main2), valscale, FALSE, FALSE,20); //FF5
      gtk_scale_set_digits (GTK_SCALE (valscale), 0);
      gtk_range_set_update_policy (GTK_RANGE (valscale), GTK_UPDATE_DISCONTINUOUS);
@@ -389,28 +390,30 @@ void CreateMainWindow (char *cmdl_filename)
      
      /////////////////////////////////
      vbox_inf = gtk_vbox_new (TRUE, 0);
-     gtk_widget_ref (vbox_inf);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_inf", vbox_inf,
-                            (GtkDestroyNotify) gtk_widget_unref);
+     //     gtk_widget_ref (vbox_inf);
+//      gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_inf", vbox_inf,
+//                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_widget_show (vbox_inf);
      gtk_box_pack_start (GTK_BOX (vbox_main2), vbox_inf, FALSE, FALSE,32); //DO NOT CHANGE!!!32
      ///////////////////////////////
-     label= gtk_label_new("");//("\n FRAME=  \n =\n FREQ.=  ");
-     gtk_widget_ref (label);
-     gtk_object_set_data_full (GTK_OBJECT (win_main), "label",label,
-                           (GtkDestroyNotify) gtk_widget_unref);
-     gtk_label_set_justify (GTK_LABEL(label), GTK_JUSTIFY_LEFT);
-     gtk_box_pack_start (GTK_BOX (vbox_inf), label, FALSE, FALSE, 0);
+//       label= gtk_label_new(""); //\n FRAME=  \n =\n FREQ.=  ");
+//       gtk_widget_ref (label);
+//       gtk_object_set_data_full (GTK_OBJECT (win_main), "label",label,
+//                             (GtkDestroyNotify) gtk_widget_unref);
+//       gtk_label_set_justify (GTK_LABEL(label), GTK_JUSTIFY_LEFT);
+//       gtk_box_pack_start (GTK_BOX (vbox_inf), label, FALSE, FALSE, 0);
      //////////////////////////////////
      statusbar =gtk_statusbar_new();
+     context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), "");
 //     gtk_object_set_data_full (GTK_OBJECT (win_main), "statusbar",statusbar,
 //                           (GtkDestroyNotify) gtk_widget_unref);
      gtk_box_pack_start (GTK_BOX (vbox_main), statusbar, FALSE, FALSE, 0);
+     gtk_statusbar_push(GTK_STATUSBAR(statusbar), context_id, "Amplitude Plot:");
      gtk_widget_show(statusbar);
 
      init_scalers(FALSE);
      gtk_widget_show(main_graph);
-     gtk_widget_show (win_main);
+     gtk_widget_show(win_main);
      
      draw_default();
      
@@ -420,12 +423,7 @@ void CreateMainWindow (char *cmdl_filename)
      else {
        show_file_name(win_main,NULL);
      }
-     //check the GTK Version
-     /*
-     g_print("\nGTK Version(Library)= %d.%d.%d  \n", gtk_major_version, gtk_minor_version, gtk_micro_version );
-     g_print("GTK Version(Headers)= %d.%d.%d  \n", GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION );
-     */
-return;
+
 }
 ///////////////////////////////////////////////////////////
 void init_scalers(gint how)
@@ -457,7 +455,7 @@ void init_scalers(gint how)
    gtk_widget_hide(GTK_WIDGET(valscale));
    gtk_widget_hide(GTK_WIDGET(hruler));
    gtk_widget_hide(GTK_WIDGET(vruler));
-   gtk_widget_hide(GTK_WIDGET(label));
+   //   gtk_widget_hide(GTK_WIDGET(label));
    
   
 }
@@ -469,7 +467,7 @@ void init_scalers(gint how)
    gtk_widget_show(GTK_WIDGET(valscale));
    gtk_widget_show(GTK_WIDGET(hruler));
    gtk_widget_show(GTK_WIDGET(vruler));
-   gtk_widget_show(GTK_WIDGET(label));
+   //   gtk_widget_show(GTK_WIDGET(label));
    
 }
 return;

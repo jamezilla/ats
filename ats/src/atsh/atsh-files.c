@@ -10,7 +10,7 @@ char      *filt;
 GtkWidget *outlabel;
 GtkWidget *slabel;
 extern GtkWidget     *isfile_label;
-extern GtkWidget     *osfile_label;
+ GtkWidget     *osfile_label;
 extern GtkWidget     *afile_label;
 extern GtkWidget     *rfile_label;
 char *in_tittle;

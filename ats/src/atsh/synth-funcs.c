@@ -264,6 +264,7 @@ void do_synthesis()
   RANDI *rarray=NULL;
   float res_band_edges[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
   float res_band_centers[ATSA_CRITICAL_BANDS];
+  char str[100];
 
   //ATTEMPT TO CATCH TWO POSSIBLE ERRORS........ 
   if(*ats_tittle==0) {
@@ -348,10 +349,9 @@ void do_synthesis()
   
 
   //INITIALIZE PROGRESSBAR
-  *info=0;
-  strcat(info,"writing on " );
-  strcat(info, out_tittle);
-  StartProgress(info, TRUE);
+  strcpy(str,"Writing File " );
+  strcat(str, out_tittle);
+  StartProgress(str, TRUE);
 
   //ALLOCATE AND CLEAN AUDIO BUFFERS
   maxlen= (int)ceil(maxtim * sparams->sr * sparams->max_stretch); 
@@ -476,15 +476,21 @@ void do_synthesis()
   
   mus_sound_close_output(ptout,written * mus_data_format_to_bytes_per_sample(format));
 
-  *info=0;
-  strcat(info, "DONE OK...!!! MAXAMP= ");
-  sprintf(stamp,"%6.4f ",maxamp);
-  strcat(info, stamp);
-  Popup(info);
+//   *info=0;
+//   strcat(info, "DONE OK...!!! MAXAMP= ");
+//   sprintf(stamp,"%6.4f ",maxamp);
+//   strcat(info, stamp);
+//   Popup(info);
 
   free(obuf[0]);
   free(tdata);
   EndProgress();
+
+  strcpy(str, "DONE! MAXAMP= ");
+  sprintf(stamp, "%6.4f", maxamp);
+  strcat(str, stamp);
+  Popup(str);
+
 }
 
 int locate_frame(int from_frame, float time, float dif)

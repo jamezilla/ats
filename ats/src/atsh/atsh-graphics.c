@@ -12,6 +12,8 @@ extern GtkWidget *vscale1, *vscale2;
 extern GtkWidget *hruler, *vruler;
 extern VIEW_PAR *h, *v;
 extern GdkPixmap *pixmap;
+extern GtkWidget *statusbar;
+extern gint context_id;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -469,67 +471,57 @@ gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 int x,y,rband;
 GdkModifierType state;
 
- if(floaded==0) {return(TRUE);} 
- 
- 
- gdk_window_get_pointer(event->window, &x, &y, &state); //get new position
- if(x <= main_graph->allocation.width && 
-    x > 0 &&
-    y <=main_graph->allocation.height &&
-    y >0) { //print only if in region
-   
-   *info=0;
-   frame_step=(float)main_graph->allocation.width / (float) (h->diff+1.);
-   //position->from store always the horizontal position of the mouse...
-   position->from= (h->viewstart-1) + (int)((float) x / frame_step);     
-   //we must now track the vertical position of the mouse pointer
-   //according the view_type
-   if(VIEWING_DET){ 
-     freq_step=(float)main_graph->allocation.height / (float) v->diff;
-     position->f1  = v->viewstart + (v->diff - (int)((float) y / freq_step));
-     /*
-     if(scale_type==AMP_SCALE) {
-       sprintf(info,"\n FRAME=%d(%6.3f segs.)\n FREQ.=%d Hz.\n Amplitude Plot", 
-	     position->from+1, 
-	     ats_sound->time[0][position->from], 
-	     position->f1);
-     }
-     else{
-       sprintf(info,"\n FRAME=%d(%6.3f segs.)\n FREQ.=%d Hz.\n SMR Plot ", 
-	       position->from+1, 
-	       ats_sound->time[0][position->from], 
-	       position->f1);
-     }
-     */
-     gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend / 1000.,
-			  (float)v->viewstart / 1000.,
-			  (float)position->f1 / 1000.,
-			  (float)v->diff / 1000.);  		  
-   }     
-   if(VIEWING_RES){
-     freq_step=main_graph->allocation.height / (float)ATSA_CRITICAL_BANDS;
-     rband    = ATSA_CRITICAL_BANDS-(int)((float)y /freq_step); 
+ if(floaded) {
+   gdk_window_get_pointer(event->window, &x, &y, &state); //get new position
+   if(x <= main_graph->allocation.width && x > 0 &&
+      y <=main_graph->allocation.height && y > 0) { //print only if in region
+     *info=0;
+     frame_step=(float)main_graph->allocation.width / (float) (h->diff+1.);
+     //position->from store always the horizontal position of the mouse...
      position->from= (h->viewstart-1) + (int)((float) x / frame_step);     
-     
-     sprintf(info," FRAME  =%d(%6.3f segs.)\n BAND    =%d(%d-%d Hz.)\n ENERGY=%6.5f", 
-	     position->from+1,
-	     ats_sound->time[0][position->from], 
-	     rband,
-	     (int)res_data[rband-1],(int)res_data[rband],
-	     ats_sound->band_energy[rband-1][position->from] ); 
-   }  
+     //we must now track the vertical position of the mouse pointer
+     //according the view_type
+     if(VIEWING_DET) { 
+       freq_step=(float)main_graph->allocation.height / (float) v->diff;
+       position->f1  = v->viewstart + (v->diff - (int)((float) y / freq_step));
+       
+       if(scale_type==AMP_SCALE) sprintf(info,"Amplitude Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
+                                         position->from+1, 
+                                         ats_sound->time[0][position->from], 
+                                         position->f1);
+       else sprintf(info,"SMR Plot:  FRAME %d (%.3f s)    FREQ %d Hz", 
+                    position->from+1, 
+                    ats_sound->time[0][position->from], 
+                    position->f1);
+       
+       gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend / 1000.,
+                            (float)v->viewstart / 1000.,
+                            (float)position->f1 / 1000.,
+                            (float)v->diff / 1000.);  		  
+     }
+     if(VIEWING_RES) {
+       freq_step=main_graph->allocation.height / (float)ATSA_CRITICAL_BANDS;
+       rband    = ATSA_CRITICAL_BANDS-(int)((float)y /freq_step); 
+       position->from= (h->viewstart-1) + (int)((float) x / frame_step);     
+       
+       sprintf(info,"Noise Plot:  FRAME %d (%.3f s)    BAND %d (%d-%d Hz)    ENERGY %.5f", 
+               position->from+1,
+               ats_sound->time[0][position->from], 
+               rband,
+               (int)res_data[rband-1],(int)res_data[rband],
+               ats_sound->band_energy[rband-1][position->from] ); 
+     }
+   }
+ 
+   gtk_statusbar_push(GTK_STATUSBAR(statusbar), context_id, info);
    
+   set_hruler((double)h->viewstart, (double)h->viewend, (double)position->from, (double)h->diff); 
+   //get new position
+   x=event->x;
+   y=event->y;
+   state=event->state;   
  }
- 
- //WARNING: from+1 is only for printing
- gtk_label_set_text(GTK_LABEL(label),info); 
- set_hruler((double)h->viewstart, (double)h->viewend, (double)position->from, (double)h->diff); 
- //get new position
- x=event->x;
- y=event->y;
- state=event->state;   
- 
- return(TRUE);
+   return(TRUE);
 }
 /////////////////////////////////////////////////////////////// 
 void unzoom()
