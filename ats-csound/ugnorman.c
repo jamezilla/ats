@@ -85,9 +85,8 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 //static	int	pdebug = 0;
 
 // static variables used for atsbufread and atsbufreadnz
-static	ATSBUFREAD	*atsbufreadaddr;
+static	ATSBUFREAD	*atsbufreadaddr = NULL;
 
-int readdatafile(const char *, ATSFILEDATA *);
 
 /************************************************************/
 /*********  ATSREAD       ***********************************/
@@ -468,83 +467,83 @@ void atsaddset(ATSADD *p){
 }
 
 void atsadd(ATSADD *p){
-        float	frIndx;
-        float	* ar, amp, fract, v1, *ftab;
-        FUNC    *ftp;
-        long    lobits, phase, inc;
-        double *oscphase;
-        int     i, nsmps = ksmps;
-        int     numpartials = (int)*p->iptls;
+	float	frIndx;
+	float	* ar, amp, fract, v1, *ftab;
+	FUNC    *ftp;
+	long    lobits, phase, inc;
+	double *oscphase;
+	int     i, nsmps = ksmps;
+	int     numpartials = (int)*p->iptls;
 	ATS_DATA_LOC * buf;
 	buf = p->buf;
 
-        if (p->auxch.auxp == NULL)
-        {
+	if (p->auxch.auxp == NULL)
+	{
 		initerror("ATSADD: not intialized");
-                return;
-        }
-
-        ftp = p->ftp;           // ftp is a poiter to the ftable
-        if (ftp == NULL)
-        {
-                initerror("ATSADD: not intialized");
-                return;
-        }
+		return;
+	}
+	
+	ftp = p->ftp;           // ftp is a poiter to the ftable
+	if (ftp == NULL)
+	{
+		initerror("ATSADD: not intialized");
+		return;
+	}
 	
 	// make sure time pointer is within range
 	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
-        {
+	{
 		frIndx = 0;
 		if (p->prFlg)
 		{
-                	p->prFlg = 0;
+			p->prFlg = 0;
 			fprintf(stderr, "ATSADD: only positive time pointer values are allowed, setting to zero\n");
 		}
-        }
-        else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
-        {
-                frIndx = (float)p->maxFr;
-                if (p->prFlg)
-                {
-                        p->prFlg = 0;   // set to false
+	}
+	else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
+	{
+		frIndx = (float)p->maxFr;
+		if (p->prFlg)
+		{
+			p->prFlg = 0;   // set to false
 			fprintf(stderr, "ATSADD: time pointer out of range, truncating to last frame\n");
-                }
-        }
+		}
+	}
 	else
 		p->prFlg = 1;
         
 	FetchADDPartials(p, buf, frIndx);
         
 	oscphase = p->oscphase;
-        // initialize output to zero
-        ar = p->aoutput;
-        for (i = 0; i < nsmps; i++)
-                ar[i] = 0.0f;
-
-        if(*p->igatefun > 0)
-            AtsAmpGate(buf, *p->iptls , p->AmpGateFunc, p->MaxAmp);
-
-        for (i = 0; i < numpartials; i++)
-        {
-                lobits = ftp->lobits;
-                amp = (float)p->buf[i].amp;
-                phase = (long)*oscphase;
-                ar = p->aoutput;        // ar is a pointer to the audio output
-                nsmps = ksmps;
-                inc = (long)(p->buf[i].freq *  sicvt * *p->kfmod);  // put in * kfmod
-                do {
-                        ftab = ftp->ftable + (phase >> lobits);
-                        v1 = *ftab++;
-                        fract = (float) PFRAC(phase);
-                        *ar += (v1 + fract * (*ftab - v1)) * amp;
-                        ar++;
-                        phase += inc;
-                        phase &= PHMASK;
-                }
-                while (--nsmps);
-                *oscphase = (double)phase;
-                oscphase++;
-        }
+	// initialize output to zero
+	ar = p->aoutput;
+	for (i = 0; i < nsmps; i++)
+		ar[i] = 0.0f;
+	
+	if(*p->igatefun > 0)
+		AtsAmpGate(buf, *p->iptls , p->AmpGateFunc, p->MaxAmp);
+	
+	for (i = 0; i < numpartials; i++)
+	{
+		lobits = ftp->lobits;
+		amp = (float)p->buf[i].amp;
+		phase = (long)*oscphase;
+		ar = p->aoutput;        // ar is a pointer to the audio output
+		nsmps = ksmps;
+		inc = (long)(p->buf[i].freq *  sicvt * *p->kfmod);  // put in * kfmod
+		do {
+			ftab = ftp->ftable + (phase >> lobits);
+			v1 = *ftab++;
+			fract = (float) PFRAC(phase);
+			*ar += (v1 + fract * (*ftab - v1)) * amp;
+			ar++;
+			phase += inc;
+			phase &= PHMASK;
+		}
+		while (--nsmps);
+		*oscphase = (double)phase;
+		oscphase++;
+	}
 }
 
 void FetchADDPartials(ATSADD *p, ATS_DATA_LOC *buf, float position)
@@ -1360,7 +1359,7 @@ void atsbufreadset(ATSBUFREAD *p)
         p->table[0].amp = 0;
         p->table[(int)*p->iptls + 1].freq = 20000;
         p->table[(int)*p->iptls + 1].amp = 0;
-
+	
     return;
 }
 
@@ -1425,6 +1424,7 @@ void atsbufread(ATSBUFREAD *p)
                 fprintf(stderr, "ATSBUFREAD: not intialized");
                 return;
         }
+	
 	// make sure time pointer is within range
 	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
         {
@@ -1454,10 +1454,360 @@ void atsbufread(ATSBUFREAD *p)
         qsort(buf, (int)*p->iptls, sizeof(ATS_DATA_LOC), mycomp);
 }
 
+void atspartialtapset(ATSPARTIALTAP *p)
+{
+	if(atsbufreadaddr == NULL)
+	{
+   	sprintf(errmsg,"ATSPARTIALTAP: you must have a atsbufread before an atspartialtap");
+   	initerror(errmsg);
+		return;
+	}
+	if((int)*p->iparnum > (int)(atsbufreadaddr->iptls))
+	{
+		sprintf(errmsg,"ATSPARTIALTAP: exceeded max partial %i", (int)(atsbufreadaddr->iptls));
+		initerror(errmsg);
+		return;
+	}
+	if((int)*p->iparnum <= 0)
+	{
+		sprintf(errmsg,"ATSPARTIALTAP: partial must be positive and nonzero");
+		initerror(errmsg);
+		return;
+	}
+	
+}
+void atspartialtap(ATSPARTIALTAP *p)
+{
+	if(atsbufreadaddr == NULL)
+	{
+		fprintf(stderr,"ATSPARTIALTAP: you must have a atsbufread before an atspartialtap");
+		return;
+	}
+	*p->kfreq = (float)((atsbufreadaddr->table)[(int)(*p->iparnum)].freq);
+	*p->kamp = (float)((atsbufreadaddr->table)[(int)(*p->iparnum)].amp);
+}
 
-
-
+void atsinterpreadset(ATSINTERPREAD *p)
+{	
+	if(atsbufreadaddr == NULL)
+	{
+		sprintf(errmsg,"ATSINTERPREAD: you must have a atsbufread before an atsinterpread");
+		initerror(errmsg);
+		return;
+	}
+	p->overflowflag = 1; /*true */
+}
+void atsinterpread(ATSINTERPREAD *p)
+{
+	int i;
+	float frac;
+	/* make sure we have data to read from */
+	if(atsbufreadaddr == NULL)
+	{
+		fprintf(stderr,"ATSINTERPREAD: you must have a atsbufread before an atsinterpread\n");
+		return;
+	}
+	/* make sure we aren't asking for unreasonble frequencies */
+	if(*p->kfreq <= 20.0 || *p->kfreq >= 20000.0)
+	{
+		if(p->overflowflag)
+		{	
+			fprintf(stderr,"ATSINTERPREAD: frequency must be greater than 20.0 and less than 20000Hz\n");
+			p->overflowflag = 0;
+		}
+		*p->kamp = 0.0;
+		return;
+	}
+	/* find the location in the table */
+	for(i = 0; i < (int)*(atsbufreadaddr->iptls); i++)
+	{
+		/* find i such that table i+1 is greater than the specified frequency */
+		if((float)((atsbufreadaddr->table[i+1]).freq) > *p->kfreq)
+			break;
+	}
+	if(i == 0)
+	{
+		*p->kamp = 0.0;
+		return;
+	}
+	/* linear interpolation */
+	frac = (*p->kfreq - (atsbufreadaddr->table[i]).freq)/((atsbufreadaddr->table[i + 1]).freq - (atsbufreadaddr->table[i]).freq);
+	*p->kamp = (float)((atsbufreadaddr->table[i]).amp + frac * ((atsbufreadaddr->table[i + 1]).amp - (atsbufreadaddr->table[i]).amp));
+	//*p->kamp = (float)(atsbufreadaddr->table[i]).amp;
+}
 /* the below is to allow this to be a plugin */
+
+void atscrossset(ATSCROSS *p)
+{
+	char atsfilname[MAXNAME];
+	ATSSTRUCT * atsh;
+   FUNC *ftp; 
+	int i, memsize;
+	
+	// set up function table for synthesis
+	if ((ftp = ftfind(p->ifn)) == NULL){
+		sprintf(errmsg, "ATSCROSS: Function table number for synthesis waveform not valid\n");
+		initerror(errmsg);
+      return;
+	}
+        p->ftp = ftp;
+	
+	/* copy in ats file name */
+	if (*p->ifileno == sstrcod){
+   	strcpy(atsfilname, unquote(p->STRARG));
+   }
+   else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+		strcpy(atsfilname, strsets[(long)*p->ifileno]);
+	else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
+	
+	// load memfile
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+	{
+		sprintf(errmsg, "ATSCROSS: Ats file %s not read (does it exist?)", atsfilname);
+		initerror(errmsg);
+		return;
+	}
+	//point the header pointer at the header data
+	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
+	
+	//make sure that this is an ats file
+	if (atsh->magic != 123)
+	{
+		sprintf(errmsg, "ATSCROSS: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+      initerror(errmsg);
+      return;
+   }
+	
+	//calculate how much memory we have to allocate for this
+	memsize = (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
+	// allocate space if we need it
+	if(p->auxch.auxp == NULL || memsize > p->memsize)
+	{
+		// need room for a buffer and an array of oscillator phase increments
+		auxalloc(memsize, &p->auxch);
+		p->memsize = memsize;
+	}
+	
+	// set up the buffer, phase, etc.
+	p->buf = (ATS_DATA_LOC *)(p->auxch.auxp);
+	p->oscphase = (double *)(p->buf + (int)(*p->iptls));
+	p->maxFr = (int)atsh->nfrms - 1;
+	p->timefrmInc = atsh->nfrms / atsh->dur;
+	
+	// make sure partials are in range
+   if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+   {
+		sprintf(errmsg, "ATSADD: Partial(s) out of range, max partial allowed is %i", (int)atsh->npartials);
+ 		initerror(errmsg);
+		return;
+	}
+	//get a pointer to the beginning of the data
+	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
+
+	// get increments for the partials
+	switch ( (int)(atsh->type))
+   {
+		case 1 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+		                p->partialinc = 2 * (int)(*p->iptlincr);
+		                p->frmInc = (int)(atsh->npartials * 2 + 1);
+		                break;
+		
+		case 2 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+		                p->partialinc = 3 * (int)(*p->iptlincr);
+		                p->frmInc = (int)(atsh->npartials * 3 + 1);
+		                break;
+		
+		case 3 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+		                p->partialinc = 2 * (int)(*p->iptlincr);
+		                p->frmInc = (int)(atsh->npartials * 2 + 26);
+		                break;
+		
+		case 4 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+		                p->partialinc = 3 * (int)(*p->iptlincr);
+		                p->frmInc = (int)(atsh->npartials * 3 + 26);
+		                break;
+		
+		default:        sprintf(errmsg, "ATSCROSS: Type not implemented");
+		                initerror(errmsg);
+		                return;
+	}
+	
+	// initilize the phase of the oscilators
+	for(i = 0; i < (int)(*p->iptls); i++)
+		(p->oscphase)[i] = 0.0;
+	
+	//flag set to reduce the amount of warnings sent out for time pointer out of range
+	p->prFlg = 1;	// true
+
+	return;
+}
+
+void FetchCROSSPartials(ATSCROSS *p, ATS_DATA_LOC *buf, float position)
+{
+   float   frac;           // the distance in time we are between frames
+	double * frm0, * frm1;
+   int     frame;
+   int     i;      // for the for loop
+	int     partialloc = p->firstpartial;
+	int     npartials = (int)*p->iptls;
+	
+   frame = (int)position;
+	frm0 = p->datastart + frame * p->frmInc;
+	
+	// if we're using the data from the last frame we shouldn't try to interpolate
+	if(frame == p->maxFr)
+	{
+		for(i = 0; i < npartials; i++)
+		{
+			buf[i].amp = frm0[partialloc]; // calc amplitude
+			buf[i].freq = frm0[partialloc + 1];
+			partialloc += p->partialinc;
+		}
+		return;
+	}
+	
+	frac = position - frame;
+	frm1 = frm0 + p->frmInc;
+	
+	for(i = 0; i < npartials; i++)
+	{
+		buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
+				buf[i].freq = frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1]); // calc freq
+				partialloc += p->partialinc;       // get to the next partial
+			}
+}
+
+
+void ScalePartials(
+	ATS_DATA_LOC *cbuf,  //the current buffer
+	int     cbufnp, 		//the current buffer's number of partials
+	MYFLT  cbufamp, 		//the amplitude for the current buffer
+	ATS_DATA_LOC *tbuf, //the table buffer
+	int     tbufnp, //the table buffer's n partials
+	MYFLT  tbufamp  //the amp of the table buffer
+   )
+{
+	MYFLT   tempamp;           // hold the cbufn amp for a bit
+	MYFLT   frac;          // for interpilation
+	int     i, j;      // for the for loop
+	
+	for(i = 0; i < cbufnp; i++)
+	{
+		//look for closest freqency in buffer
+		for(j=0; j < tbufnp; j++)
+		{
+		   if ( tbuf[j].freq > cbuf[i].freq)
+		      break;
+		}
+		tempamp = 0;
+		// make sure we aren't going to overstep our array
+		if (j < tbufnp && j > 0)
+		{
+		   //interp amplitude from table
+		   frac = (cbuf[i+1].freq - tbuf[j-1].freq) / (tbuf[j].freq - tbuf[j-1].freq);
+		   tempamp = tbuf[j-1].amp + frac * (tbuf[j].amp - tbuf[j-1].amp);
+		}
+		else if(j == tbufnp)
+		{
+		   // this means the last value in the table is equal to a value in the current buffer
+		   if( cbuf[i+1].freq == tbuf[tbufnp-1].freq)
+		   {
+		      tempamp = tbuf[tbufnp-1].amp;
+		   }
+		}
+		// do the actual scaling
+		cbuf[i].amp = cbufamp * cbuf[i].amp + tempamp * tbufamp;
+	}
+}
+
+
+void atscross(ATSCROSS *p)
+{	
+	float	frIndx;
+	float	* ar, amp, fract, v1, *ftab;
+	FUNC    *ftp;
+	long    lobits, phase, inc;
+	double *oscphase;
+	int     i, nsmps = ksmps;
+	int     numpartials = (int)*p->iptls;
+	ATS_DATA_LOC * buf;
+	buf = p->buf;
+
+	if (p->auxch.auxp == NULL)
+	{
+		fprintf(stderr,"ATSCROSS: not intialized");
+		return;
+	}
+	
+	ftp = p->ftp;           // ftp is a poiter to the ftable
+	if (ftp == NULL)
+	{
+		fprintf(stderr,"ATSCROSS: not intialized");
+		return;
+	}
+	
+	// make sure time pointer is within range
+	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
+	{
+		frIndx = 0;
+		if (p->prFlg)
+		{
+			p->prFlg = 0;
+			fprintf(stderr, "ATSCROSS: only positive time pointer values are allowed, setting to zero\n");
+		}
+	}
+	else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
+	{
+		frIndx = (float)p->maxFr;
+		if (p->prFlg)
+		{
+			p->prFlg = 0;   // set to false
+			fprintf(stderr, "ATSCROSS: time pointer out of range, truncating to last frame\n");
+		}
+	}
+	else
+		p->prFlg = 1;
+        
+	FetchCROSSPartials(p, buf, frIndx);
+	
+	ScalePartials(buf,	//the current buffer
+		(int)*(p->iptls), //the current buffer's number of partials
+		*(p->kmyamp),		//the amplitude for the current buffer
+		atsbufreadaddr->table, //the table buffer
+		(int)*(atsbufreadaddr->iptls), //the table buffer's n partials
+		*p->katsbufamp  //the amp of the table buffer
+	   );
+	
+	oscphase = p->oscphase;
+	// initialize output to zero
+	ar = p->aoutput;
+	for (i = 0; i < nsmps; i++)
+		ar[i] = 0.0f;
+	
+	for (i = 0; i < numpartials; i++)
+	{
+		lobits = ftp->lobits;
+		amp = (float)p->buf[i].amp;
+		phase = (long)*oscphase;
+		ar = p->aoutput;        // ar is a pointer to the audio output
+		nsmps = ksmps;
+		inc = (long)(p->buf[i].freq *  sicvt * *p->kfmod);  // put in * kfmod
+		do {
+			ftab = ftp->ftable + (phase >> lobits);
+			v1 = *ftab++;
+			fract = (float) PFRAC(phase);
+			*ar += (v1 + fract * (*ftab - v1)) * amp;
+			ar++;
+			phase += inc;
+			phase &= PHMASK;
+		}
+		while (--nsmps);
+		*oscphase = (double)phase;
+		oscphase++;
+	}
+
+}
+
 
 GLOBALS *pcglob;
 #define S(x)       sizeof(x)
