@@ -1,4 +1,5 @@
 /* ATScsound Ugens, adapted by Alex Norman (2003) from the phase vocoder csound code by Richard Karpen
+*  If you find bugs contact me at alexnorman@users.sourceforge.net
 *  uses noise generations fucntions from atsh
 *  the following needs to be put in entry.c
 
@@ -56,7 +57,6 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 */
 
 
-/* PROBLEM? for some reason on my system fopen causes seg fault if the file does not exist */
 
 #include "cs.h"
 // Use the below instead of the above if using as a plugin
@@ -70,11 +70,7 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 
 #define ATSA_NOISE_VARIANCE 0.04
 
-#define ATSA_CRITICAL_BAND_EDGES {0.0, 100.0, 200.0, 300.0, 400.0, 510.0,\
-                                      630.0, 770.0, 920.0, 1080.0, 1270.0,\
-                                    1480.0, 1720.0, 2000.0, 2320.0, 2700.0,\
-                                     3150.0, 3700.0, 4400.0, 5300.0, 6400.0,\
-                                    7700.0, 9500.0, 12000.0, 15500.0, 20000.0}
+#define ATSA_CRITICAL_BAND_EDGES {0.0, 100.0, 200.0, 300.0, 400.0, 510.0, 630.0, 770.0, 920.0, 1080.0, 1270.0, 1480.0, 1720.0, 2000.0, 2320.0, 2700.0, 3150.0, 3700.0, 4400.0, 5300.0, 6400.0, 7700.0, 9500.0, 12000.0, 15500.0, 20000.0}
 
 //extern	int	ksmps;
 //extern	char	errmsg[];
@@ -909,7 +905,7 @@ void band_energy_to_res(ATSSINNOI *p)
 {
   int i, j, k, par, first_par, last_par=0;
   double sum;
-  double edges[26] = ATSA_CRITICAL_BAND_EDGES;
+  float edges[] = ATSA_CRITICAL_BAND_EDGES;
   double * partial;
   double * band;
   double * curframe = p->datastart;
@@ -918,19 +914,24 @@ void band_energy_to_res(ATSSINNOI *p)
   band = (double *)(p->firstband + curframe);
   par = 0;
   
-  for(i = 0; i < p->atshead->nfrms; i++)
+  for(i = 0; i < (int)p->atshead->nfrms; i++)
   {
   /* find partials by band */
   	for(j=0 ; j<25 ; j++)
   	{
   		first_par = par;
  	   	sum = 0.0;
- 	   	while( par < p->atshead->npartials &&
- 	         	(*band > 0.0) &&
- 	         	(*(partial + 1) >= edges[j]) &&
- 	         	(*(partial + 1) < edges[j+1]))
+		//fprintf(stderr, "band: %i %f freq: %f\n", j, (float)*band, (float)*(partial + 1));
+ 	   	//if( (float)*band > 0.0)
+		//	fprintf(stderr,"band greater than zero %f par: %i\n", (float)*band, par);
+			
+		while( (par < (int)p->atshead->npartials) &&
+ 	         	( (float)*band > 0.0) &&
+ 	         	( (float)*(partial + 1) >= edges[j]) &&
+ 	         	( (float)*(partial + 1) < edges[j+1]) )
  	     	{
- 	       		sum += *partial;	//amplitude
+		fprintf(stderr, "gets here\n\n");
+			sum += *partial;	//amplitude
  	       		last_par = par;
         		par++;
 			if(par < p->atshead->npartials)
@@ -950,7 +951,7 @@ void band_energy_to_res(ATSSINNOI *p)
 		if(j < 24)
 			band++;
   	}
-	if(i < (p->atshead->nfrms - 1))
+	if(i < (int)(p->atshead->nfrms - 1))
 	{
 		curframe += p->frmInc;
 		partial = (double *)(curframe + 1);
@@ -965,7 +966,7 @@ void atssinnoiset(ATSSINNOI *p)
 {
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
-	int memsize, nzmemsize;
+	int i, memsize, nzmemsize;
 	
 	/* copy in ats file name */
         if (*p->ifileno == sstrcod){
@@ -993,7 +994,7 @@ void atssinnoiset(ATSSINNOI *p)
                	return;
         }
 	//calculate how much memory we have to allocate for this need room for a buffer and the noise data and the noise info per partial for synthesizing noise
-	memsize = (int)(*p->iptls) * (sizeof(ATS_DATA_LOC) + sizeof(double) + sizeof(RANDIATS));
+	memsize = (int)(*p->iptls) * (sizeof(ATS_DATA_LOC) + 2 * sizeof(double) + sizeof(RANDIATS));
 	// allocate space if we need it
 	if(p->auxch.auxp == NULL || memsize > p->memsize)
 	{
@@ -1005,7 +1006,8 @@ void atssinnoiset(ATSSINNOI *p)
 	// set up the buffer, phase, etc.
 	p->oscbuf = (ATS_DATA_LOC *)(p->auxch.auxp);
 	p->randinoise = (RANDIATS *)(p->oscbuf + (int)(*p->iptls));
-	p->nzbuf = (double *)(p->randinoise + (int)(*p->iptls));
+	p->oscphase = (double *)(p->randinoise + (int)(*p->iptls));
+	p->nzbuf = (double *)(p->oscphase + (int)(*p->iptls));
 	
 	//see if we have to allocate memory for the nzdata
 	nzmemsize = (int)(atsh->npartials * atsh->nfrms);
@@ -1074,7 +1076,14 @@ void atssinnoiset(ATSSINNOI *p)
 	//save the memory size of the noise
 	p->nzmemsize = nzmemsize;
 	
-	p->oscphase = 0;
+	// initialize band limited noise parameters
+	for(i = 0; i < (int)*p->iptls; i++)
+	{
+		randiats_setup(esr, *(p->datastart + 2 + i * (int)*p->iptlincr + (int)*p->iptloffset), &(p->randinoise[i]));
+	}
+	//initilize oscphase
+	for(i = 0; i < (int)*p->iptls; i++)
+		p->oscphase[i] = 0;
 	//flag set to reduce the amount of warnings sent out for time pointer out of range
 	p->prFlg = 1;	// true
 
@@ -1089,12 +1098,14 @@ void atssinnoi(ATSSINNOI *p)
 	double noise;
 	double inc;
 	int i;
-	unsigned int phase;
+	double phase;
 	double * nzbuf;
 	double amp;
+	double nzamp;	//noize amp
 	double sinewave;
 	float freq;
-	
+	float nzfreq;
+
 	ATS_DATA_LOC * oscbuf;
 	
 	// make sure time pointer is within range
@@ -1133,25 +1144,28 @@ void atssinnoi(ATSSINNOI *p)
 	//do synthesis
 	for(i = 0; i < (int)*p->iptls; i++)
 	{
-			phase = p->oscphase;
+			phase = p->oscphase[i];
 			ar = p->aoutput;
 			nsmps = ksmps;
 			amp = oscbuf[i].amp;
 			freq = (float)oscbuf[i].freq * *p->kfreq;
 			inc = TWOPI * freq / esr;
+			nzamp = *(p->nzbuf + i);
+			nzfreq   =(freq< 500.? 50. : freq * .05);
 			do
 			{
-				sinewave = sin(inc * phase) * amp;
-				noise = sinewave * randifats(&(p->randinoise[i]), freq );
-				
+				//calc sine wave
+				sinewave = sin(phase) * amp;
+				phase += inc;
+				//calc noise
+				noise = nzamp * sinewave * randifats(&(p->randinoise[i]), nzfreq );
+				//calc output
 				*ar += (float)sinewave * *p->ksinamp + (float)noise * *p->knzamp;
-				
-				phase += 1;
 				ar++;
 			}
 			while(--nsmps);
+			p->oscphase[i] = phase;
 	}
-	p->oscphase = phase;
 }
 
 void fetchSINNOIpartials(ATSSINNOI * p, float position)
@@ -1162,6 +1176,7 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 	double * nzbuf;
         int     frame;
         int     i;      // for the for loop
+	int	npartials = (int)p->atshead->npartials;
 	
         frame = (int)position;
 	frm0 = p->datastart + frame * p->frmInc;
@@ -1188,7 +1203,7 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 				oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
 				oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
 				//noise
-				*nzbuf = *(p->nzdata + frame * (int)p->atshead->npartials + i);
+				*nzbuf = *(p->nzdata + frame * npartials + i);
 				nzbuf++;
 				oscbuf++;
 			}
@@ -1215,7 +1230,7 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 			oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc) + frac * (*(frm1 + 1 + i * (int)p->partialinc) - *(frm0 + 1 + i * (int)p->partialinc));	//amp
 			oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc) + frac * (*(frm1 + 2 + i * (int)p->partialinc) - *(frm0 + 2 + i * (int)p->partialinc));	//freq
 			//noise
-			*nzbuf = *(p->nzdata + frame * (int)p->atshead->npartials + i) + frac * (*(p->nzdata + (frame + 1) * (int)p->atshead->npartials + i) - *(p->nzdata + frame * (int)p->atshead->npartials + i));
+			*nzbuf = *(p->nzdata + frame * npartials + i) + frac * (*(p->nzdata + (frame + 1) * npartials + i) - *(p->nzdata + frame * npartials + i));
 			nzbuf++;
 			oscbuf++;
 		}

@@ -187,7 +187,7 @@ typedef struct _atssinnoi
 	ATS_DATA_LOC * oscbuf;           // stores band information for passing data
         
 	double  * nzbuf;           // stores band information for passing data
-        unsigned int	oscphase;       //the phase of all the oscilators
+        double * oscphase;       //the phase of all the oscilators
         RANDIATS * randinoise;	// a pointer to the interpolated random noise info
 	ATSSTRUCT * atshead;
 	char * filename;
