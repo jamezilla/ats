@@ -7,20 +7,21 @@ typedef struct atsdataloc
         double freq;
 }       ATS_DATA_LOC;
 
-typedef struct
+typedef struct _atspinfo
 {
         float   amp;
         float   freq;
 }       atspinfo;               //a sturucture that holds the amp and freq of 1 partial
 
-typedef struct { //the data for the randi UG
+typedef struct _randiats
+{ //the data for the randi UG
   int   size; //size of the frame in samples this should be sr/freq.
   float a1;   //first amplitude value
   float a2;   //next  amplitude value
   int   cnt;  //sample position counter
 } RANDIATS;
 
-typedef struct
+typedef struct _atsnzaux
 {
         double   buf[25];
         float   phaseinc[25];
@@ -42,7 +43,7 @@ typedef struct atsstruct
         double  type;   /* Ats Frame type 1-4 */
 }       ATSSTRUCT;
 
-typedef struct atsfiledata
+typedef struct _atsfiledata
 {
 	ATS_DATA_LOC ** atsdata; //temp data
 	double ** atsdatanoise;  //temp data
@@ -52,20 +53,21 @@ typedef struct atsfiledata
 
 /* structures to pass data to the opcodes */
 
-typedef struct
+typedef struct _atsread
 {       OPDS    h;
         float   *kfreq, *kamp, *ktimpnt, *ifileno, *ipartial; //outputs (2) and inputs
         double  maxFr;
 	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
-        double  timefrmInc;
-        AUXCH   auxch;
-        
-	ATSFILEDATA filedata;
+	double  timefrmInc;
+        char * filename;
 	
-	ATS_DATA_LOC * datap;	// pointer to the data that we get from the ats file (freq and amp array)
+	AUXCH   auxch;
+        MEMFIL * atsmemfile;
+	
+	ATS_DATA_LOC ** datap;	// pointer to the data that we get from the ats file (freq and amp array)
 }       ATSREAD;
 
-typedef struct
+typedef struct _atsreadnz
 {       OPDS    h;
         float   *kenergy, *ktimpnt, *ifileno, *inzbin; //outputs (1) and inputs
         double  maxFr;
@@ -80,7 +82,7 @@ typedef struct
 
 }       ATSREADNZ;
 
-typedef struct
+typedef struct _atsadd
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *kfmod, *ifileno, *ifn, *iptls; // audio output and k & i inputs
         float   *iptloffset, *iptlincr, *igatefun; // optional arguments
@@ -99,7 +101,7 @@ typedef struct
 
 }       ATSADD;
 
-typedef struct
+typedef struct _atsaddnz
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *ifileno, *ibands; // audio output and k & i inputs
         float   *ibandoffset, *ibandincr; // optional arguments
@@ -122,7 +124,8 @@ typedef struct
 	ATSSTRUCT atshead;
 }       ATSADDNZ;
 
-typedef struct {
+typedef struct _atsbufread
+{
         OPDS    h;
         float   *ktimpnt, *kfmod, *ifilno, *iptls;
         float   *iptloffset, *iptlincr; // optional arguments
@@ -141,7 +144,7 @@ typedef struct {
 	ATSSTRUCT atshead;
 } ATSBUFREAD;
 
-typedef struct
+typedef struct _atscross
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *kfmod, *ifileno, *ifn, *kmyamp, *katsbufamp, *iptls; // audio output and k & i inputs
         float   *iptloffset, *iptlincr, *igatefun; // optional arguments
@@ -163,7 +166,8 @@ typedef struct
 
 }       ATSCROSS;       //modified from atsadd
 
-typedef struct {
+typedef struct _atsbufreadnz
+{
         OPDS    h;
         float   *ktimpnt, *ifileno, *ibands; // required inputs
         float   *ibandoffset, *ibandincr; // optional arguments
@@ -182,7 +186,7 @@ typedef struct {
 	ATSSTRUCT atshead;
 } ATSBUFREADNZ;
 
-typedef struct
+typedef struct _atscrossnz
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *ifileno, *ifn, *kmyamp, *katsbufamp, *ibands; // audio output and k & i inputs
         float   *ibandoffset, *ibandincr; // optional arguments

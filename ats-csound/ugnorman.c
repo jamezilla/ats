@@ -97,7 +97,7 @@ void myiniterror(char *s)
 /************************************************************/
 
 void FetchPartial(
-	ATS_DATA_LOC *input,
+	ATS_DATA_LOC **input,
 	float	*buf,
 	float	position
 	)
@@ -107,18 +107,17 @@ void FetchPartial(
 	
 	frame = (int)position;
 	frac = position - frame;
-
-	buf[0] = (float)(input[frame].amp + frac * (input[frame + 1].amp - input[frame].amp));	// calc amplitude
-	buf[1] = (float)(input[frame].freq + frac * (input[frame + 1].freq - input[frame].freq)); // calc freq
+	
+	buf[0] = (float)(input[frame]->amp + frac * (input[frame + 1]->amp - input[frame]->amp));	// calc amplitude
+	buf[1] = (float)(input[frame]->freq + frac * (input[frame + 1]->freq - input[frame]->freq)); // calc freq
 }
 
 void atsreadset(ATSREAD *p){
 	char atsfilname[MAXNAME];
-	ATSSTRUCT * atsh = NULL;
-	int i;
-	p->filedata.atsdata = NULL;
-	p->filedata.atsdatanoise = NULL;
-
+	ATSSTRUCT * atsh;
+	int i, frmInc, partialloc;
+	double * temppnt;
+	
 	/* copy in ats file name */
 	if (*p->ifileno == SSTRCOD)
 	{
@@ -129,53 +128,84 @@ void atsreadset(ATSREAD *p){
 	else 
 		sprintf(atsfilname,"ats.%d", (int)*p->ifileno);
 	
-	
-	if (readdatafile(atsfilname, &(p->filedata)) == 1)
-	{
-		sprintf(errmsg, "ATSREAD: FILE NOT READ");
-		myiniterror(errmsg);
-		return;
-	}
-	//assign a local pointer to the header data so it's easy to deal with
-	atsh = &(p->filedata.atshead);
+	p->atsmemfile = ldmemfile(atsfilname);
 	
 	// allocate space so we can store the data for later use
-	auxalloc(((int)(atsh->nfrms) * sizeof(ATS_DATA_LOC)), &p->auxch);
-	p->datap = (ATS_DATA_LOC *) p->auxch.auxp;
-	
-	/* test */
-	//p->datap = (ATS_DATA_LOC *) malloc(sizeof(ATS_DATA_LOC) * (int)(atsh->nfrms));
-	// copy the data from the data read in to the newly allocated space
-	for(i = 0; i < atsh->nfrms; i++)
+	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
 	{
-		p->datap[i].amp = (p->filedata.atsdata)[i][(int)(*p->ipartial) - 1].amp;
-		p->datap[i].freq = (p->filedata.atsdata)[i][(int)(*p->ipartial) - 1].freq;
+		// copy in the file name
+		if(p->filename != NULL)
+		{
+			mfree(p->filename);
+			p->filename = NULL;
+		}
+		p->filename = (char *)mmalloc(sizeof(char) * strlen(atsfilname));
+		strcpy(p->filename, atsfilname);
+		
+		//point the header pointer at the header data
+		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
+	        
+		//make sure that this is an ats file
+		if (atsh->magic != 123)
+		{
+        	        sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+                	initerror(errmsg);
+                	return;
+        	}
+
+		auxalloc(((int)(atsh->nfrms) * sizeof(ATS_DATA_LOC *)), &p->auxch);
+		p->datap = (ATS_DATA_LOC **) (p->auxch.auxp);
+		
+		p->maxFr = atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
 	}
-	//free the space used when we read in the data
-	if(p->filedata.atsdatanoise != NULL)
+	else
 	{
-		for(i = 0; i < (int)(atsh->nfrms); i++)
-			free(p->filedata.atsdatanoise[i]);
-		free(p->filedata.atsdatanoise);
-	}
-	if(p->filedata.atsdata != NULL)
-	{
-		for(i = 0; i < (int)(atsh->nfrms); i++)
-			free(p->filedata.atsdata[i]);
-		free(p->filedata.atsdata);
+		//point the header pointer at the header data
+		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	}
 		
-	p->prFlg = 1;	// true
-	p->maxFr = atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
-
 	// check to see if partial is valid
 	if( (int)(*p->ipartial) > (int)(atsh->npartials) || (int)(*p->ipartial) <= 0)
 	{
-		sprintf(errmsg, "PARTIAL %i OUT OF RANGE", (int)(*p->ipartial));
-		myiniterror(errmsg);
+		sprintf(errmsg, "ATSREAD: partial %i out of range, max allowed is %i", (int)(*p->ipartial), (int)(atsh->npartials));
+		initerror(errmsg);
 		return;
 	}
+
+	// point the data pointer to the correct partial
+	temppnt = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
+
+        switch ( (int)(atsh->type))
+        {
+
+                case 1 :        partialloc = 1 + 2 * (*p->ipartial - 1);
+                                frmInc = (int)(atsh->npartials * 2 + 1);
+                                break;
+
+                case 2 :        partialloc = 1 + 3 * (*p->ipartial - 1);
+                                frmInc = (int)(atsh->npartials * 3 + 1);
+                                break;
+
+                case 3 :        partialloc = 1 + 2 * (*p->ipartial - 1);
+                                frmInc = (int)(atsh->npartials * 2 + 26);
+                                break;
+
+                case 4 :        partialloc = 1 + 3 * (*p->ipartial - 1);
+                                frmInc = (int)(atsh->npartials * 3 + 26);
+                                break;
+                default:        sprintf(errmsg, "Type not implemented");
+                                initerror(errmsg);
+                                return;
+        }
+	for(i = 0; i < (int)(atsh->nfrms); i++)
+	{
+		p->datap[i] = (ATS_DATA_LOC *)(temppnt + partialloc);
+		temppnt = temppnt + frmInc;
+	}
+	
+	p->prFlg = 1;	// true
+
 	return;
 }
 
