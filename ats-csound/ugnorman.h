@@ -1,6 +1,17 @@
 /* header file for all of the ATScsound functions by Alex Norman
 */
-//#include "ftgen.h"
+
+typedef struct atsdataloc
+{
+        double amp;
+        double freq;
+}       ATS_DATA_LOC;
+
+typedef struct
+{
+        float   amp;
+        float   freq;
+}       atspinfo;               //a sturucture that holds the amp and freq of 1 partial
 
 typedef struct { //the data for the randi UG
   int   size; //size of the frame in samples this should be sr/freq.
@@ -9,6 +20,13 @@ typedef struct { //the data for the randi UG
   int   cnt;  //sample position counter
 } RANDIATS;
 
+typedef struct
+{
+        double   buf[25];
+        float   phaseinc[25];
+        float   nfreq[25];
+	RANDIATS randinoise[25];
+}       atsnzAUX;
 
 typedef struct atsstruct
 {
@@ -24,45 +42,60 @@ typedef struct atsstruct
         double  type;   /* Ats Frame type 1-4 */
 }       ATSSTRUCT;
 
+typedef struct atsfiledata
+{
+	ATS_DATA_LOC ** atsdata; //temp data
+	double ** atsdatanoise;  //temp data
+	ATSSTRUCT atshead;	//the ATS file header
+}	ATSFILEDATA;
+
+
+/* structures to pass data to the opcodes */
+
 typedef struct
 {       OPDS    h;
         float   *kfreq, *kamp, *ktimpnt, *ifileno, *ipartial; //outputs (2) and inputs
-        MEMFIL  *mfp;
-        double  *frPtr; // pointer to the data (past the header)
-        double  maxFr, prFlg;
-        int     frmInc;         // amount to increment frame pointer to get to next frame
+        double  maxFr;
+	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
-        int     partialloc;     // location of the partial in the frame
+        AUXCH   auxch;
+        
+	ATSFILEDATA filedata;
+	
+	ATS_DATA_LOC * datap;	// pointer to the data that we get from the ats file (freq and amp array)
 }       ATSREAD;
 
 typedef struct
 {       OPDS    h;
         float   *kenergy, *ktimpnt, *ifileno, *inzbin; //outputs (1) and inputs
-        MEMFIL  *mfp;
-        double  *frPtr; // pointer to the data (past the header)
-        double  maxFr, prFlg;
-        int     frmInc;         // amount to increment frame pointer to get to next frame
+        double  maxFr;
+	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
-        int     nzbinloc;       // location of the noise bin in the frame
+        
+        AUXCH   auxch;
+	
+	ATSFILEDATA filedata;
+	
+	double * datap;	// pointer to the data that we get from the ats file energy
+
 }       ATSREADNZ;
 
 typedef struct
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *kfmod, *ifileno, *ifn, *iptls; // audio output and k & i inputs
         float   *iptloffset, *iptlincr, *igatefun; // optional arguments
-        MEMFIL  *mfp;   // a pointer into the ATS file
-        FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
+        
+	FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
         AUXCH   auxch;
-        double  *frPtr;         // pointer to the data (past the header)
-        double  maxFr, prFlg;
-        int     frmInc;         // amount to increment frame pointer to get to next frame
+        double  maxFr;
+	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
         double  timefrmInc;
-        int     firstpartial;   // location of first wanted partial in the frame
-        int     partialinc;     // amount to increment pointer by to get at the next partial in a frame
-        float   *buf;           // stores partial information for passing data
-        float   * oscphase;      // for creating noise
-        float   MaxAmp;         // maximum amplitude in anaylsis file
-        int     mems;           // memory size of aux channel
+        double	MaxAmp;         // maximum amplitude in anaylsis file
+
+	ATSFILEDATA filedata;
+	ATS_DATA_LOC * datap;
+        double  *oscphase;      // oscillator phase
+	ATS_DATA_LOC * buf;
 
 }       ATSADD;
 
@@ -86,22 +119,8 @@ typedef struct
         RANDIATS * randinoise;	// a pointer to the interpolated random noise info
         int	oscphase;       //the phase of all the oscilators
 	float   * nfreq;
+	ATSSTRUCT atshead;
 }       ATSADDNZ;
-
-typedef struct
-{
-        double   buf[25];
-        float   phaseinc[25];
-        float   nfreq[25];
-	RANDIATS randinoise[25];
-}       atsnzAUX;
-
-typedef struct
-{
-        float   amp;
-        float   freq;
-}       atspinfo;               //a sturucture that holds the amp and freq of 1 partial
-
 
 typedef struct {
         OPDS    h;
@@ -119,6 +138,7 @@ typedef struct {
         double  timefrmInc;
         float   MaxAmp;         // maximum amplitude in anaylsis file
         double  *frPtr;         // pointer to the data (past the header)
+	ATSSTRUCT atshead;
 } ATSBUFREAD;
 
 typedef struct
@@ -139,6 +159,7 @@ typedef struct
         float   *oscphase;              // pointer to the phase information
         float   MaxAmp;         // maximum amplitude in anaylsis file
         int     mems;           // memory size of aux channel
+	ATSSTRUCT atshead;
 
 }       ATSCROSS;       //modified from atsadd
 
@@ -158,6 +179,7 @@ typedef struct {
         double  timefrmInc;
         float   MaxAmp;         // maximum amplitude in anaylsis file
         double  *frPtr;         // pointer to the data (past the header)
+	ATSSTRUCT atshead;
 } ATSBUFREADNZ;
 
 typedef struct
@@ -184,4 +206,5 @@ typedef struct
         float   *num1, *num2, *dfdmax;
         float   *nfreq;
         float   *oscphase;      // for creating noise
+	ATSSTRUCT atshead;
 }       ATSCROSSNZ;                     
