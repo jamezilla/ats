@@ -27,9 +27,6 @@
 
 \raggedbottom                           % better than inter-para spaces, I say.
 
-
-
-
 \usepackage{babel}
 \makeatother
 \begin{document}
@@ -49,6 +46,16 @@ of Washington\\
 
 \maketitle
 \pagestyle{empty} \thispagestyle{empty}
+
+\begin{center}\textbf{\large Abstract}\end{center}{\large \par}
+
+\textit{\hspace*{-0.1in}ATS is a spectral modeling system based on
+a sinusoidal plus critical-band noise decomposition. The original
+system interface was through LISP and CLM, but significant improvements
+have been made by porting the concepts of ATS to the C language. This
+work has also been extended to create interfaces for two popular synthesis
+languages: Csound and Pd. This paper presents several ways of working
+with ATS data using tools written by the authors.}
 
 
 \section{ATS Overview}
@@ -86,12 +93,12 @@ atsbufread.
 
 \subsection{Independent Unit Generators}
 
-All of the independent u-gens take an ATS file and a time pointer
-as arguments. Using these and other arguments, the u-gens extract
-data from an ATS file at the time indicated by the time pointer.
+All of the independent ugens take an ATS file and a time pointer as
+arguments. Using these and other arguments, the ugens extract data
+from an ATS file at the time indicated by the time pointer.
 
-\textbf{atsread} and \textbf{atsreadnz} are the most generic u-gens
-in the ats-csound package. Each of these u-gens simply read data (with
+\textbf{atsread} and \textbf{atsreadnz} are the most generic ugens
+in the ats-csound package. Each of these ugens simply read data (with
 interpolation) out of an ATS data file and return it for arbitrary
 use. atsread returns the frequency and amplitude information of a
 user specified partial. atsreadnz takes a noise band number and returns
@@ -188,19 +195,19 @@ sound.
 
 In order to access ATS data in real time we have created an object
 for Pure-Data. This object allows users to access data in a similar
-way to the csound unit generators atsread and atsreadnz. This pd object
-is called \textbf{atsread}.
+way to the Csound unit generators \textbf{atsread} and \textbf{atsreadnz}.
+This pd object is called \textbf{atsread}.
 
-\textbf{atsread} uses a time pointer the same way that its csound
-counter part does. The pd version combines the functionality of the
+\textbf{atsread} uses a time pointer the same way that its Csound
+counterpart does. The pd version combines the functionality of the
 csound atsread and atsread noise. In addition to it's combined functionality
 the pd object can output lists of data, allowing for one object to
 output all the partial and noise data for one file. atsread for pd
 has three outputs: the first output gives a list of frequency values,
 the second gives a list of corresponding amplitude values, and the
-third gives a list of noise energy values. The lists are always given
-in order from lowest partial/band to highest partial/band. The user
-opens an ATS file for access by sending a message in this format:
+third gives a list of noise energy values. These lists are always
+given in order from lowest partial/band to highest partial/band. The
+user opens an ATS file for access by sending a message in this format:
 \char`\"{}open cl.ats\char`\"{}, alternatively the ATS file name can
 be given as an argument to the object. A user can set a range of partials
 by giving messages of the form \char`\"{}set 1 2 5 10..20\char`\"{}.
@@ -380,9 +387,9 @@ all the extent of the view. The data selected is displayed in red.
 seen in the form of a numerical list. The amplitude, frequency and
 phase (if any) values of each frame are represented in each column
 of the list. A vertical selection/deselection can be performed shift-clicking
-/ ctrl-clicking on the list (note that you may also perform a non-contiguous
-selection of partials as well). The horizontal selection may be done
-using the NOW=TO and NOW=FROM buttons. 
+/ ctrl-clicking on the list (note that the user may also perform a
+non-contiguous selection of partials as well). The horizontal selection
+may be done using the NOW=TO and NOW=FROM buttons. 
 \item Using the smart selection menu item. This menu allows the user to
 select partials in the current view using both amplitude evaluation
 and/or a fix step of partial order. As an example: setting from 1
