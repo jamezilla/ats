@@ -4,7 +4,7 @@ Oscar Pablo Di Liscia / Juan Pampin
  */
 
 #include "atsh.h"
-float res_data[NB_RES+1]=ATSA_CRITICAL_BAND_EDGES;
+float res_data[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
 
 //////////////////////////////////////////////////////////////////////////////
 gint configure_event(GtkWidget *widget, GdkEventConfigure *event)
@@ -187,7 +187,7 @@ void draw_pixm()//draws the spectrum on a pixmap
   float curx, cury, nextx ,nexty;
   float ffac1, ffac2=0.; 
   float x_line=-1.;
-  //float band_step[NB_RES+1];
+  //float band_step[ATSA_CRITICAL_BANDS+1];
   float band_step;
   float linear_res;
   //erase previous graph
@@ -259,14 +259,14 @@ void draw_pixm()//draws the spectrum on a pixmap
     
       //init values
       curx=nextx=nexty=0.;
-      band_step=main_graph->allocation.height/(float)NB_RES; 
+      band_step=main_graph->allocation.height/(float)ATSA_CRITICAL_BANDS; 
 
       for(i=h->viewstart-1; i < h->viewend; ++i) {  
 
 	nextx+=frame_step;
 	cury=main_graph->allocation.height;
 	
-	for(j=0; j <NB_RES; ++j) {
+	for(j=0; j <ATSA_CRITICAL_BANDS; ++j) {
 	  linear_res= (float)sqrt((float)ats_sound->band_energy[j][i]/
 				  ((float)atshed->ws * (float)ATSA_NOISE_VARIANCE));
 	  val=depth - (int)((float)pow(linear_res, valexp) * (float)depth);
@@ -441,8 +441,8 @@ GdkModifierType state;
 			  (float)v->diff / 1000.);  		  
    }     
    if(VIEWING_RES){
-     freq_step=main_graph->allocation.height / (float)NB_RES;
-     rband    = NB_RES-(int)((float)y /freq_step); 
+     freq_step=main_graph->allocation.height / (float)ATSA_CRITICAL_BANDS;
+     rband    = ATSA_CRITICAL_BANDS-(int)((float)y /freq_step); 
      position->from= (h->viewstart-1) + (int)((float) x / frame_step);     
      
      sprintf(info," FRAME  =%d(%6.3f segs.)\n BAND    =%d(%d-%d Hz.)\n ENERGY=%6.5f", 
@@ -528,7 +528,7 @@ return;
 ///////////////////////////////////////////////////////////////
 gint click(GtkWidget *widget, GdkEventButton *event) 
 {
-  int i,j, temp,curr, index;
+  int i,j, temp, index=0;
   int prevfrom, prevto;
   GdkModifierType state;
   float gap=0., mingap=0.;

@@ -442,216 +442,213 @@ void atsin(char *pointer)
 
   //g_print ("%s ", pointer);
 
- if((atsfin=fopen(ats_tittle,"rb"))==0) {
-   strcat(info, "Could not open ");
-   strcat(info, ats_tittle);
-   Popup(info);
-   *ats_tittle=0;
-   floaded=FALSE;
-   draw_default();
-   init_scalers(FALSE);
-   return;
- }
+  if((atsfin=fopen(ats_tittle,"rb"))==0) {
+    strcat(info, "Could not open ");
+    strcat(info, ats_tittle);
+    Popup(info);
+    *ats_tittle=0;
+    floaded=FALSE;
+    draw_default();
+    init_scalers(FALSE);
+    return;
+  }
 
- length=my_filelength(atsfin);
- //g_print (" (%d BYTES) \n", length);
+  length=my_filelength(atsfin);
+  //g_print (" (%d BYTES) \n", length);
   
- fread(atshed,sizeof(ATS_HEADER),1,atsfin);
+  fread(atshed,sizeof(ATS_HEADER),1,atsfin);
 
- //here we try to deal with the BIG/LITTLE ENDIAN stuff 
- if(atshed->mag != magic) { 
-   aux=atshed->mag;		
-   atshed->mag =byte_swap(&aux);
+  //here we try to deal with the BIG/LITTLE ENDIAN stuff 
+  if(atshed->mag != magic) { 
+    aux=atshed->mag;		
+    atshed->mag =byte_swap(&aux);
 
-   if((int)atshed->mag != (int)magic) { 
-	Popup("ERROR:ATS MAGIC NUMBER NOT FOUND IN HEADER...");
-   	*ats_tittle=0;
-   	fclose(atsfin);
-   	floaded=FALSE;
-	need_byte_swap=FALSE;
-   	init_scalers(FALSE);
-   	draw_default();
-   	return;
-   } 
-   else {
+    if((int)atshed->mag != (int)magic) { 
+      Popup("ERROR:ATS MAGIC NUMBER NOT FOUND IN HEADER...");
+      *ats_tittle=0;
+      fclose(atsfin);
+      floaded=FALSE;
+      need_byte_swap=FALSE;
+      init_scalers(FALSE);
+      draw_default();
+      return;
+    } 
+    else {
       need_byte_swap=TRUE;               //now we know that we must swap the bytes 
-	byte_swap_header(atshed,FALSE);    //swap bytes of header data first
-   }  
+      byte_swap_header(atshed,FALSE);    //swap bytes of header data first
+    }  
  
- }
+  }
  
 
-//////////////////////find out length of data and check it for consistence////////////////
+  //////////////////////find out length of data and check it for consistence////////////////
 
- if(FILE_HAS_PHASE) {
-   n1+=1;
- }
- if(FILE_HAS_NOISE) {
-   n2+=1;
- }
+  if(FILE_HAS_PHASE) {
+    n1+=1;
+  }
+  if(FILE_HAS_NOISE) {
+    n2+=1;
+  }
 
- sizef =  sizeof(ATS_HEADER) +
-   ((int)atshed->par * (int)atshed->fra * sizeof(double) * n1) +
-   (sizeof(double) * (int)atshed->fra) + 
-   (NB_RES * (int)atshed->fra * sizeof(double) * n2);
+  sizef =  sizeof(ATS_HEADER) +
+    ((int)atshed->par * (int)atshed->fra * sizeof(double) * n1) +
+    (sizeof(double) * (int)atshed->fra) + 
+    (ATSA_CRITICAL_BANDS * (int)atshed->fra * sizeof(double) * n2);
 
 
 
-if(sizef != length) { //error: the file size does not match the header data
-   Popup("ERROR: FILE SIZE DOES NOT MATCH HEADER DATA...");
-   *ats_tittle=0;
-   fclose(atsfin);
-   floaded=FALSE;
-   init_scalers(FALSE);
-   draw_default();
-   return; 
- }
-/////////////////////////////////////////////////////////////////////////////////////////
+  if(sizef != length) { //error: the file size does not match the header data
+    Popup("ERROR: FILE SIZE DOES NOT MATCH HEADER DATA...");
+    *ats_tittle=0;
+    fclose(atsfin);
+    floaded=FALSE;
+    init_scalers(FALSE);
+    draw_default();
+    return; 
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////
  
-if(!ats_sound) {
-   Popup("Could not allocate enough memory for ATS data");
-   *ats_tittle=0;
-   fclose(atsfin);
-   floaded=FALSE;
-   init_scalers(FALSE);
-   draw_default();
-   return; 
- }
+    if(!ats_sound) {
+      Popup("Could not allocate enough memory for ATS data");
+      *ats_tittle=0;
+      fclose(atsfin);
+      floaded=FALSE;
+      init_scalers(FALSE);
+      draw_default();
+      return; 
+    }
 
-mem_realloc();
-////////////////////////////////////////////////////////////////////////////////////////
+    mem_realloc();
+    ////////////////////////////////////////////////////////////////////////////////////////
 
- normfac= 1. / atshed->ma;
- ///EVERYTHING SEEMS TO BE OK, THEN LOAD THE DATA...
- fseek(atsfin,sizeof(ATS_HEADER),SEEK_SET);
+    normfac= 1. / atshed->ma;
+    ///EVERYTHING SEEMS TO BE OK, THEN LOAD THE DATA...
+      fseek(atsfin,sizeof(ATS_HEADER),SEEK_SET);
   
 
- for(i=0; i<(int)atshed->fra; ++i) {
+      for(i=0; i<(int)atshed->fra; ++i) {
    
-   fread(&aux,1,sizeof(double),atsfin);  //read just one time value per frame
+        fread(&aux,1,sizeof(double),atsfin);  //read just one time value per frame
    
-   if(need_byte_swap==TRUE) {
-	 ats_sound->time[0][i]=byte_swap(&aux); 
-   } 
-   else {
-       ats_sound->time[0][i]=aux; 
-   }
-
-   for (x=0; x<(int)atshed->par; ++x) {
-   
-     fread(&aux,1,sizeof(double),atsfin);  //read amp value for each partial 
-     if(need_byte_swap==TRUE) {
-	 ats_sound->amp[x][i]=byte_swap(&aux); 
-     } 
-     else {
-       ats_sound->amp[x][i]= aux; 
-     } 
-     fread(&aux,1,sizeof(double),atsfin); //read freq value for each partial 
-     if(need_byte_swap==TRUE) {
-       ats_sound->frq[x][i]=byte_swap(&aux); 
-     } 
-     else {
-       ats_sound->frq[x][i]= aux; 
-     }
-   
-     if(FILE_HAS_PHASE) {                 //read phase data if any...
-       fread(&aux,1,sizeof(double),atsfin); 
-       if(need_byte_swap==TRUE) {
-	 ats_sound->pha[x][i]=byte_swap(&aux); 
-       } 
-       else {
-	 ats_sound->pha[x][i]= aux; 
-       }
-     }
-  }  
-   
-   if (FILE_HAS_NOISE) {
-     for (x=0; x<NB_RES; x++) {//read residual analysis data if any...
-       fread(&aux,1,sizeof(double),atsfin);
-       if(need_byte_swap==TRUE) {
-          ats_sound->band_energy[x][i]=byte_swap(&aux);  
-       }
-	 else {
-          ats_sound->band_energy[x][i]=aux;
-       }
-
-     }
-   }
-   
- }
-
-//g_print ("\n read OK \n");
+        if(need_byte_swap==TRUE) ats_sound->time[0][i]=byte_swap(&aux); 
+        else ats_sound->time[0][i]=aux; 
 
 
-/////////////// find out max. dt//////////////////////////////
- maxtim=0.;
+        for (x=0; x<(int)atshed->par; ++x) {
+   
+          fread(&aux,1,sizeof(double),atsfin);  //read amp value for each partial 
+          if(need_byte_swap==TRUE) {
+            ats_sound->amp[x][i]=byte_swap(&aux); 
+          } 
+          else {
+            ats_sound->amp[x][i]= aux; 
+          } 
+          fread(&aux,1,sizeof(double),atsfin); //read freq value for each partial 
+          if(need_byte_swap==TRUE) {
+            ats_sound->frq[x][i]=byte_swap(&aux); 
+          } 
+          else {
+            ats_sound->frq[x][i]= aux; 
+          }
+   
+          if(FILE_HAS_PHASE) {                 //read phase data if any...
+            fread(&aux,1,sizeof(double),atsfin); 
+            if(need_byte_swap==TRUE) {
+              ats_sound->pha[x][i]=byte_swap(&aux); 
+            } 
+            else {
+              ats_sound->pha[x][i]= aux; 
+            }
+          }
+        }  
+   
+        if (FILE_HAS_NOISE) {
+          for (x=0; x<ATSA_CRITICAL_BANDS; x++) {//read residual analysis data if any...
+            fread(&aux,1,sizeof(double),atsfin);
+            if(need_byte_swap==TRUE) {
+              ats_sound->band_energy[x][i]=byte_swap(&aux);  
+            }
+            else {
+              ats_sound->band_energy[x][i]=aux;
+            }
 
- for(i=0; i<(int)atshed->fra - 1; ++i) {
-  dt=ats_sound->time[0][1+i] - ats_sound->time[0][i];
-  if(dt > maxtim) {maxtim=dt;} //find out max. dt.
-}
- //g_print ("MAX. delta time is = %f secs.\n",maxtim );
+          }
+        }
+   
+      }
+
+      //g_print ("\n read OK \n");
+
+
+      /////////////// find out max. dt//////////////////////////////
+        maxtim=0.;
+
+        for(i=0; i<(int)atshed->fra - 1; ++i) {
+          dt=ats_sound->time[0][1+i] - ats_sound->time[0][i];
+          if(dt > maxtim) {maxtim=dt;} //find out max. dt.
+        }
+        //g_print ("MAX. delta time is = %f secs.\n",maxtim );
  
- //the horizontal selection parameters 
- selection->from=selection->to=0;
- selection->f1=selection->f2=0;
- selection->x1=selection->y1=selection->x2=selection->y2=0;
- vertex1=vertex2=FALSE;
+        //the horizontal selection parameters 
+        selection->from=selection->to=0;
+        selection->f1=selection->f2=0;
+        selection->x1=selection->y1=selection->x2=selection->y2=0;
+        vertex1=vertex2=FALSE;
  
 
- if (FILE_HAS_PHASE) {
-   sparams->upha=TRUE;
- }
- else{
-   sparams->upha=FALSE;
- }
+        if (FILE_HAS_PHASE) {
+          sparams->upha=TRUE;
+        }
+        else{
+          sparams->upha=FALSE;
+        }
  
- //Default initialization of synthesis data...
- sparams->sr  = 44100.; 
- sparams->amp = 1.;
- if(FILE_HAS_NOISE) {
-   sparams->ramp = 1.;
- }
- else {
-   sparams->ramp = 0.;
- }
- sparams->frec = 1.;
- sparams->max_stretch= 1.;
- sparams->beg = 0.;
- sparams->end = ats_sound->time[0][(int)atshed->fra-1] + ats_sound->time[0][1];
- sparams->allorsel=FALSE;
+        //Default initialization of synthesis data...
+        sparams->sr  = 44100.; 
+        sparams->amp = 1.;
+        if(FILE_HAS_NOISE) {
+          sparams->ramp = 1.;
+        }
+        else {
+          sparams->ramp = 0.;
+        }
+        sparams->frec = 1.;
+        sparams->max_stretch= 1.;
+        sparams->beg = 0.;
+        sparams->end = ats_sound->time[0][(int)atshed->fra-1] + ats_sound->time[0][1];
+        sparams->allorsel=FALSE;
 
-//initialization of smart selection data
+        //initialization of smart selection data
 
- sdata->from=  1;
- sdata->to=(int)atshed->par; 
- sdata->step=  1;
- sdata->tres=  -96.;
- sdata->met =  FALSE;
+        sdata->from=  1;
+        sdata->to=(int)atshed->par; 
+        sdata->step=  1;
+        sdata->tres=  -96.;
+        sdata->met =  FALSE;
 
- floaded=TRUE;
- init_scalers(TRUE); 
- ned=led=0;
- undo=TRUE;
+        floaded=TRUE;
+        init_scalers(TRUE); 
+        ned=led=0;
+        undo=TRUE;
 
- //the contrast of display
- valexp=.5;
- GTK_ADJUSTMENT(valadj)->upper=100.;
- GTK_ADJUSTMENT(valadj)->lower=1.;
- gtk_adjustment_set_value(GTK_ADJUSTMENT(valadj), valexp * 100.);  
+        //the contrast of display
+        valexp=.5;
+        GTK_ADJUSTMENT(valadj)->upper=100.;
+        GTK_ADJUSTMENT(valadj)->lower=1.;
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(valadj), valexp * 100.);  
  
 
- if(tWedit == NULL) {
-   tWedit=create_edit_curve(TIM_EDIT, timenv);
- }
- else {
-   set_time_env(timenv, TRUE);
- }
+        if(tWedit == NULL) {
+          tWedit=create_edit_curve(TIM_EDIT, timenv);
+        }
+        else {
+          set_time_env(timenv, TRUE);
+        }
 
- fclose(atsfin);
- draw_pixm(); 
+        fclose(atsfin);
+        draw_pixm(); 
  
- return;
+        return;
 }
 /////////////////////////////////////////////////////////////////////////////
 void atsout(char *pointer)
@@ -689,7 +686,7 @@ for(i=0; i<(int)atshed->fra; ++i) {
       }
    }  
    if (FILE_HAS_NOISE) {
-     for (x=0; x<NB_RES; x++) {//read residual analysis data if any...
+     for (x=0; x<ATSA_CRITICAL_BANDS; x++) {//read residual analysis data if any...
        aux=(double)ats_sound->band_energy[x][i];
        fwrite(&aux,1,sizeof(double),atsfin); 
      }

@@ -56,7 +56,6 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define APF_OUTSEL 5
 #define RES_OUTSEL 6
 
-#define NB_RES 25 //number of bands of the residual analysis is 25 at present
 
 #define VEC_LEN 1024  //curve vector size
 
@@ -105,9 +104,8 @@ Oscar Pablo Di Liscia / Juan Pampin
 ;;; and frequency of the previous frame while pha and frq refer
 ;;; to the phase and frequency of the present frame.
 */
-#define SETWOPI  two_pi= 8. * atan(1.)
-#define COMPUTE_M(pha_1, frq_1, pha, frq, dt) ((pha_1 + (frq_1 * dt) - pha) + ((frq - frq_1) * .5 * dt)) / two_pi   
-#define COMPUTE_AUX(pha_1, pha, frq_1, dt, M) (pha + (two_pi * M)) - (pha_1 + (frq_1 * dt))
+#define COMPUTE_M(pha_1, frq_1, pha, frq, dt) ((pha_1 + (frq_1 * dt) - pha) + ((frq - frq_1) * .5 * dt)) / TWOPI   
+#define COMPUTE_AUX(pha_1, pha, frq_1, dt, M) (pha + (TWOPI * M)) - (pha_1 + (frq_1 * dt))
 #define COMPUTE_ALPHA(aux, frq_1, frq, dt) ((3. / (dt * dt)) * aux ) - ((frq - frq_1) / dt)
 #define COMPUTE_BETA(aux, frq_1, frq, dt) ((-2. / (dt * dt * dt)) * aux) + ((frq - frq_1) / (dt * dt))
 /*
@@ -221,7 +219,7 @@ typedef struct { //the data for the randi UG
 
 //GLOBAL VARIABLES
 
-double two_pi, tl_sr;
+double tl_sr;
 float *sine_table;
 
 //FROM MAIN

@@ -300,8 +300,6 @@ void do_analysis (GtkWidget *widget, gpointer data)
     fclose(outfile);
     /* free ATS_SOUND memory */
     free_sound(sound);
-    /* finally sound */
-    free(sound);
   }
   else{
     /* file I/O error */

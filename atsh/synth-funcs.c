@@ -68,7 +68,7 @@ void make_sine_table()
 {
 int i;
 float theta=0.;
-float incr = two_pi / (float)TABLE_LENGTH;
+float incr = TWOPI / (float)TABLE_LENGTH;
 
 sine_table= (float *) malloc(TABLE_LENGTH * sizeof(float));
 
@@ -114,8 +114,8 @@ void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float 
   int k, index;
   float out=0., phase=0.;
 
-  f1  *=two_pi;
-  f2  *=two_pi;
+  f1  *=TWOPI;
+  f2  *=TWOPI;
   t_inc= dt  / frame_samps;
   a_inc= (a2 - a1) / frame_samps;
   M    = COMPUTE_M(p1, f1, p2, f2,dt);
@@ -124,13 +124,13 @@ void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float 
   beta = COMPUTE_BETA(aux,f1,f2,dt);
   time = 0.;
   amp  = a1;
-  scale = two_pi / ((float)TABLE_LENGTH - 1.);/*must take it out from here...*/
+  scale = TWOPI / ((float)TABLE_LENGTH - 1.);/*must take it out from here...*/
 
   for(k = 0; k < (int)frame_samps; k++) { 
  
     phase = INTERP_PHASE(p1,f1,alpha,beta,time);
-    new_phase = (phase >= two_pi  ? phase - two_pi : phase);
-    index=(int)((new_phase / two_pi)*(float)TABLE_LENGTH - 1.);
+    new_phase = (phase >= TWOPI  ? phase - TWOPI : phase);
+    index=(int)((new_phase / TWOPI)*(float)TABLE_LENGTH - 1.);
     while ( index >= TABLE_LENGTH ) {
       index -=TABLE_LENGTH;
     }
@@ -283,10 +283,10 @@ void do_synthesis()
   float cxval, cyval, nxval, nyval, difx, dify;
   TIME_DATA *tdata;
   int nbp;
-  float *dospt , *rospt;
-  RANDI *rarray;
-  float res_band_edges[NB_RES+1]=ATSA_CRITICAL_BAND_EDGES;
-  float res_band_centers[NB_RES];
+  float *dospt=NULL, *rospt=NULL;
+  RANDI *rarray=NULL;
+  float res_band_edges[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
+  float res_band_centers[ATSA_CRITICAL_BANDS];
 
   //ATTEMPT TO CATCH TWO POSSIBLE ERRORS........ 
   if(*ats_tittle==0) {
@@ -406,9 +406,9 @@ void do_synthesis()
     break;
   }
   case SYNTH_RES: {
-    rospt = (float *) malloc((int)NB_RES * sizeof(float)); 
-    rarray= (RANDI *) malloc((int)NB_RES * sizeof(RANDI));
-    for(z=0; z<(int)NB_RES; ++z) {
+    rospt = (float *) malloc((int)ATSA_CRITICAL_BANDS * sizeof(float)); 
+    rarray= (RANDI *) malloc((int)ATSA_CRITICAL_BANDS * sizeof(RANDI));
+    for(z=0; z<(int)ATSA_CRITICAL_BANDS; ++z) {
       res_band_centers[z]= res_band_edges[z]+((res_band_edges[z+1]-res_band_edges[z])*0.5); 
       randi_setup(sparams->sr,res_band_edges[z+1]-res_band_edges[z],&rarray[z]);
       rospt[z]=0.;
@@ -455,7 +455,7 @@ void do_synthesis()
 	break;
       }	
       case SYNTH_RES: { //residual synthesis only
-	for(x = 0; x < (int)NB_RES; x++) {
+	for(x = 0; x < (int)ATSA_CRITICAL_BANDS; x++) {
 	  synth_residual_only(ENG_RMS(ats_sound->band_energy[x][curr], atshed->ws), 
 			      ENG_RMS(ats_sound->band_energy[x][next],atshed->ws) ,
 			      res_band_centers[x],frame_samps,x,rospt,&rarray[x]);  

@@ -92,7 +92,7 @@ void show_header (void)
  length =  sizeof(ATS_HEADER) +
    ((int)atshed->par * (int)atshed->fra * sizeof(double) * n1) +
    (sizeof(double) * (int)atshed->fra) + 
-   (NB_RES * (int)atshed->fra * sizeof(double) * n2);
+   (ATSA_CRITICAL_BANDS * (int)atshed->fra * sizeof(double) * n2);
 
 
  *hdata=0;

@@ -19,59 +19,49 @@ Oscar Pablo Di Liscia / Juan Pampin
  */
 gint EndProgram ()
 {
+  
+  free(atshed);
+  free(sparams);
+  free(sine_table);
+  if(!entry)g_free(entry);
 
- free(atshed);
- free(sparams);
- free(sine_table);
- if(!entry)g_free(entry);
-
- //if(times) free(times);
- if(selected) {free(selected);}
-
- free(info);
-
- free(h);
- free(v);
- free(selection);
- free(position);
- free(undat);
- free(sdata);
- free(avec);
- free(fvec);
-
- //kill UNDO file
- remove(undo_file);
-
- gdk_pixmap_unref(pixmap);
- gdk_gc_unref(draw_pen);
- stringfree();
- 
- if(fWedit)
- gtk_widget_destroy (GTK_WIDGET (fWedit)); //Kill Frequency edit Window
- if(aWedit)
- gtk_widget_destroy (GTK_WIDGET (aWedit)); //Kill Amplitude edit Window
- if(tWedit)
- gtk_widget_destroy (GTK_WIDGET (tWedit)); //Kill Time edit Window
- 
- if(ampenv) {
-   free(ampenv);
- }
- if(freenv) {
-   free(freenv);
- }
- if(timenv) {
-   free(timenv);
- }
- if(atsh_anargs) {
-   free(atsh_anargs);
- }
- free_sound(ats_sound);
-
-/* --- End gtk event loop processing --- */
-    gtk_main_quit ();
-
-    /* --- Ok to close the app. --- */
-    return (FALSE);
+  //if(times) free(times);
+  free(selected);
+  free(info);
+  free(h);
+  free(v);
+  free(selection);
+  free(position);
+  free(undat);
+  free(sdata);
+  free(avec);
+  free(fvec);
+  
+  //kill UNDO file
+  remove(undo_file);
+  
+  gdk_pixmap_unref(pixmap);
+  gdk_gc_unref(draw_pen);
+  stringfree();
+  
+  if(fWedit)
+    gtk_widget_destroy (GTK_WIDGET (fWedit)); //Kill Frequency edit Window
+  if(aWedit)
+    gtk_widget_destroy (GTK_WIDGET (aWedit)); //Kill Amplitude edit Window
+  if(tWedit)
+    gtk_widget_destroy (GTK_WIDGET (tWedit)); //Kill Time edit Window
+  
+  free(ampenv);
+  free(freenv);
+  free(timenv);
+  free(atsh_anargs);
+  free_sound(ats_sound);
+  
+  /* --- End gtk event loop processing --- */
+  gtk_main_quit ();
+  
+  /* --- Ok to close the app. --- */
+  return (FALSE);
 }
 
 /*
@@ -81,7 +71,7 @@ gint EndProgram ()
  */
 int main (int argc, char *argv[])
 {
-  unsigned int npid=0, i;
+  unsigned int npid=0;
   char *suffix;
   
 
@@ -92,7 +82,6 @@ int main (int argc, char *argv[])
     /* initialize sndlib */
     mus_sound_initialize();
 
-    SETWOPI;
     make_sine_table();
     //////////////////
     floaded=FALSE;
@@ -115,9 +104,6 @@ int main (int argc, char *argv[])
     fvec=(float*)malloc(sizeof(float));
     ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
     init_sound(ats_sound, 44100 , 2205, 2205, 1,.05,1);
-//     ats_sound->band_energy = (void *)malloc(NB_RES * sizeof(void *));
-//     for(i=0; i<NB_RES; i++)
-//       ats_sound->band_energy[i] = (double *)malloc(atshed->fra * sizeof(double));
 
     selected=(short*)malloc(sizeof(short));
     info=(char*)malloc(sizeof(char)*1024);
@@ -179,7 +165,6 @@ int main (int argc, char *argv[])
     atsh_anargs->win_type = ATSA_WTYPE; 
     atsh_anargs->hop_size = ATSA_HSIZE; 
     atsh_anargs->lowest_mag = ATSA_LMAG;
-
     atsh_anargs->track_len = ATSA_TRKLEN; 
     atsh_anargs->min_seg_len = ATSA_MSEGLEN; 
     atsh_anargs->min_gap_len = ATSA_MGAPLEN; 
@@ -188,6 +173,7 @@ int main (int argc, char *argv[])
     atsh_anargs->last_peak_cont = ATSA_LPKCONT; 
     atsh_anargs->SMR_cont = ATSA_SMRCONT ; 
     atsh_anargs->type=ATSA_TYPE;
+
     /* --- Create the window with menus/toolbars. --- */
     if(argc ==2) {   //see if we have an ats file delivered by command line
 	CreateMainWindow (argv[1]); //pass the filename to main function
@@ -561,33 +547,23 @@ void mem_realloc()
 {
   int i;
 
-  if(ats_sound) { free_sound(ats_sound); }
-  init_sound(ats_sound,
-	    (int)atshed->sr,
-	    (int)atshed->fs,
-	    (int)atshed->ws,
-	    (int)atshed->fra+1,
-	    (double)atshed->dur,
-	    (int)atshed->par);
-
-  //THIS SHOULD BE DONE ON ATSA
-  if(FILE_HAS_NOISE) {
-    ats_sound->band_energy = (void *)malloc(NB_RES * sizeof(void *));
-    for(i=0; i<NB_RES; i++) {
-      ats_sound->band_energy[i] = (double *)malloc(atshed->fra * sizeof(double));
+  if(ats_sound != NULL) {
+    free_sound(ats_sound);
+    ats_sound=(ATS_SOUND*)malloc(sizeof(ATS_SOUND));
+    init_sound(ats_sound, (int)atshed->sr, (int)atshed->fs, (int)atshed->ws, (int)atshed->fra+1, (double)atshed->dur, (int)atshed->par);
+  
+    //THIS SHOULD BE DONE ON ATSA
+    if(FILE_HAS_NOISE) {
+      ats_sound->band_energy = (void *)malloc(ATSA_CRITICAL_BANDS * sizeof(void *));
+      for(i=0; i<ATSA_CRITICAL_BANDS; i++) ats_sound->band_energy[i] = (double *)malloc(atshed->fra * sizeof(double));
     }
-  }
-
- selected=(short*)realloc(selected, (int)atshed->par * sizeof(short) + 1);
-
- //all partials are UNselected by default
- for(i=0; i<(int)atshed->par; i++) {
-   selected[i]=FALSE;
- }
- 
-
- return;
+  }  
+  selected=(short*)realloc(selected, (int)atshed->par * sizeof(short) + 1);
+    
+  //all partials are UNselected by default
+  for(i=0; i<(int)atshed->par; i++) selected[i]=FALSE;
 }
+
 //////////////////////////////////////////////////////////
 void set_avec()
 {

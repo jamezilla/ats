@@ -115,8 +115,7 @@ void ismoving_time(GtkWidget *widget, GdkEventMotion *event, ENVELOPE *data)
 /////////////////////////////////////////////////////////////////////////////
 void setmin_time(GtkWidget *widget, ENVELOPE *data)
 {
-  char *str;  
-  str=(char*)malloc(13 * sizeof(char)); 
+  char *str=(char*)malloc(13 * sizeof(char)); 
   *str=0;        
   str=gtk_editable_get_chars(GTK_EDITABLE(data->minentry),0,13);
   data->ymin=(float)atof(str);
@@ -138,8 +137,7 @@ void setmax_time(GtkWidget *widget, ENVELOPE *data)
 {
  
   float val, stime;
-  char *str;
-  str=(char*)malloc(13 * sizeof(char)); 
+  char *str=(char*)malloc(13 * sizeof(char)); 
   
   *str=0;        
   str=gtk_editable_get_chars(GTK_EDITABLE(data->maxentry),0,13);
@@ -163,10 +161,7 @@ void setmax_time(GtkWidget *widget, ENVELOPE *data)
 /////////////////////////////////////////////////////////////////////////////
 void change_duration(GtkWidget *widget, ENVELOPE *data)
 {
-  char *str;
-  float val;
-
-  str=(char*)malloc(13 * sizeof(char)); 
+  char *str=(char*)malloc(13 * sizeof(char)); 
   str=gtk_editable_get_chars(GTK_EDITABLE(widget),0,13);
   data->dur=atof(str);
   free(str);
@@ -175,9 +170,7 @@ void change_duration(GtkWidget *widget, ENVELOPE *data)
 /////////////////////////////////////////////////////////////////////////////
 void setmax(GtkWidget *widget, ENVELOPE *data)
 {
-  char *str;  
- 
-  str=(char*)malloc(10 * sizeof(char)); 
+  char *str=(char*)malloc(10 * sizeof(char)); 
   *str=0;        
   str=gtk_editable_get_chars(GTK_EDITABLE(data->maxentry),0,9);
   data->ymax=(float)atof((char*)str);
@@ -188,8 +181,7 @@ void setmax(GtkWidget *widget, ENVELOPE *data)
 /////////////////////////////////////////////////////////////////////////////
 void setmin(GtkWidget *widget, ENVELOPE *data)
 {
-  char *str;  
-  str=(char*)malloc(10 * sizeof(char)); 
+  char *str=(char*)malloc(10 * sizeof(char)); 
   *str=0;        
   str=gtk_editable_get_chars(GTK_EDITABLE(data->minentry),0,9);
   data->ymin=(float)atof((char*)str);
