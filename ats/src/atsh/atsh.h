@@ -42,7 +42,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define IN_NAME  0
 #define OUT_NAME 1
 #define SPA_NAME 2
-#define TABLE_LENGTH 16384
+//#define TABLE_LENGTH 16384
 #define CURVE_LENGTH 100.
 
 #define NULL_VIEW  0

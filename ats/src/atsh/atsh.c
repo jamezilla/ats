@@ -34,7 +34,7 @@ char in_title[256] = "";
 char undo_file[256] = UNDO_FILE;
 char ats_title[256] = "";
 
-float *sine_table;
+extern float *sine_table;
 
 GtkObject *hadj1,*hadj2;
 GtkObject *vadj1,*vadj2, *valadj;

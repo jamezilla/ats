@@ -10,6 +10,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define SYNTH_RES  1
 #define SYNTH_DET  2
 #define SYNTH_BOTH 3
+#define TABLE_LENGTH 16384
 
 typedef struct { //the data for the randi UG
   int   size; //size of the frame in samples this should be sr/freq.
@@ -30,7 +31,7 @@ void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,
 void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
 
 double tl_sr;
-extern float *sine_table;
+float *sine_table;
 extern char out_title[];
 extern char ats_title[];
 extern SPARAMS sparams;
