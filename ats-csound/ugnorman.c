@@ -1566,6 +1566,7 @@ void atsbufreadset(ATSBUFREAD *p)
 	MEMFIL   *mfp, *ldmemfile(char *);
 	ATS_DATA_LOC *fltp;
 	ATSSTRUCT *atsh;
+	int type, n_partials;
 	int memsize;    //the size of the memory to request for AUX
 	
 	atsbufreadaddr = p;
@@ -1586,18 +1587,38 @@ void atsbufreadset(ATSBUFREAD *p)
 
 	atsh = (ATSSTRUCT *)mfp->beginp;
 
-	if ( atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSBUFREAD: %s is either not an ATS file or the byte-endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	//make sure that this is an ats file
+	p->swapped = 0;	//false.. not swapped
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSBUFREAD: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSBUFREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
-	
 	// get past the header to the data, point frptr at time 0
 	p->datastart = (double *)atsh + 10;
 	p->prFlg = 1;   // true
-	p->maxFr = (int)(atsh->nfrms) - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
+	
+	//is swapped?
+	if(p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		type = (int)bswap(&atsh->type);
+		n_partials = (int)bswap(&atsh->npartials);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		type = (int)atsh->type;
+		n_partials = (int)atsh->npartials;
+	}
 	
 	memsize = 2 * (int)(*p->iptls + 2); // we need room for 2 * (1 table + 2 for 20 and 20,000 hz) (one sorted one unsorted)
 	
@@ -1610,35 +1631,35 @@ void atsbufreadset(ATSBUFREAD *p)
 	p->memsize=memsize;
 
 	// check to see if partial is valid
-	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > n_partials || (int)(*p->iptloffset) < 0)
 	{
-		sprintf(errmsg, "ATSBUFREAD: Partial out of range, max partial is %i", (int)atsh->npartials);
+		sprintf(errmsg, "ATSBUFREAD: Partial out of range, max partial is %i", n_partials);
 		initerror(errmsg);
 		return;
 	}
 
 // set up partial locations and frame increments
 
-	switch ( (int)(atsh->type))
+	switch (type)
 	{
 		case 1 :	p->firstpartial = 1 + 2 * (*p->iptloffset);
 					p->partialinc = 2;
-					p->frmInc = (int)(atsh->npartials * 2 + 1);
+					p->frmInc = n_partials * 2 + 1;
 					break;
 		
 		case 2 :	p->firstpartial = 1 + 3 * (*p->iptloffset);
 					p->partialinc = 3;
-					p->frmInc = (int)(atsh->npartials * 3 + 1);
+					p->frmInc = n_partials * 3 + 1;
 					break;
 		
 		case 3 :	p->firstpartial = 1 + 2 * (*p->iptloffset);
 					p->partialinc = 2;
-					p->frmInc = (int)(atsh->npartials * 2 + 26);
+					p->frmInc = n_partials * 2 + 26;
 					break;
 		
 		case 4 :	p->firstpartial = 1 + 3 * (*p->iptloffset);
 					p->partialinc = 3;
-					p->frmInc = (int)(atsh->npartials * 3 + 26);
+					p->frmInc = n_partials * 3 + 26;
 					break;
 		
 		default:	sprintf(errmsg, "ATSBUFREAD: Type not implemented");
@@ -1672,6 +1693,7 @@ void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, ATS_DATA_LOC *buf2, floa
 {
 	float   frac;           // the distance in time we are between frames
 	double * frm0, * frm1;
+	double frm0amp, frm0freq, frm1amp, frm1freq;
 	int     frame;
 	int     i;      // for the for loop
 	int     partialloc = p->firstpartial;
@@ -1683,26 +1705,46 @@ void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, ATS_DATA_LOC *buf2, floa
 	// if we're using the data from the last frame we shouldn't try to interpolate
 	if(frame == p->maxFr)
 	{
-		for(i = 0; i < npartials; i++)
-		{
-			buf[i].amp = buf2[i].amp = frm0[partialloc]; // calc amplitude
-			buf[i].freq = buf2[i].freq = frm0[partialloc + 1];
-			partialloc += p->partialinc;
+		if(p->swapped == 1) {
+			for(i = 0; i < npartials; i++)
+			{
+				buf[i].amp = buf2[i].amp = bswap(&frm0[partialloc]); // calc amplitude
+				buf[i].freq = buf2[i].freq = bswap(&frm0[partialloc + 1]);
+				partialloc += p->partialinc;
+			}
+		} else {
+			for(i = 0; i < npartials; i++)
+			{
+				buf[i].amp = buf2[i].amp = frm0[partialloc]; // calc amplitude
+				buf[i].freq = buf2[i].freq = frm0[partialloc + 1];
+				partialloc += p->partialinc;
+			}
 		}
 		return;
 	}
 	
 	frac = position - frame;
 	frm1 = frm0 + p->frmInc;
-	
-	for(i = 0; i < npartials; i++)
-	{
-		buf[i].amp = buf2[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
-		buf[i].freq = buf2[i].freq = *p->kfmod * (frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1])); // calc freq
-		partialloc += p->partialinc;       // get to the next partial
+	if(p->swapped == 1) {
+		for(i = 0; i < npartials; i++)
+		{
+			frm0amp = bswap(&frm0[partialloc]);
+			frm0freq = bswap(&frm0[partialloc + 1]);
+			frm1amp = bswap(&frm1[partialloc]);
+			frm1freq = bswap(&frm1[partialloc + 1]);
+			buf[i].amp = buf2[i].amp = frm0amp + frac * (frm1amp - frm0amp); // calc amplitude
+			buf[i].freq = buf2[i].freq = *p->kfmod * (frm0freq + frac * (frm1freq - frm0freq)); // calc freq
+			partialloc += p->partialinc;       // get to the next partial
+		}
+	} else {
+		for(i = 0; i < npartials; i++)
+		{
+			buf[i].amp = buf2[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
+			buf[i].freq = buf2[i].freq = *p->kfmod * (frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1])); // calc freq
+			partialloc += p->partialinc;       // get to the next partial
+		}
 	}
 }
-
 
 void atsbufread(ATSBUFREAD *p)
 {
@@ -1748,6 +1790,8 @@ void atsbufread(ATSBUFREAD *p)
 	qsort(buf, (int)*p->iptls, sizeof(ATS_DATA_LOC), mycomp);
 }
 
+/* ATS partial tap */
+
 void atspartialtapset(ATSPARTIALTAP *p)
 {
 	if(atsbufreadaddr == NULL)
@@ -1782,6 +1826,8 @@ void atspartialtap(ATSPARTIALTAP *p)
 	*p->kamp = (float)((atsbufreadaddr->utable)[(int)(*p->iparnum)].amp);
 }
 
+/* ATS interpread */
+
 void atsinterpreadset(ATSINTERPREAD *p)
 {	
 	if(atsbufreadaddr == NULL)
@@ -1792,7 +1838,6 @@ void atsinterpreadset(ATSINTERPREAD *p)
 	}
 	p->overflowflag = 1; /*true */
 }
-
 
 void atsinterpread(ATSINTERPREAD *p)
 {
@@ -1833,13 +1878,16 @@ void atsinterpread(ATSINTERPREAD *p)
 	//*p->kamp = (float)(atsbufreadaddr->table[i]).amp;
 }
 
+/* ATS cross */
+
 void atscrossset(ATSCROSS *p)
 {
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
    FUNC *ftp; 
 	int i, memsize;
-	
+	int type, n_partials;
+
 	// set up function table for synthesis
 	if ((ftp = ftfind(p->ifn)) == NULL){
 		sprintf(errmsg, "ATSCROSS: Function table number for synthesis waveform not valid\n");
@@ -1867,12 +1915,21 @@ void atscrossset(ATSCROSS *p)
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
 	//make sure that this is an ats file
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSCROSS: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-      initerror(errmsg);
-      return;
-   }
+	p->swapped = 0;	//false.. not swapped
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSCROSS: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSCROSS: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
+	}
 	
 	//calculate how much memory we have to allocate for this
 	memsize = (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
@@ -1887,13 +1944,22 @@ void atscrossset(ATSCROSS *p)
 	// set up the buffer, phase, etc.
 	p->buf = (ATS_DATA_LOC *)(p->auxch.auxp);
 	p->oscphase = (double *)(p->buf + (int)(*p->iptls));
-	p->maxFr = (int)atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
-	
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		type = (int)bswap(&atsh->type);
+		n_partials = (int)bswap(&atsh->npartials);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		type = (int)atsh->type;
+		n_partials = (int)atsh->npartials;
+	}
+
 	// make sure partials are in range
-   if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+   if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > n_partials || (int)(*p->iptloffset) < 0)
    {
-		sprintf(errmsg, "ATSADD: Partial(s) out of range, max partial allowed is %i", (int)atsh->npartials);
+		sprintf(errmsg, "ATSCROSS: Partial(s) out of range, max partial allowed is %i", n_partials);
  		initerror(errmsg);
 		return;
 	}
@@ -1901,29 +1967,29 @@ void atscrossset(ATSCROSS *p)
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 
 	// get increments for the partials
-	switch ( (int)(atsh->type))
+	switch (type)
    {
 		case 1 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 		        	p->partialinc = 2 * (int)(*p->iptlincr);
-		        	p->frmInc = (int)(atsh->npartials * 2 + 1);
+		        	p->frmInc = n_partials * 2 + 1;
 		        	break;
 		
 		case 2 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 		        	p->partialinc = 3 * (int)(*p->iptlincr);
-		        	p->frmInc = (int)(atsh->npartials * 3 + 1);
+		        	p->frmInc = n_partials * 3 + 1;
 		        	break;
 		
 		case 3 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 		        	p->partialinc = 2 * (int)(*p->iptlincr);
-		        	p->frmInc = (int)(atsh->npartials * 2 + 26);
+		        	p->frmInc = n_partials * 2 + 26;
 		        	break;
 		
 		case 4 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 		        	p->partialinc = 3 * (int)(*p->iptlincr);
-		        	p->frmInc = (int)(atsh->npartials * 3 + 26);
+		        	p->frmInc = n_partials * 3 + 26;
 		        	break;
 		
-		default:	sprintf(errmsg, "ATSCROSS: Type not implemented");
+		default:	printf(errmsg, "ATSCROSS: Type not implemented");
 		        	initerror(errmsg);
 		        	return;
 	}
@@ -1942,6 +2008,7 @@ void FetchCROSSPartials(ATSCROSS *p, ATS_DATA_LOC *buf, float position)
 {
    float   frac;           // the distance in time we are between frames
 	double * frm0, * frm1;
+	double	frm0amp, frm0freq, frm1amp, frm1freq;
    int     frame;
    int     i;      // for the for loop
 	int     partialloc = p->firstpartial;
@@ -1953,26 +2020,47 @@ void FetchCROSSPartials(ATSCROSS *p, ATS_DATA_LOC *buf, float position)
 	// if we're using the data from the last frame we shouldn't try to interpolate
 	if(frame == p->maxFr)
 	{
-		for(i = 0; i < npartials; i++)
-		{
-			buf[i].amp = frm0[partialloc]; // calc amplitude
-			buf[i].freq = frm0[partialloc + 1];
-			partialloc += p->partialinc;
+		if(p->swapped == 1) {
+			for(i = 0; i < npartials; i++)
+			{
+				buf[i].amp = bswap(&frm0[partialloc]); // calc amplitude
+				buf[i].freq = bswap(&frm0[partialloc + 1]);
+				partialloc += p->partialinc;
+			}
+		} else {
+			for(i = 0; i < npartials; i++)
+			{
+				buf[i].amp = frm0[partialloc]; // calc amplitude
+				buf[i].freq = frm0[partialloc + 1];
+				partialloc += p->partialinc;
+			}
 		}
 		return;
 	}
 	
 	frac = position - frame;
 	frm1 = frm0 + p->frmInc;
-	
-	for(i = 0; i < npartials; i++)
-	{
-		buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
-		buf[i].freq = frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1]); // calc freq
-		partialloc += p->partialinc;       // get to the next partial
+	if(p->swapped == 1) {
+		for(i = 0; i < npartials; i++)
+		{
+			frm0amp = frm0[partialloc];
+			frm0freq = frm0[partialloc + 1];
+			frm1amp = frm1[partialloc];
+			frm1freq = frm1[partialloc + 1];
+
+			buf[i].amp = frm0amp + frac * (frm1amp - frm0amp); // calc amplitude
+			buf[i].freq = frm0freq + frac * (frm1freq - frm0freq); // calc freq
+			partialloc += p->partialinc;       // get to the next partial
+		}
+	} else {
+		for(i = 0; i < npartials; i++)
+		{
+			buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
+			buf[i].freq = frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1]); // calc freq
+			partialloc += p->partialinc;       // get to the next partial
+		}
 	}
 }
-
 
 void ScalePartials(
 	ATS_DATA_LOC *cbuf,  //the current buffer
@@ -2013,7 +2101,6 @@ void ScalePartials(
 		cbuf[i].amp = cbufamp * cbuf[i].amp + tempamp * tbufamp;
 	}
 }
-
 
 void atscross(ATSCROSS *p)
 {	
