@@ -698,31 +698,31 @@ void atsaddnzset(ATSADDNZ *p){
 
 	
 	// save bandwidths for creating noise bands
-	p->nfreq[0] = 50;
-	p->nfreq[1] = 50;
-	p->nfreq[2] = 50;
-	p->nfreq[3] = 50;
-	p->nfreq[4] = 55;
-	p->nfreq[5] = 60;
-	p->nfreq[6] = 70;
-	p->nfreq[7] = 75;
-	p->nfreq[8] = 80;
-	p->nfreq[9] = 95;
-	p->nfreq[10] = 105;
-	p->nfreq[11] = 120;
-	p->nfreq[12] = 140;
-	p->nfreq[13] =  160;
-	p->nfreq[14] = 190;
-	p->nfreq[15] = 225;
-	p->nfreq[16] = 275;
-	p->nfreq[17] = 350;
-	p->nfreq[18] = 450;
-	p->nfreq[19] = 550;
-	p->nfreq[20] = 650;
-	p->nfreq[21] = 900;
-	p->nfreq[22] = 1250;
-	p->nfreq[23] = 1750;
-	p->nfreq[24] = 2250;
+	p->nfreq[0] = 100;
+	p->nfreq[1] = 100;
+	p->nfreq[2] = 100;
+	p->nfreq[3] = 100;
+	p->nfreq[4] = 110;
+	p->nfreq[5] = 120;
+	p->nfreq[6] = 140;
+	p->nfreq[7] = 150;
+	p->nfreq[8] = 160;
+	p->nfreq[9] = 190;
+	p->nfreq[10] = 210;
+	p->nfreq[11] = 240;
+	p->nfreq[12] = 280;
+	p->nfreq[13] = 320;
+	p->nfreq[14] = 380;
+	p->nfreq[15] = 450;
+	p->nfreq[16] = 550;
+	p->nfreq[17] = 700;
+	p->nfreq[18] = 900;
+	p->nfreq[19] = 1100;
+	p->nfreq[20] = 1300;
+	p->nfreq[21] = 1800;
+	p->nfreq[22] = 2500;
+	p->nfreq[23] = 3500;
+	p->nfreq[24] = 4500;
 
 	// initialize frequencies to modulate noise by
 	p->phaseinc[0] = TWOPI * 50.0 / esr;
