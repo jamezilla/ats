@@ -111,7 +111,7 @@ typedef struct _atsaddnz
 
 	double  buf[25];           // stores band information for passing data
 	double   phaseinc[25];       // to create an array of noise
-	unsigned int	oscphase;       //the phase of all the oscilators
+	double	oscphase[25];       //the phase of all the oscilators
 	RANDIATS randinoise[25];	// a pointer to the interpolated random noise info
 	double	nfreq[25];
 	ATSSTRUCT atshead;

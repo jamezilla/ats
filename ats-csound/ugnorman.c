@@ -811,7 +811,34 @@ void atsaddnzset(ATSADDNZ *p){
 	p->phaseinc[22] = TWOPI * 10750.0/ esr;
 	p->phaseinc[23] = TWOPI * 13750.0/ esr;
 	p->phaseinc[24] = TWOPI * 17750.0/ esr;
-
+	
+	// initialize phase
+	p->oscphase[0] = 0;
+	p->oscphase[1] = 0;
+	p->oscphase[2] = 0;
+	p->oscphase[3] = 0;
+	p->oscphase[4] = 0;
+	p->oscphase[5] = 0;
+	p->oscphase[6] = 0;
+	p->oscphase[7] = 0;
+	p->oscphase[8] = 0;
+	p->oscphase[9] = 0;
+	p->oscphase[10] = 0;
+	p->oscphase[11] = 0;
+	p->oscphase[12] = 0;
+	p->oscphase[13] = 0;
+	p->oscphase[14] = 0;
+	p->oscphase[15] = 0;
+	p->oscphase[16] = 0;
+	p->oscphase[17] = 0;
+	p->oscphase[18] = 0;
+	p->oscphase[19] = 0;
+	p->oscphase[20] = 0;
+	p->oscphase[21] = 0;
+	p->oscphase[22] = 0;
+	p->oscphase[23] = 0;
+	p->oscphase[24] = 0;
+	
 	// initialize band limited noise parameters
 	for(i = 0; i < 25; i++)
 	{
@@ -820,7 +847,6 @@ void atsaddnzset(ATSADDNZ *p){
 	
 	//flag set to reduce the amount of warnings sent out for time pointer out of range
 	p->prFlg = 1;	// true
-	p->oscphase = 0;
 	
 	return;
 }
@@ -829,8 +855,6 @@ void atsaddnz(ATSADDNZ *p){
 	float frIndx;
 	float *ar, amp;
 	double *buf;
-	int phase;
-	float inc;	// a value to increment a phase index of the cosine by
 	int	i, nsmps;
 	int synthme;
 	int nsynthed;
@@ -845,15 +869,15 @@ void atsaddnz(ATSADDNZ *p){
 			fprintf(stderr, "ATSADDNZ: only positive time pointer values are allowed, setting to zero\n");
 		}
 	}
-else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
-{
-	frIndx = (float)p->maxFr;
-	if (p->prFlg)
+	else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
 	{
-		p->prFlg = 0;   // set to false
-		fprintf(stderr, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
+		frIndx = (float)p->maxFr;
+		if (p->prFlg)
+		{
+			p->prFlg = 0;   // set to false
+			fprintf(stderr, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
+		}
 	}
-}
 	else
 		p->prFlg = 1;
 	
@@ -869,7 +893,6 @@ else if (frIndx > p->maxFr) // if we're trying to get frames past where we have 
    	
 	synthme = (int)*p->ibandoffset;
 	nsynthed = 0;
-	phase = p->oscphase;
 	
 	for (i = 0; i < 25; i++)
 	{	
@@ -878,14 +901,12 @@ else if (frIndx > p->maxFr) // if we're trying to get frames past where we have 
 		{
 			// synthesize cosine
 			amp = (float)sqrt((p->buf[i] / ((p->winsize) * (float)ATSA_NOISE_VARIANCE) ) );
-			phase = p->oscphase;
 			ar = p->aoutput;
 			nsmps = ksmps;
-			inc = p->phaseinc[i];
 			do
 			{
-				*ar += cos(inc * phase) * amp * randiats(&(p->randinoise[i]));
-				phase += 1;
+				*ar += cos(p->oscphase[i]) * amp * randiats(&(p->randinoise[i]));
+				p->oscphase[i] += p->phaseinc[i];
 				ar++;
 			}
 			while(--nsmps);
@@ -898,7 +919,6 @@ else if (frIndx > p->maxFr) // if we're trying to get frames past where we have 
 			synthme += (int)*p->ibandincr;
 		}	
 	}
-	p->oscphase = phase;
 }
 
 void band_energy_to_res(ATSSINNOI *p)
