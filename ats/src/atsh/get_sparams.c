@@ -83,7 +83,7 @@ void get_sparams(void)
     window = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(window), "Synthesis");
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_set_policy(GTK_WINDOW(window), FALSE, FALSE, TRUE);                  
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     gtk_container_set_border_width(GTK_CONTAINER(window), 20);
 
     /* create the various text entry boxes */
@@ -93,7 +93,7 @@ void get_sparams(void)
     gtk_widget_show(label);
     sine_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(sine_entry), 10);
-    gtk_widget_set_usize(GTK_WIDGET(sine_entry),60,20);
+    gtk_widget_set_size_request(GTK_WIDGET(sine_entry),60,20);
     sprintf(str, "%2.3f", sparams.amp);
     gtk_entry_set_text(GTK_ENTRY(sine_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), sine_entry, FALSE, FALSE, 0);
@@ -107,7 +107,7 @@ void get_sparams(void)
     gtk_widget_show(label);
     noise_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(noise_entry), 10);
-    gtk_widget_set_usize(GTK_WIDGET(noise_entry),60,20);
+    gtk_widget_set_size_request(GTK_WIDGET(noise_entry),60,20);
     sprintf(str, "%2.3f", sparams.ramp);
     gtk_entry_set_text(GTK_ENTRY(noise_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), noise_entry, FALSE, FALSE, 0);
@@ -122,7 +122,7 @@ void get_sparams(void)
     gtk_widget_show(label);
     freq_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(freq_entry), 10);
-    gtk_widget_set_usize(GTK_WIDGET(freq_entry),60,20);
+    gtk_widget_set_size_request(GTK_WIDGET(freq_entry),60,20);
     sprintf(str, "%2.3f", sparams.freq);
     gtk_entry_set_text(GTK_ENTRY(freq_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), freq_entry, FALSE, FALSE, 0);
@@ -136,7 +136,7 @@ void get_sparams(void)
     gtk_widget_show(label);
     sr_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(sr_entry), 10);
-    gtk_widget_set_usize(GTK_WIDGET(sr_entry),60,20);
+    gtk_widget_set_size_request(GTK_WIDGET(sr_entry),60,20);
     sprintf(str, "%d", (int)sparams.sr);
     gtk_entry_set_text(GTK_ENTRY(sr_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), sr_entry, FALSE, FALSE, 0);
@@ -152,7 +152,7 @@ void get_sparams(void)
     /* Create the check button for Partials */
     button = gtk_check_button_new_with_label("Selected Partials Only");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), sparams.allorsel);
-    gtk_signal_connect(GTK_OBJECT(button), "toggled", GTK_SIGNAL_FUNC(allorsel), NULL);
+    g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(allorsel), NULL);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), button, FALSE, FALSE, 2);
     gtk_widget_show (button);
     //    allorsel(GTK_WIDGET(button), NULL);
@@ -160,13 +160,13 @@ void get_sparams(void)
     /* Create the "set time pointer" button */
     button = gtk_button_new_with_label("Set Time Pointer");
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), button, FALSE, FALSE, 2);
-    gtk_signal_connect(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(edit_tim), NULL);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(edit_tim), NULL);
     gtk_widget_show(button);
     
     /* Create the set output file button */
     button = gtk_button_new_with_label ("Set Output File");
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), button, FALSE, FALSE, 2);
-    gtk_signal_connect(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(filesel), "outsel");
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(filesel), "outsel");
     gtk_widget_show(button);
     
     file_entry = gtk_entry_new();
@@ -182,12 +182,12 @@ void get_sparams(void)
     /* Create standard OK/CANCEL buttons */
     button = gtk_button_new_with_label("Do it");
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->action_area), button, TRUE, TRUE, 5);
-    gtk_signal_connect(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(ok_button), window);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(ok_button), window);
     gtk_widget_show(button);
     
     button = gtk_button_new_with_label ("Forget it");
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->action_area), button, TRUE, TRUE, 0);
-    gtk_signal_connect(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(cancel_dialog), window);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(cancel_dialog), window);
     gtk_widget_show(button);
     
     /* Make the main window visible */

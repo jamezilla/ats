@@ -18,6 +18,7 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
   /* create pointers and structures */
   ATS_SOUND *sound = NULL;
   FILE *outfile;
+  int frame_n;
   /* open output file */
   outfile = fopen(ats_outfile, "wb");
   if (outfile == NULL) {
@@ -25,7 +26,11 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
     return(-1);
   }
   /* call tracker */
-  sound = tracker(anargs, soundfile, resfile);
+  tracker_init (anargs, soundfile);
+  for (frame_n=0; frame_n<anargs->frames; frame_n++) {
+    tracker(anargs, frame_n);
+  }
+  sound = tracker_finish(anargs, resfile);
   /* save sound */
   if(sound != NULL) {
     fprintf(stderr,"saving ATS data...");

@@ -21,9 +21,9 @@ void show_header (void)
       ((int)atshed.par * fra * siz * (FILE_HAS_PHASE ? 3 : 2)) +
       (FILE_HAS_NOISE ? (ATSA_CRITICAL_BANDS * fra * siz) : 0);
 
-    window = gtk_window_new(GTK_WINDOW_DIALOG);
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "ATS File Header Data");
-    gtk_window_set_policy(GTK_WINDOW(window), FALSE, FALSE, TRUE);
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 
     box = gtk_vbox_new(FALSE, 5);

@@ -301,6 +301,8 @@ void do_synthesis()
   if(sparams.amp > 0.) sflag |= SYNTH_DET;  //deterministic synthesis only
   if(sparams.ramp > 0.) sflag |= SYNTH_RES; //residual synthesis only
 
+  //setup default timeenv here if we never popped up tWedit
+
   tl_sr = (float)TABLE_LENGTH / sparams.sr; //needed for ioscilator...
   nbp   = get_nbp(timenv->curve);
   tdata = (TIME_DATA*)malloc(nbp * sizeof(TIME_DATA));

@@ -417,7 +417,9 @@ void ats_save(ATS_SOUND *sound, FILE *outfile, float SMR_thres, int type);
  * soundfile: path to input file 
  * resfile: path to residual file 
  */
-ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile);
+void tracker_init (ANARGS *anargs, char *soundfile);
+void tracker (ANARGS *anargs, int frame_n);
+ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile);
 
 /* utilities.c */
 

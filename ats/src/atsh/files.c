@@ -46,8 +46,8 @@ GtkWidget *create_men_snd(char *label, int ID, GtkWidget *parent)
 
   menu= gtk_menu_item_new_with_label (label);
   gtk_widget_show (menu);
-  gtk_signal_connect (GTK_OBJECT (menu),
-		      "activate",GTK_SIGNAL_FUNC (choose_output),GINT_TO_POINTER(ID));
+  g_signal_connect (G_OBJECT (menu),
+		      "activate",G_CALLBACK (choose_output),GINT_TO_POINTER(ID));
   gtk_menu_append (GTK_MENU (parent), menu);
 
   return(menu);
@@ -164,15 +164,15 @@ char *title = NULL;
  */
 void FileOk (GtkWidget *w, gpointer data)
 {
-  char *sTempFile;
-  typFileSelectionData *localdata;
+  typFileSelectionData *localdata = (typFileSelectionData *) data;
+  const char *sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (localdata->filesel));
   //  GtkWidget *filew;
  
-  localdata = (typFileSelectionData *) data;
+  //localdata = (typFileSelectionData *) data;
   //  filew = localdata->filesel;
 
   /* --- Which file? --- */
-  sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (localdata->filesel));
+  //sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (localdata->filesel));
 
   /* --- Free old memory --- */
   if (title != NULL) g_free(title);
@@ -245,8 +245,8 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
     
   gtk_file_selection_set_filename(GTK_FILE_SELECTION(filew),selected);
     
-  gtk_signal_connect (GTK_OBJECT (filew), "destroy",
-		      (GtkSignalFunc) destroy, data);
+  g_signal_connect (G_OBJECT (filew), "destroy",
+                    G_CALLBACK(destroy), data);
 
   /////////////////////////////////////////////////////////////////
     //    *filt=0;
@@ -260,7 +260,7 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
       filt = g_strdup (filter); 
       gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
       gtk_widget_show(filterbutton);
-      gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt);
+      g_signal_connect (G_OBJECT (filterbutton), "clicked",G_CALLBACK(set_filter),(char *)filt);
       g_free(filt);
     }
 
@@ -270,7 +270,7 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
       filt = g_strdup (filter); 
       gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
       gtk_widget_show(filterbutton);
-      gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt);
+      g_signal_connect (G_OBJECT (filterbutton), "clicked",G_CALLBACK(set_filter),(char *)filt);
       g_free(filt);
     }
 
@@ -279,8 +279,8 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 	////////OPTION MENU///////////////////////////////////////
 	optionmenu1 = gtk_option_menu_new ();
 	gtk_widget_ref (optionmenu1);
-	gtk_object_set_data_full (GTK_OBJECT (filew), "optionmenu1", optionmenu1,
-				  (GtkDestroyNotify) gtk_widget_unref);
+	g_object_set_data_full (G_OBJECT (filew), "optionmenu1", optionmenu1,
+				  (GDestroyNotify) gtk_widget_unref);
 	gtk_widget_show (optionmenu1);
       
 	gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area),optionmenu1, 
@@ -294,7 +294,7 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 
 	gtk_option_menu_set_menu (GTK_OPTION_MENU (optionmenu1), optionmenu1_menu);
 	gtk_option_menu_set_history (GTK_OPTION_MENU (optionmenu1), (int)outype); 
-	gtk_widget_set_usize (optionmenu1, 100, 25);
+	gtk_widget_set_size_request (optionmenu1, 100, 25);
       }
       else {  //residual output soundfile can only be WAV
 	filterbutton= gtk_button_new_with_label (str);
@@ -302,7 +302,7 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 	filt = g_strdup (filter); 
 	gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
 	gtk_widget_show(filterbutton);
-	gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt); 
+	g_signal_connect (G_OBJECT (filterbutton), "clicked",G_CALLBACK(set_filter),(char *)filt); 
         g_free(filt);
       }
     }
@@ -312,13 +312,13 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
     gtk_widget_show(slabel);
     
     /* --- Connect the "ok" button --- */
-    gtk_signal_connect(GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-		       "clicked", (GtkSignalFunc) FileOk, data);
+    g_signal_connect(G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+                     "clicked", G_CALLBACK(FileOk), data);
     
     /* --- Connect the cancel button --- */
-    gtk_signal_connect_object (
-			       GTK_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
-			       "clicked", (GtkSignalFunc) gtk_widget_destroy, 
+    g_signal_connect_swapped (
+			       G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
+			       "clicked", G_CALLBACK(gtk_widget_destroy), 
 			       (gpointer) filew);
     gtk_window_set_position(GTK_WINDOW(filew),GTK_WIN_POS_CENTER);
     /* --- Show the dialog --- */
@@ -415,7 +415,7 @@ void atsin(char *pointer)
     *ats_title=0;
     floaded=FALSE;
     draw_default(main_graph);
-    init_scalers(FALSE);
+    init_scalers();
     show_file_name(NULL);
     return;
   }
@@ -436,7 +436,7 @@ void atsin(char *pointer)
       fclose(atsfin);
       floaded=FALSE;
       need_byte_swap=FALSE;
-      init_scalers(FALSE);
+      init_scalers();
       draw_default(main_graph);
       show_file_name(NULL);
       return;
@@ -470,7 +470,7 @@ void atsin(char *pointer)
     *ats_title=0;
     fclose(atsfin);
     floaded=FALSE;
-    init_scalers(FALSE);
+    init_scalers();
     draw_default(main_graph);
     show_file_name(NULL);
     return; 
@@ -583,7 +583,7 @@ void atsin(char *pointer)
     sdata->met = FALSE;
 
     floaded=TRUE;
-    init_scalers(TRUE); 
+    init_scalers(); 
     ned=led=0;
     undo=TRUE;
 
@@ -593,9 +593,9 @@ void atsin(char *pointer)
     GTK_ADJUSTMENT(valadj)->lower=1.;
     gtk_adjustment_set_value(GTK_ADJUSTMENT(valadj), valexp * 100.);  
  
-
-    if(tWedit == NULL) tWedit=create_edit_curve(TIM_EDIT, timenv);
-    else set_time_env(timenv, TRUE);
+    //need to setup the default time edit curve
+//     if(tWedit == NULL) tWedit=create_edit_curve(TIM_EDIT, timenv);
+//     else set_time_env(timenv, TRUE);
     show_file_name(pointer);
     fclose(atsfin);
     draw_pixm(); 

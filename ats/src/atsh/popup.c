@@ -44,11 +44,11 @@ void Popup (char *szMessage)
 
     /* --- Create a dialog window --- */
     dialog_window = gtk_dialog_new ();
-    gtk_window_set_policy(GTK_WINDOW (dialog_window),FALSE,FALSE,FALSE); 
+    gtk_window_set_resizable(GTK_WINDOW (dialog_window),FALSE);
     /* --- Trap the window close signal to release the grab --- */
-    gtk_signal_connect (GTK_OBJECT (dialog_window), "destroy",
-	                GTK_SIGNAL_FUNC (ClosingDialog),
-	                &dialog_window);
+    g_signal_connect (G_OBJECT (dialog_window), "destroy",
+                      G_CALLBACK(ClosingDialog),
+                      &dialog_window);
 
     /* --- Add a title to the window --- */
     gtk_window_set_title (GTK_WINDOW (dialog_window), "HEY...!!!");
@@ -81,9 +81,9 @@ void Popup (char *szMessage)
     button = gtk_button_new_with_label ("Ok");
 
     /* --- Need to close the window if they press "ok" --- */
-    gtk_signal_connect (GTK_OBJECT (button), "clicked",
-	                GTK_SIGNAL_FUNC (CloseDialog),
-	                dialog_window);
+    g_signal_connect (G_OBJECT (button), "clicked",
+                      G_CALLBACK(CloseDialog),
+                      dialog_window);
 
     /* --- Allow it to be the default button --- */
     GTK_WIDGET_SET_FLAGS (button, GTK_CAN_DEFAULT);

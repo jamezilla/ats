@@ -98,9 +98,9 @@ void do_undo(GtkWidget *widget,gpointer data)
    smr_done=FALSE;
  }
  draw_pixm(); 
- repaint(NULL);
+ // repaint();
 
- return;
+ // return;
 }
 ////////////////////////////////////////////////////////////////
 void backup_edition(int eddie)

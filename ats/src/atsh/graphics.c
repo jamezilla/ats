@@ -7,7 +7,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #define MAX_COLOR_VALUE 65535 //this is the max value the color can hold (unsigned short)
 
-
+void repaint(void);
 
 float res_data[ATSA_CRITICAL_BANDS+1]=ATSA_CRITICAL_BAND_EDGES;
 extern GtkWidget *main_graph;
@@ -45,7 +45,7 @@ gint configure_event(GtkWidget *widget, GdkEventConfigure *event)
 /////////////////////////////////////////////////////////////////////////////
 gint expose_event(GtkWidget *widget, GdkEventExpose *event)
 {
-  gdk_draw_pixmap(widget->window,
+  gdk_draw_drawable(widget->window,
 		  widget->style->white_gc,
 		  pixmap,
 		  event->area.x,event->area.y,
@@ -133,7 +133,7 @@ void erase_selection(int pfrom, int pto)//erase previous selection
 
  //mark start of selection
  draw_selection_line( selection.x1);	
- repaint(NULL);
+ repaint();
  return;
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -204,12 +204,12 @@ void draw_selection()//draw current selection
     curx+=frame_step;      
   }  
   //dump pixmap on screen
-  repaint(NULL);
+  repaint();
   return;
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void draw_pixm()//draws the spectrum on a pixmap
+void draw_pixm(void)//draws the spectrum on a pixmap
 {
   int  i,j, val, vant;
   float curx, cury, nextx ,nexty;
@@ -235,12 +235,12 @@ void draw_pixm()//draws the spectrum on a pixmap
   switch (view_type) {
   case SON_VIEW:
     {////////////////////////////////////////////////////////////////////
-
-      curx=nextx=cury=nexty=0.;
-  
+      
+      curx = nextx = cury = nexty = 0.;
+      
       for(i=(int)h.viewstart-1; i < (int)h.viewend; ++i) {
-	
-	nextx+=frame_step;
+	 
+        nextx+=frame_step;
 	
 	for(j=0; j < (int)atshed.par; ++j) {
 	  if(ats_sound->amp[j][i] > 0. ) {
@@ -365,11 +365,10 @@ void draw_pixm()//draws the spectrum on a pixmap
   if(STARTING_SELECTION && x_line >= 0.) {
     draw_selection_line( x_line );
   }
-  repaint(NULL);
-  return;
+  repaint();
 }
 ////////////////////////////////////////////////////////////////////////////
-void repaint(gpointer data)
+void repaint(void)
 {
   //repaint the widget
   update_rect.x=0;
@@ -516,15 +515,14 @@ GdkModifierType state;
 void unzoom()
 {
   if(floaded) {
-  
-    //init only horizontal scalers 
     set_hruler((double)1.,(double)atshed.fra,(double)1.,(double)atshed.fra);
-  
     h.viewstart=1;
     h.viewend=(int)atshed.fra;
-    h.diff=h.viewend - h.viewstart;      
-    h.prev=h.diff; 
-    h_setup();
+    h.prev = h.diff = h.viewend - h.viewstart;      
+    GTK_ADJUSTMENT(hadj1)->lower = GTK_ADJUSTMENT(hadj1)->upper = GTK_ADJUSTMENT(hadj2)->lower = 1.;
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(hadj1),1.);
+    GTK_ADJUSTMENT(hadj2)->upper=atshed.fra;
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(hadj2),atshed.fra);
     draw_pixm();
   }
 }

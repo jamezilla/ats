@@ -55,7 +55,7 @@ static void gtk_my_curve_set_arg     (GtkObject      *object,
 static void gtk_my_curve_get_arg     (GtkObject      *object,
 				   GtkArg         *arg,
 				   guint           arg_id);
-static void gtk_my_curve_finalize     (GtkObject     *object);
+//static void gtk_my_curve_finalize     (GObject     *object);
 static gint gtk_my_curve_graph_events (GtkWidget     *widget, 
 				    GdkEvent      *event, 
 				    GtkMyCurve      *c);
@@ -65,23 +65,18 @@ GtkType
 gtk_my_curve_get_type (void)
 {
   static GtkType curve_type = 0;
+  static const GtkTypeInfo my_curve_info = {
+    "GtkMyCurve",
+    sizeof (GtkMyCurve),
+    sizeof (GtkMyCurveClass),
+    (GtkClassInitFunc) gtk_my_curve_class_init,
+    (GtkObjectInitFunc) gtk_my_curve_init,
+    /* reserved_1 */ NULL,
+    /* reserved_2 */ NULL,
+    (GtkClassInitFunc) NULL,
+  };
 
-  if (!curve_type)
-    {
-      static const GtkTypeInfo my_curve_info =
-      {
-	"GtkMyCurve",
-	sizeof (GtkMyCurve),
-	sizeof (GtkMyCurveClass),
-	(GtkClassInitFunc) gtk_my_curve_class_init,
-	(GtkObjectInitFunc) gtk_my_curve_init,
-	/* reserved_1 */ NULL,
-        /* reserved_2 */ NULL,
-        (GtkClassInitFunc) NULL,
-      };
-
-      curve_type = gtk_type_unique (GTK_TYPE_DRAWING_AREA, &my_curve_info);
-    }
+  if (!curve_type) curve_type = gtk_type_unique (GTK_TYPE_DRAWING_AREA, &my_curve_info);
   return curve_type;
 }
 
@@ -96,13 +91,26 @@ gtk_my_curve_class_init (GtkMyCurveClass *class)
   
   object_class->set_arg = gtk_my_curve_set_arg;
   object_class->get_arg = gtk_my_curve_get_arg;
-  object_class->finalize = gtk_my_curve_finalize;
+  //  object_class->finalize = gtk_my_curve_finalize;
   
   curve_type_changed_signal =
-    gtk_signal_new ("curve_type_changed", GTK_RUN_FIRST, object_class->type,
-		    GTK_SIGNAL_OFFSET (GtkMyCurveClass, curve_type_changed),
-		    gtk_marshal_NONE__NONE, GTK_TYPE_NONE, 0);
-  gtk_object_class_add_signals (object_class, &curve_type_changed_signal, 1);
+    g_signal_new ("curve_type_changed", (GType)object_class, G_SIGNAL_RUN_FIRST,
+                  G_STRUCT_OFFSET (GtkMyCurveClass, curve_type_changed), NULL, NULL,
+                  NULL, G_TYPE_NONE, 0);
+//     gtk_signal_new ("curve_type_changed", GTK_RUN_FIRST, GTK_CLASS_TYPE(object_class),
+// 		    GTK_SIGNAL_OFFSET (GtkMyCurveClass, curve_type_changed),
+// 		    gtk_marshal_NONE__NONE, GTK_TYPE_NONE, 0);
+//   (const gchar *name,
+//    GtkSignalRunType signal_flags,
+//    GtkType object_type,
+//    guint function_offset,
+//    GtkSignalMarshaller marshaller,
+//    GtkType return_val,
+//    guint n_args,
+//    ...);
+
+
+  // gtk_object_class_add_signals (object_class, &curve_type_changed_signal, 1);
   
   gtk_object_add_arg_type ("GtkMyCurve::curve_type", GTK_TYPE_MY_CURVE,
 			   GTK_ARG_READWRITE, ARG_CURVE_TYPE);
@@ -133,22 +141,18 @@ gtk_my_curve_init (GtkCurve *my_curve)
   my_curve->num_ctlpoints = 0;
   my_curve->ctlpoint = NULL;
 
-  my_curve->min_x = 0.0;
-  my_curve->max_x = 1.0;
-  my_curve->min_y = 0.0;
-  my_curve->max_y = 1.0;
+  my_curve->min_x = my_curve->min_y = 0.0;
+  my_curve->max_x = my_curve->max_y = 1.0;
 
   old_mask = gtk_widget_get_events (GTK_WIDGET (my_curve));
   gtk_widget_set_events (GTK_WIDGET (my_curve), old_mask | GRAPH_MASK);
-  gtk_signal_connect (GTK_OBJECT (my_curve), "event",
-		      (GtkSignalFunc) gtk_my_curve_graph_events, my_curve);
+  g_signal_connect (G_OBJECT (my_curve), "event",
+                    G_CALLBACK(gtk_my_curve_graph_events), my_curve);
   gtk_my_curve_size_graph (my_curve);
 }
 
 static void
-gtk_my_curve_set_arg (GtkObject *object,
-		   GtkArg    *arg,
-		   guint      arg_id)
+gtk_my_curve_set_arg (GtkObject *object, GtkArg *arg, guint arg_id)
 {
   GtkMyCurve *my_curve = GTK_MY_CURVE (object);
   
@@ -159,27 +163,25 @@ gtk_my_curve_set_arg (GtkObject *object,
       break;
     case ARG_MIN_X:
       gtk_my_curve_set_range (my_curve, GTK_VALUE_FLOAT (*arg), my_curve->max_x,
-			   my_curve->min_y, my_curve->max_y);
+                              my_curve->min_y, my_curve->max_y);
       break;
     case ARG_MAX_X:
       gtk_my_curve_set_range (my_curve, my_curve->min_x, GTK_VALUE_FLOAT (*arg),
-			   my_curve->min_y, my_curve->max_y);
+                              my_curve->min_y, my_curve->max_y);
       break;	
     case ARG_MIN_Y:
       gtk_my_curve_set_range (my_curve, my_curve->min_x, my_curve->max_x,
-			   GTK_VALUE_FLOAT (*arg), my_curve->max_y);
+                              GTK_VALUE_FLOAT (*arg), my_curve->max_y);
       break;
     case ARG_MAX_Y:
       gtk_my_curve_set_range (my_curve, my_curve->min_x, my_curve->max_x,
-			   my_curve->min_y, GTK_VALUE_FLOAT (*arg));
+                              my_curve->min_y, GTK_VALUE_FLOAT (*arg));
       break;
     }
 }
 
 static void
-gtk_my_curve_get_arg (GtkObject *object,
-		   GtkArg    *arg,
-		   guint      arg_id)
+gtk_my_curve_get_arg (GtkObject *object, GtkArg *arg, guint arg_id)
 {
   GtkMyCurve *my_curve = GTK_MY_CURVE (object);
 
@@ -209,13 +211,13 @@ gtk_my_curve_get_arg (GtkObject *object,
 static int
 project (gfloat value, gfloat min, gfloat max, int norm)
 {
-  return (norm - 1) * ((value - min) / (max - min)) + 0.5;
+  return((norm - 1) * ((value - min) / (max - min)) + 0.5);
 }
 
 static gfloat
 unproject (gint value, gfloat min, gfloat max, int norm)
 {
-  return value / (gfloat) (norm - 1) * (max - min) + min;
+  return(value / (gfloat) (norm - 1) * (max - min) + min);
 }
 
 /* Solve the tridiagonal equation system that determines the second
@@ -280,7 +282,7 @@ gtk_my_curve_interpolate (GtkMyCurve *c, gint width, gint height)
   gfloat *vector;
   int i;
 
-  vector =g_malloc (width * sizeof(vector[0]));// g_malloc (width * sizeof (vector[0]));
+  vector =g_malloc (width * sizeof(vector[0]));
 
   gtk_my_curve_get_vector (c, width, vector);
 
@@ -308,7 +310,7 @@ gtk_my_curve_draw (GtkMyCurve *c, gint width, gint height)
 {
   GtkStateType state;
   GtkStyle *style;
-  gint i;
+  gint i, x, y;
 
   if (!c->pixmap)
     return;
@@ -341,8 +343,6 @@ gtk_my_curve_draw (GtkMyCurve *c, gint width, gint height)
   if (c->curve_type != GTK_CURVE_TYPE_FREE)
     for (i = 0; i < c->num_ctlpoints; ++i)
       {
-	gint x, y;
-
 	if (c->ctlpoint[i][0] < c->min_x)
 	  continue;
 
@@ -356,7 +356,7 @@ gtk_my_curve_draw (GtkMyCurve *c, gint width, gint height)
 	gdk_draw_arc (c->pixmap, style->fg_gc[state], TRUE, x, y,
 		      RADIUS * 2, RADIUS*2, 0, 360*64);
       }
-  gdk_draw_pixmap (GTK_WIDGET (c)->window, style->fg_gc[state], c->pixmap,
+  gdk_draw_drawable (GTK_WIDGET (c)->window, style->fg_gc[state], c->pixmap,
 		   0, 0, 0, 0, width + RADIUS * 2, height + RADIUS * 2);
 }
 
@@ -591,7 +591,7 @@ gtk_my_curve_graph_events (GtkWidget *widget, GdkEvent *event, GtkMyCurve *c)
 
 	  cursor = gdk_cursor_new (c->cursor_type);
 	  gdk_window_set_cursor (w->window, cursor);
-	  gdk_cursor_destroy (cursor);
+	  gdk_cursor_unref (cursor);
 	}
       break;
 
@@ -658,7 +658,7 @@ gtk_my_curve_set_curve_type (GtkMyCurve *c, GtkCurveType new_type)
 	  c->curve_type = new_type;
 	  gtk_my_curve_interpolate (c, width, height);
 	}
-      gtk_signal_emit (GTK_OBJECT (c), curve_type_changed_signal);
+      g_signal_emit (G_OBJECT (c), curve_type_changed_signal, 0);
       gtk_my_curve_draw (c, width, height);
     }
 }
@@ -731,7 +731,7 @@ gtk_my_curve_reset (GtkMyCurve *c)
   gtk_my_curve_reset_vector (c);
 
   if (old_type != GTK_CURVE_TYPE_SPLINE)
-    gtk_signal_emit (GTK_OBJECT (c), curve_type_changed_signal);
+    g_signal_emit (G_OBJECT (c), curve_type_changed_signal, 0);
 }
 
 void
@@ -762,7 +762,7 @@ gtk_my_curve_set_gamma (GtkMyCurve *c, gfloat gamma)
     }
 
   if (old_type != GTK_CURVE_TYPE_FREE)
-    gtk_signal_emit (GTK_OBJECT (c), curve_type_changed_signal);
+    g_signal_emit (G_OBJECT (c), curve_type_changed_signal, 0);
 
   gtk_my_curve_draw (c, c->num_points, c->height);
 }
@@ -815,7 +815,7 @@ gtk_my_curve_set_vector (GtkMyCurve *c, int veclen, gfloat vector[])
 	RADIUS + height - project (ry, c->min_y, c->max_y, height);
     }
   //if (old_type != GTK_CURVE_TYPE_FREE)
-  //gtk_signal_emit (GTK_OBJECT (c), curve_type_changed_signal);
+  //g_signal_emit (G_OBJECT (c), curve_type_changed_signal, 0);
 
   gtk_my_curve_draw (c, c->num_points, height);
 }
@@ -943,21 +943,21 @@ gtk_my_curve_new (void)
   return gtk_type_new (gtk_my_curve_get_type ());
 }
 
-static void
-gtk_my_curve_finalize (GtkObject *object)
-{
-  GtkCurve *my_curve;
+// static void
+// gtk_my_curve_finalize (GObject *object)
+// {
+//   GtkCurve *my_curve;
 
-  g_return_if_fail (object != NULL);
-  g_return_if_fail (GTK_IS_MY_CURVE (object));
+//   g_return_if_fail (object != NULL);
+//   g_return_if_fail (GTK_IS_MY_CURVE (object));
 
-  my_curve = GTK_MY_CURVE (object);
-  if (my_curve->pixmap)
-    gdk_pixmap_unref (my_curve->pixmap);
-  if (my_curve->point)
-    g_free (my_curve->point);
-  if (my_curve->ctlpoint)
-    g_free (my_curve->ctlpoint);
+//   my_curve = GTK_MY_CURVE (object);
+//   if (my_curve->pixmap)
+//     gdk_pixmap_unref (my_curve->pixmap);
+//   if (my_curve->point)
+//     g_free (my_curve->point);
+//   if (my_curve->ctlpoint)
+//     g_free (my_curve->ctlpoint);
 
-  (*GTK_OBJECT_CLASS (parent_class)->finalize) (object);
-}
+//   G_OBJECT_CLASS (parent_class)->finalize (object);
+// }

@@ -212,12 +212,12 @@ int list_view()
     offset=0;
     maxval=(atshed.par > 35.? 35:(int)atshed.par ); //clip the max val for clist to 35.
     window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_set_usize(GTK_WIDGET(window),450,22 * maxval);
+    gtk_widget_set_size_request(GTK_WIDGET(window),450,22 * maxval);
 
     gtk_window_set_title(GTK_WINDOW(window), ats_title);
-    gtk_signal_connect(GTK_OBJECT(window),
+    g_signal_connect(G_OBJECT(window),
 		       "destroy",
-		       GTK_SIGNAL_FUNC(delete_window),
+		       G_CALLBACK(delete_window),
 		       GTK_WIDGET(window));
     
     vbox=gtk_vbox_new(FALSE, 5);
@@ -281,8 +281,8 @@ int list_view()
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
    
     gtk_range_set_update_policy (GTK_RANGE (scrollbar),GTK_UPDATE_DISCONTINUOUS);
-    gtk_signal_connect (GTK_OBJECT(adj1), "value_changed",
-                        GTK_SIGNAL_FUNC (clist_update), NULL);
+    g_signal_connect (G_OBJECT(adj1), "value_changed",
+                        G_CALLBACK (clist_update), NULL);
     gtk_box_pack_start (GTK_BOX (hbox3), scrollbar, TRUE, TRUE, 0);
     
     gtk_widget_show (scrollbar);
@@ -295,32 +295,32 @@ int list_view()
     fromb=gtk_button_new_with_label("From=Now");
     gtk_box_pack_start(GTK_BOX(hboxb), fromb, FALSE, FALSE, 5);
     gtk_widget_show(fromb);
-    gtk_signal_connect (GTK_OBJECT (fromb), "clicked",
-			GTK_SIGNAL_FUNC (from_now),GTK_OBJECT(adj1));
+    g_signal_connect (G_OBJECT (fromb), "clicked",
+			G_CALLBACK (from_now),G_OBJECT(adj1));
 
     tob=gtk_button_new_with_label("To=Now");
     gtk_box_pack_start(GTK_BOX(hboxb), tob, FALSE, FALSE, 5);
     gtk_widget_show(tob);
-    gtk_signal_connect (GTK_OBJECT (tob), "clicked",
-			GTK_SIGNAL_FUNC (to_now),GTK_OBJECT(adj1));
+    g_signal_connect (G_OBJECT (tob), "clicked",
+			G_CALLBACK (to_now),G_OBJECT(adj1));
     
     redrawb=gtk_button_new_with_label("Redraw");
     gtk_box_pack_start(GTK_BOX(hboxb), redrawb, FALSE, FALSE, 5);
     gtk_widget_show(redrawb);
-    gtk_signal_connect (GTK_OBJECT (redrawb), "clicked",
-			GTK_SIGNAL_FUNC (redraw_screen),NULL);
+    g_signal_connect (G_OBJECT (redrawb), "clicked",
+			G_CALLBACK (redraw_screen),NULL);
     
     /////////////////////////////////////////
      /* Create the CList*/
     clist = gtk_clist_new_with_titles( 5, titles);
 
     /* selection made */
-    gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_EXTENDED);
-    gtk_signal_connect(GTK_OBJECT(clist), "select_row",
-		       GTK_SIGNAL_FUNC(selection_made),
+    gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_MULTIPLE);
+    g_signal_connect(G_OBJECT(clist), "select_row",
+		       G_CALLBACK(selection_made),
 		       NULL);
-    gtk_signal_connect(GTK_OBJECT(clist), "unselect_row",
-		       GTK_SIGNAL_FUNC(unselection_made),
+    g_signal_connect(G_OBJECT(clist), "unselect_row",
+		       G_CALLBACK(unselection_made),
 		       NULL);
     gtk_clist_set_shadow_type (GTK_CLIST(clist), GTK_SHADOW_OUT);
     for(i=0; i<5; ++i) {

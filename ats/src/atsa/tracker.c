@@ -8,6 +8,17 @@
 /* private function prototypes */
 int compute_frames(ANARGS *anargs);
 
+ATS_FFT fft;
+int filptr, n_partials, sflen, *win_samps, tracks_size, peaks_size, first_point, M_2;
+ATS_FRAME *ana_frames;
+float *window, norm;
+ATS_PEAK *peaks, *tracks;
+mus_sample_t **bufs;
+
+#ifdef FFTW
+  fftw_plan plan;
+  FILE *fftw_wisdom_file;
+#endif
 
 /* ATS_SOUND *tracker (ANARGS *anargs, char *soundfile)
  * partial tracking function 
@@ -15,34 +26,26 @@ int compute_frames(ANARGS *anargs);
  * soundfile: path to input file 
  * returns an ATS_SOUND with data issued from analysis
  */
-ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
+void tracker_init (ANARGS *anargs, char *soundfile)
 {
-  int fd, M_2, first_point, filptr, n_partials = 0;
-  int frame_n, k, sflen, *win_samps, peaks_size, tracks_size = 0;
-  int i, frame, i_tmp;
-  float *window, norm, sfdur, f_tmp;
-  /* declare structures and buffers */
-  ATS_SOUND *sound = NULL;
-  ATS_PEAK *peaks, *tracks = NULL, cpy_peak;
-  ATS_FRAME *ana_frames = NULL, *unmatched_peaks = NULL;
-  mus_sample_t **bufs;
-  ATS_FFT fft;
-#ifdef FFTW
-  fftw_plan plan;
-  FILE *fftw_wisdom_file;
-#endif
+  int fd, i_tmp;
+  float sfdur, f_tmp;
+
+  n_partials = tracks_size = 0;
+  ana_frames = NULL;
+  tracks = NULL;
 
   /* open input file
      we get srate and total_samps in file in anargs */
   if ((fd = mus_sound_open_input(soundfile))== -1) {
     fprintf(stderr, "%s: %s\n", soundfile, strerror(errno));
-    return(NULL);
+    return;
   }
   /* warn about multi-channel sound files */
   if (mus_sound_chans(soundfile) > 1) {
     fprintf(stderr, "Error: file has %d channels, must be mono!\n",
 	    mus_sound_chans(soundfile));
-    return(NULL);
+    return;
   }
 
   fprintf(stderr, "tracking...\n");
@@ -117,7 +120,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* check that we have enough frames for the analysis */
   if( !(anargs->frames >= ATSA_MFRAMES) ){
     fprintf(stderr, "Error: %d frames are not enough for analysis, nead at least %d\n", anargs->frames , ATSA_MFRAMES);
-    return(NULL);
+    return;
   }
   /* check other user parameters */
   /* track length */
@@ -207,88 +210,99 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   fft.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
   fft.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
 #endif
+}
 
-  /* main loop */
-  for (frame_n=0; frame_n<anargs->frames; frame_n++) {
-    /* clear fft arrays */
+void tracker (ANARGS *anargs, int frame_n)
+{
+  int k;
+  ATS_FRAME *unmatched_peaks = NULL;
+  ATS_PEAK cpy_peak;
+
+  /* clear fft arrays */
 #ifdef FFTW
-    for(k=0; k<fft.size; k++) fft.data[k][0] = fft.data[k][1] = 0.0f;
+  for(k=0; k<fft.size; k++) fft.data[k][0] = fft.data[k][1] = 0.0f;
 #else
-    for(k=0; k<fft.size; k++) fft.fdr[k] = fft.fdi[k] = 0.0f;
+  for(k=0; k<fft.size; k++) fft.fdr[k] = fft.fdi[k] = 0.0f;
 #endif
-    /* multiply by window */
-    for (k=0; k<anargs->win_size; k++) {
-      if ((filptr >= 0) && (filptr < sflen)) 
+  /* multiply by window */
+  for (k=0; k<anargs->win_size; k++) {
+    if ((filptr >= 0) && (filptr < sflen)) 
 #ifdef FFTW
-        fft.data[(k+first_point)%fft.size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+      fft.data[(k+first_point)%fft.size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
 #else
-        fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+    fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
 #endif
-      filptr++;
-    }
-    /* we keep sample numbers of window midpoints in win_samps array */
-    win_samps[frame_n] = filptr - M_2 - 1;
-    /* move file pointer back */
-    filptr = filptr - anargs->win_size + anargs->hop_smp;
-    /* take the fft */
+    filptr++;
+  }
+  /* we keep sample numbers of window midpoints in win_samps array */
+  win_samps[frame_n] = filptr - M_2 - 1;
+  /* move file pointer back */
+  filptr = filptr - anargs->win_size + anargs->hop_smp;
+  /* take the fft */
 #ifdef FFTW
-    fftw_execute(plan);
+  fftw_execute(plan);
 #else
-    fft_slow(fft.fdr, fft.fdi, fft.size, 1);
+  fft_slow(fft.fdr, fft.fdi, fft.size, 1);
 #endif
-    /* peak detection */
-    peaks_size = 0;
-    peaks = peak_detection(&fft, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
-    /* peak tracking */
-    if (peaks != NULL) {
-      /* evaluate peaks SMR (masking curves) */
-      evaluate_smr(peaks, peaks_size);
-      if (frame_n) {
-	/* initialize or update tracks */
-	if ((tracks = update_tracks(tracks, &tracks_size, anargs->track_len, frame_n, ana_frames, anargs->last_peak_cont)) != NULL) {
-	  /* do peak matching */
-          unmatched_peaks = peak_tracking(tracks, &tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
-	  /* kill unmatched peaks from previous frame */
-          if(unmatched_peaks[0].peaks != NULL) {
-	    for(k=0; k<unmatched_peaks[0].n_peaks; k++) {
-	      cpy_peak = unmatched_peaks[0].peaks[k];
-	      cpy_peak.amp = cpy_peak.smr = 0.0;
-	      peaks = push_peak(&cpy_peak, peaks, &peaks_size);
-             }
-             free(unmatched_peaks[0].peaks);
-           }
-           /* give birth to peaks from new frame */
-           if(unmatched_peaks[1].peaks != NULL) {
-             for(k=0; k<unmatched_peaks[1].n_peaks; k++) {
-               tracks = push_peak(&unmatched_peaks[1].peaks[k], tracks, &tracks_size);
-               unmatched_peaks[1].peaks[k].amp = unmatched_peaks[1].peaks[k].smr = 0.0;
-               ana_frames[frame_n-1].peaks = push_peak(&unmatched_peaks[1].peaks[k], ana_frames[frame_n-1].peaks, &ana_frames[frame_n-1].n_peaks);
-             }
-             free(unmatched_peaks[1].peaks);
-           }
-         } else {
-           /* give number to all peaks */
-           qsort(peaks, peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
-           for(k=0; k<peaks_size; k++) peaks[k].track = n_partials++;
-         }
+  /* peak detection */
+  peaks_size = 0;
+  peaks = peak_detection(&fft, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
+  /* peak tracking */
+  if (peaks != NULL) {
+    /* evaluate peaks SMR (masking curves) */
+    evaluate_smr(peaks, peaks_size);
+    if (frame_n) {
+      /* initialize or update tracks */
+      if ((tracks = update_tracks(tracks, &tracks_size, anargs->track_len, frame_n, ana_frames, anargs->last_peak_cont)) != NULL) {
+        /* do peak matching */
+        unmatched_peaks = peak_tracking(tracks, &tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
+        /* kill unmatched peaks from previous frame */
+        if(unmatched_peaks[0].peaks != NULL) {
+          for(k=0; k<unmatched_peaks[0].n_peaks; k++) {
+            cpy_peak = unmatched_peaks[0].peaks[k];
+            cpy_peak.amp = cpy_peak.smr = 0.0;
+            peaks = push_peak(&cpy_peak, peaks, &peaks_size);
+          }
+          free(unmatched_peaks[0].peaks);
+        }
+        /* give birth to peaks from new frame */
+        if(unmatched_peaks[1].peaks != NULL) {
+          for(k=0; k<unmatched_peaks[1].n_peaks; k++) {
+            tracks = push_peak(&unmatched_peaks[1].peaks[k], tracks, &tracks_size);
+            unmatched_peaks[1].peaks[k].amp = unmatched_peaks[1].peaks[k].smr = 0.0;
+            ana_frames[frame_n-1].peaks = push_peak(&unmatched_peaks[1].peaks[k], ana_frames[frame_n-1].peaks, &ana_frames[frame_n-1].n_peaks);
+          }
+          free(unmatched_peaks[1].peaks);
+        }
       } else {
         /* give number to all peaks */
         qsort(peaks, peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
         for(k=0; k<peaks_size; k++) peaks[k].track = n_partials++;
       }
-      /* attach peaks to ana_frames */
-      ana_frames[frame_n].peaks = peaks;
-      ana_frames[frame_n].n_peaks = n_partials;
-      ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
-      /* free memory */
-      free(unmatched_peaks);
     } else {
-      /* if no peaks found, initialize empty frame */
-      ana_frames[frame_n].peaks = NULL;
-      ana_frames[frame_n].n_peaks = 0;
-      ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
+      /* give number to all peaks */
+      qsort(peaks, peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
+      for(k=0; k<peaks_size; k++) peaks[k].track = n_partials++;
     }
+    /* attach peaks to ana_frames */
+    ana_frames[frame_n].peaks = peaks;
+    ana_frames[frame_n].n_peaks = n_partials;
+    ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
+    /* free memory */
+    free(unmatched_peaks);
+  } else {
+    /* if no peaks found, initialize empty frame */
+    ana_frames[frame_n].peaks = NULL;
+    ana_frames[frame_n].n_peaks = 0;
+    ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
   }
+}
+
+ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile)
+{
+  int k, i, frame;
+  ATS_SOUND *sound = NULL;
+
   /* free up some memory */
   free(window);
   free(tracks);

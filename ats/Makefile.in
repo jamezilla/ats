@@ -76,6 +76,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -120,7 +121,7 @@ noinst_LIBRARIES = libatsa.a
 libatsa_a_DEPENDENCIES = src/sndlib/sndlib.a
 libatsa_a_SOURCES = src/atsa/atsa.h src/atsa/critical-bands.c src/atsa/other-utils.c src/atsa/peak-detection.c src/atsa/peak-tracking.c src/atsa/residual-analysis.c src/atsa/residual.c src/atsa/save-load-sound.c src/atsa/tracker.c src/atsa/utilities.c
 libatsa_a_LIBADD = src/sndlib/sndlib.a
-libatsa_a_CFLAGS = -Isrc/sndlib
+libatsa_a_CFLAGS = -Wall -Isrc/sndlib
 
 bin_PROGRAMS = atsa atsh
 
@@ -128,9 +129,10 @@ atsa_SOURCES = src/atsa/atsa-nogui.c src/atsa/atsa.c
 atsa_LDADD = libatsa.a
 atsa_CFLAGS = -Wall -Isrc/sndlib
 
-atsh_SOURCES = src/atsh/about.c src/atsh/analysis.c src/atsh/atsh.c src/atsh/curves.c src/atsh/header.c src/atsh/files.c src/atsh/graphics.c src/atsh/atsh.h src/atsh/mask.c src/atsh/sel.c src/atsh/undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
+atsh_SOURCES = src/atsh/about.c src/atsh/analysis.c src/atsh/atsh.c src/atsh/curves.c src/atsh/header.c src/atsh/files.c src/atsh/graphics.c src/atsh/atsh.h src/atsh/mask.c src/atsh/sel.c src/atsh/undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
+#atsh_SOURCES = src/atsh/about.c src/atsh/analysis.c src/atsh/atsh.c src/atsh/curves.c src/atsh/header.c src/atsh/files.c src/atsh/graphics.c src/atsh/atsh.h src/atsh/mask.c src/atsh/sel.c src/atsh/undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
 atsh_LDADD = libatsa.a @GTK_LIBS@
-atsh_CFLAGS = -Wall -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@
+atsh_CFLAGS = -Wall -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@ 
 
 EXTRA_DIST = README TODO doc \
 src/sndlib/clm.c src/sndlib/clm.h src/sndlib/clm-strings.h src/sndlib/config.guess src/sndlib/config.h.in src/sndlib/config.sub src/sndlib/configure src/sndlib/headers.c src/sndlib/install-sh src/sndlib/io.c src/sndlib/makefile.in src/sndlib/README src/sndlib/sndlib-config.in src/sndlib/sndlib.h src/sndlib/sndlib-strings.h src/sndlib/sound.c
@@ -164,9 +166,8 @@ am_atsh_OBJECTS = atsh-about.$(OBJEXT) atsh-analysis.$(OBJEXT) \
 	atsh-files.$(OBJEXT) atsh-graphics.$(OBJEXT) \
 	atsh-mask.$(OBJEXT) atsh-sel.$(OBJEXT) atsh-undo.$(OBJEXT) \
 	atsh-get_sparams.$(OBJEXT) atsh-list_view.$(OBJEXT) \
-	atsh-my_curve.$(OBJEXT) atsh-popup.$(OBJEXT) \
-	atsh-progress.$(OBJEXT) atsh-synth-funcs.$(OBJEXT) \
-	atsh-help.$(OBJEXT)
+	atsh-popup.$(OBJEXT) atsh-progress.$(OBJEXT) \
+	atsh-synth-funcs.$(OBJEXT) atsh-help.$(OBJEXT)
 atsh_OBJECTS = $(am_atsh_OBJECTS)
 atsh_DEPENDENCIES = libatsa.a
 atsh_LDFLAGS =
@@ -183,9 +184,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-graphics.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-header.Po ./$(DEPDIR)/atsh-help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-list_view.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-mask.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-my_curve.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/atsh-popup.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/atsh-mask.Po ./$(DEPDIR)/atsh-popup.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-progress.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-sel.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/atsh-synth-funcs.Po \
@@ -307,7 +306,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-list_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-mask.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-my_curve.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-popup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-progress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/atsh-sel.Po@am__quote@
@@ -851,28 +849,6 @@ atsh-list_view.obj: src/atsh/list_view.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-list_view.obj `if test -f 'src/atsh/list_view.c'; then $(CYGPATH_W) 'src/atsh/list_view.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/list_view.c'; fi`
 
-atsh-my_curve.o: src/atsh/my_curve.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-my_curve.o -MD -MP -MF "$(DEPDIR)/atsh-my_curve.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-my_curve.o `test -f 'src/atsh/my_curve.c' || echo '$(srcdir)/'`src/atsh/my_curve.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-my_curve.Tpo" "$(DEPDIR)/atsh-my_curve.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-my_curve.Tpo"; exit 1; \
-@am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/my_curve.c' object='atsh-my_curve.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-my_curve.Po' tmpdepfile='$(DEPDIR)/atsh-my_curve.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-my_curve.o `test -f 'src/atsh/my_curve.c' || echo '$(srcdir)/'`src/atsh/my_curve.c
-
-atsh-my_curve.obj: src/atsh/my_curve.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-my_curve.obj -MD -MP -MF "$(DEPDIR)/atsh-my_curve.Tpo" \
-@am__fastdepCC_TRUE@	  -c -o atsh-my_curve.obj `if test -f 'src/atsh/my_curve.c'; then $(CYGPATH_W) 'src/atsh/my_curve.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/my_curve.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/atsh-my_curve.Tpo" "$(DEPDIR)/atsh-my_curve.Po"; \
-@am__fastdepCC_TRUE@	else rm -f "$(DEPDIR)/atsh-my_curve.Tpo"; exit 1; \
-@am__fastdepCC_TRUE@	fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/atsh/my_curve.c' object='atsh-my_curve.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/atsh-my_curve.Po' tmpdepfile='$(DEPDIR)/atsh-my_curve.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -c -o atsh-my_curve.obj `if test -f 'src/atsh/my_curve.c'; then $(CYGPATH_W) 'src/atsh/my_curve.c'; else $(CYGPATH_W) '$(srcdir)/src/atsh/my_curve.c'; fi`
-
 atsh-popup.o: src/atsh/popup.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(atsh_CFLAGS) $(CFLAGS) -MT atsh-popup.o -MD -MP -MF "$(DEPDIR)/atsh-popup.Tpo" \
 @am__fastdepCC_TRUE@	  -c -o atsh-popup.o `test -f 'src/atsh/popup.c' || echo '$(srcdir)/'`src/atsh/popup.c; \
@@ -1225,6 +1201,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-info-am
 	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-info-am
 
+
+#-DGTK_DISABLE_DEPRECATED=1 -DGDK_DISABLE_DEPRECATED=1 -DG_DISABLE_DEPRECATED=1
 
 src/sndlib/sndlib.a:
 	cd src/sndlib ; ./configure --with-doubles ; make

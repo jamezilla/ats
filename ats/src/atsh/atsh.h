@@ -162,14 +162,6 @@ typedef struct {
 
 
 
-typedef struct {
-  GtkWidget *progressbar;
-  GtkWidget *window;
-  int bProgressUp;
-  int nLastPct;
-}typProgressData;
-
-
 typedef struct { //the envelope window data
   GtkWidget *curve;         //curve storing the envelope
   GtkWidget *whatodo;       //either scale or add  values toggling this button
@@ -179,12 +171,15 @@ typedef struct { //the envelope window data
   GtkWidget *maxentry;      //max Y value entry 
   GtkWidget *minentry;      //min Y value entry 
   GtkWidget *durentry;      //Duration entry (only for synthesis)
-  GtkWidget *info_label;    //The label for printing info
-  short tflag;              //the toggle flag for the toggle operation button
-  short cflag;              //the toggle flag for changing the curve type
+  GtkWidget *statusbar;     //The label for printing info
+  gint context_id;          //contextid for the status bar
+  char op_flag;              //the toggle flag for the toggle operation button
+  char type_flag;              //the toggle flag for changing the curve type
   float ymin;               //min Y value  
   float ymax;               //max Y value
   float dur;                //output duration in  milliseconds(only for synthesis)
+  char type_eat; //used to eat first "toggle" message from radio buttons
+  char op_eat;
 } ENVELOPE;
 
 
@@ -241,9 +236,9 @@ GdkGC *draw_pen;
 GdkColor *draw_col;
 GdkRectangle update_rect;
 
-GtkWidget *optionmenu1,*optionmenu2;
-GtkWidget **entrys;
-typProgressData *pdata;
+//GtkWidget *optionmenu1,*optionmenu2;
+//GtkWidget **entrys;
+//typProgressData *pdata;
 //from list view
 gchar  *ats_data[5];
 gchar  *nbuf,*abuf,*fbuf,*pbuf, *sbuf,*n_text, *fto, *ffro;
@@ -265,7 +260,7 @@ void make_sine_table(void);
 gint EndProgram (void);
 //void PrintFunc (GtkWidget *widget, gpointer data);
 void show_file_name(char *name);
-void init_scalers(gint how);
+void init_scalers(void);
 void h_setup(void);
 
 
@@ -283,7 +278,6 @@ float get_x_value(GtkWidget *curve, int breakpoint);
 float get_y_value(GtkWidget *curve, int breakpoint); 
 void do_fredit(GtkWidget *widget, ENVELOPE *data);
 void do_amedit(GtkWidget *widget, ENVELOPE *data);
-void cancel_wedit(GtkWidget *widget, gpointer *data);
 void change_curve_type(GtkWidget *widget, ENVELOPE *data);
 void change_operation(GtkWidget *widget, ENVELOPE *data);
 void setmax(GtkWidget *widget, ENVELOPE *data);
@@ -292,7 +286,6 @@ void setmax_time(GtkWidget *widget, ENVELOPE *data);
 void setmin_time(GtkWidget *widget, ENVELOPE *data);
 void ismoving(GtkWidget *widget, GdkEventMotion *event, ENVELOPE *data);
 void ismoving_time(GtkWidget *widget, GdkEventMotion *event, ENVELOPE *data);
-void hidewindow(GtkWidget *widget);
 void curve_reset(GtkWidget *widget, ENVELOPE *data);
 void curve_reset_time(GtkWidget *widget, ENVELOPE *data);
 
@@ -342,7 +335,7 @@ void draw_selection_line(int x);
 void draw_selection(void);
 void erase_selection(int pfrom, int pto);
 void draw_pixm(void);
-void repaint(gpointer data);
+//void repaint(void);
 void set_selection(int from, int to, int x1, int x2, int width);
 void set_hruler(double from, double to, double pos, double max);
 void set_spec_view(void);
@@ -395,15 +388,15 @@ void change_ats_type(GtkWidget *widget, gpointer data);
 void select_out_atsfile(GtkWidget *widget, gpointer *data);
 void select_in_soundfile(GtkWidget *widget, gpointer *data);
 //void set_defaults(GtkWidget *widget, gpointer *data);
-void unload_ats_file(void);
+//void unload_ats_file(void);
 //void change_win_type(GtkWidget *widget, gpointer data);
-GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which);
+//GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which);
 //void set_aparam(GtkWidget *widget, gpointer data);
 void do_analysis (GtkWidget *widget, gpointer data);
 void cancel_dialog (GtkWidget *widget, gpointer data);
-GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, 
-			GtkWidget *window ,GtkWidget *table);
-GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID, float value, char *strbuf, int isint, int width);
+// GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, 
+// 			GtkWidget *window ,GtkWidget *table);
+//GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID, float value, char *strbuf, int isint, int width);
 //GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID);
 void create_ana_dlg (void);
 void get_ap(GtkWidget *widget, gpointer *data);
