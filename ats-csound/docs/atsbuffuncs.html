@@ -149,22 +149,22 @@ given by <strong>atsbufread</strong></p>
   ktime2 <strong>line</strong> 0, p3, .5
   kline <strong>expseg</strong> 0.001, .9, 1, p3-.9, 1
   kline2 <strong>expseg</strong> .001, p3, 1
-  <strong>atsbufread</strong>  ktime2, 1, "crt.ATS", 20
-  aout <strong>atscross</strong> ktime, 1, "cl.ATS", 1, kline, .001* (1 - kline2), 42</pre>
+  <strong>atsbufread</strong>  ktime2, 1, "crt.ats", 20
+  aout <strong>atscross</strong> ktime, 1, "cl.ats", 1, kline, .001* (1 - kline2), 42</pre>
 <p>
-	This example performs cross synthesis using two ATS files, crt.ATS and
-	cl.ATS.  The result of this will be a sound that starts out with the shape
-	(in frequency) of crt.ATS, and ends with the shape of cl.ATS.  All the
-	sine-wave frequencies come from cl.ATS.  The <em>kbuflev</em> value is scaled
+	This example performs cross synthesis using two ATS files, crt.ats and
+	cl.ats.  The result of this will be a sound that starts out with the shape
+	(in frequency) of crt.ats, and ends with the shape of cl.ats.  All the
+	sine-wave frequencies come from cl.ats.  The <em>kbuflev</em> value is scaled
 	because the energy produced by applying crt.ats's frequency spectrum to
 	cl.ats's partials is very large.  Notice also that the time pointers of the
-	atsbufread (crt.ATS) and atscross (cl.ATS) need not have the same value, this
+	atsbufread (crt.ats) and atscross (cl.ats) need not have the same value, this
 	way you can read through the two ATS files at different rates.
 </p>
 
 2.
 <pre>  ktime  <strong>line</strong>  0, p3, 2.4
-  <strong>atsbufread</strong>  ktime, 1, "cl.ATS", 42
+  <strong>atsbufread</strong>  ktime, 1, "cl.ats", 42
   kamp  <strong>atsinterpread</strong> p4
   aosc  <strong>oscili</strong>  kamp, p4, 1
   </pre>
@@ -173,7 +173,7 @@ given by <strong>atsbufread</strong></p>
 	the score (p4) and this frequency is given to an atsinterpread (with a
 	corresponding atsbufread).  The atsinterpread uses this frequency to output a
 	corresponding amplitude value, based on the atsfile given by the atsbufread
-	(cl.ATS in this case).  We then use that amplitude to scale a sine-wave that
+	(cl.ats in this case).  We then use that amplitude to scale a sine-wave that
 	is synthesized with the same frequency (p4).  You could extend this to
 	include multiple sine-waves.  This way you could synthesize any reasonable
 	frequency (within the low and high frequencies of the indicated ATS file),
@@ -183,13 +183,13 @@ given by <strong>atsbufread</strong></p>
 
 3.
 <pre>  ktime <strong>line</strong> 0, p3, 2.4
-  <strong>atsbufread</strong>  ktime, 1, "crt.ATS", 20
+  <strong>atsbufread</strong>  ktime, 1, "crt.ats", 20
   kfreq1, kamp1 <strong>atspartialtap</strong> 1
   kfreq2, kamp2 <strong>atspartialtap</strong> 10
   kfreq3, kamp3 <strong>atspartialtap</strong> 20</pre>
 <p>
 	This example here uses an atspartialtap, and an atsbufread to read partials
-	1, 10 and 20 from crt.ATS.  These amplitudes and frequencies could be used to
+	1, 10 and 20 from crt.ats.  These amplitudes and frequencies could be used to
 	re-synthesize those partials, or something all together different.
 </p>
 
