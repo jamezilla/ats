@@ -5,27 +5,27 @@
 
 #include "ugnorman.h"
 
-void    atsreadset(void*), atsread(void*);
-void    atsreadnzset(void*), atsreadnz(void*);
-void    atsaddset(void*), atsadd(void*);
-void    atssinnoiset(void*), atssinnoi(void*);
-
-taken out for now:
-void    atsaddnzset(void*), atsaddnz(void*);
-void    atsbufreadset(void*), atsbufread(void*);
-void    atscrossset(void*), atscross(void*);
-void    atsbufreadnzset(void*), atsbufreadnz(void*);
-void    atscrossnzset(void*), atscrossnz(void*);
+void	atsreadset(void*), atsread(void*);
+void	atsreadnzset(void*), atsreadnz(void*);
+void	atsaddset(void*), atsadd(void*);
+void	atsaddnzset(void*), atsaddnz(void*);
+void	atssinnoiset(void*), atssinnoi(void*);
+void	atsbufreadset(void*), atsbufread(void*);
+void	atspartialtapset(void*), atspartialtap(void*);
+void	atsinterpreadset(void*), atsinterpread(void*);
+void	atscrossset(void*), atscross(void*);
+void	atsinfo(void*);
 
 { "atsread", S(ATSREAD), 3, "kk", "kSi", atsreadset, atsread, NULL},
 { "atsreadnz", S(ATSREADNZ), 3, "k", "kSi", atsreadnzset, atsreadnz, NULL},
 { "atsadd",    S(ATSADD),       5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
 { "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
 { "atssinnoi",    S(ATSSINNOI),   5,     "a", "kkkkSiop", atssinnoiset,     NULL,   atssinnoi},
+{ "atsbufread",    S(ATSBUFREAD),   3,     "", "kkSiop", atsbufreadset, atsbufread, NULL},
+{ "atspartialtap",    S(ATSPARTIALTAP),   3,     "kk", "i", atspartialtapset, atspartialtap, NULL},
+{ "atsinterpread",    S(ATSINTERPREAD),   3,     "k", "k", atsinterpreadset, atsinterpread, NULL},
+{ "atscross",    S(ATSCROSS),   5,     "a", "kkSikkiopo", atscrossset, NULL, atscross},
 { "atsinfo",    S(ATSINFO),   1,     "i", "Si", atsinfo, NULL, NULL},
-
-{ "atsbufread", S(ATSBUFREAD),  3,      "", "kkSiop", atsbufreadset, atsbufread, NULL},
-{ "atscross", S(ATSCROSS),      5,      "a", "kkSikkiop", atscrossset,  NULL,   atscross},
 
 put ugnorman.c ugnorman.h and ugnorman.o in the correct place in your make file as well.
 
@@ -35,27 +35,26 @@ http://students.washington.edu/~anorman/atsadd.html
 and
 http://students.washington.edu/~anorman/atsread.html
 
+atsinfo:
+idata		atsinfo iatsfile, idataloc
 
 read functions:
-
 kfreq, kamp     atsread     ktimepnt, ifile, ipartial
 kenergy atsreadnz    ktimepnt, ifile, iband
 
 add functions:
-
-ar      atsadd      ktimepnt, kfmod, iatsfile, ifn, ipartials[, ipartialoffset, ipartialincr, igatefn]
-ar      atsaddnz    ktimepnt, iatsfile, ibands[, ibandoffset, ibandincr]
+ar			atsadd	ktimepnt, kfmod, iatsfile, ifn, ipartials[, ipartialoffset, ipartialincr, igatefn]
+ar			atsaddnz	ktimepnt, iatsfile, ibands[, ibandoffset, ibandincr]
 
 sinnoi function:
-ar	atssinnoi  ktimepnt, ksinlev, knzlev, kfreqscale, iatsfile, ipartials[, ipartialoffset, ipartialincr]
+ar			atssinnoi  ktimepnt, ksinlev, knzlev, kfreqscale, iatsfile, ipartials[, ipartialoffset, ipartialincr]
 
 buf/cross functions:
+        	atsbufread	ktimepnt, kfmod, iatsfile, ipartials[, ipartialoffset, ipartialincr]
+ar      	atscross	ktimepnt, kfmod, iatsfile, ifn, kmyamp, kbufamp, ipartials[, ipartialoffset, ipartialincr]
+kfreq, kamp atspartialtap ipartialnum
+kamp 		atsinterpread kfreq
 
-        atsbufread      ktimepnt, kfmod, iatsfile, ipartials[, ipartialoffset, ipartialincr]
-ar      atsadd      ktimepnt, kfmod, iatsfile, ifn, kmyamp, kbufamp, ipartials[, ipartialoffset, ipartialincr]
-
-        atsbufreadnz    ktimepnt, iatsfile
-ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, ibandoffset, ibandincr]
 
 */
 
@@ -2199,7 +2198,11 @@ static OENTRY localops[] = {
   	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
 	{ "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
 	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
-	{ "atsbufread",    S(ATSBUFREAD),   3,     "", "kkSiop", atsbufreadset, atsbufread, NULL}
+	{ "atsbufread",    S(ATSBUFREAD),   3,     "", "kkSiop", atsbufreadset, atsbufread, NULL},
+	{ "atspartialtap",    S(ATSPARTIALTAP),   3,     "kk", "i", atspartialtapset, atspartialtap, NULL},
+	{ "atsinterpread",    S(ATSINTERPREAD),   3,     "k", "k", atsinterpreadset, atsinterpread, NULL},
+	{ "atscross",    S(ATSCROSS),   5,     "a", "kkSikkiopo", atscrossset, NULL, atscross},
+	{ "atsinfo",    S(ATSINFO),   1,     "i", "Si", atsinfo, NULL, NULL}
 };
 
 long opcode_size(void)
