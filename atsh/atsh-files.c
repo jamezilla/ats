@@ -454,6 +454,8 @@ void atsin(char *pointer)
   }
 
   view_type=SON_VIEW;
+  scale_type=AMP_SCALE;
+
   //the contrast of display
   valexp=.5;
 
@@ -614,9 +616,7 @@ void atsin(char *pointer)
       if(dt > maxtim) {maxtim=dt;} //find out max. dt.
     }
     //g_print ("MAX. delta time is = %f secs.\n",maxtim );
-    //compute and store SMR
-										  
-    atsh_compute_SMR(ats_sound, 0, ats_sound->frames);
+    smr_done=FALSE;
 
     //the horizontal selection parameters 
     selection->from=selection->to=0;

@@ -236,6 +236,12 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
   }
     
   EndProgress();
+  if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
+    atsh_compute_SMR(ats_sound,selection->from,selection->to);
+  }
+  else {
+    smr_done=FALSE;
+  }
   draw_selection();
   gtk_grab_remove (fWedit);
   gtk_widget_hide(GTK_WIDGET(fWedit));
@@ -275,6 +281,12 @@ void do_amedit (GtkWidget *widget, ENVELOPE *data)
     }
 
     EndProgress();
+    if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
+      atsh_compute_SMR(ats_sound,selection->from , selection->to);
+    }
+    else {
+      smr_done=FALSE;
+    }
     draw_selection();
     gtk_grab_remove (aWedit);
     gtk_widget_hide(GTK_WIDGET(aWedit));

@@ -140,9 +140,9 @@ void Create_menu (GtkWidget *menubar)
   GtkWidget *menuitem;  
 
   /* -----------------
-     --- File menu ---
+     --- Analysis---
      ----------------- */
-    menu =(GtkWidget *)( CreateBarSubMenu (menubar, "File"));
+    menu =(GtkWidget *)( CreateBarSubMenu (menubar, "Analysis"));
 
     menuitem = CreateMenuItem (menu, "Load ATS file", "^L", 
                      "Load Analysis File", 
@@ -156,18 +156,9 @@ void Create_menu (GtkWidget *menubar)
    
                   NULL, NULL, NULL);
     
-    menuitem = CreateMenuItem (menu, "New ATS File", "^I", 
+    menuitem = CreateMenuItem (menu, "New ATS File", "^A", 
                      "Select and Analyze input soundfile", 
                      GTK_SIGNAL_FUNC (create_ana_dlg),NULL);
-
-    menuitem = CreateMenuItem (menu, "Set Output SoundFile", "^O", 
-                     "Select output soundfile", 
-                     GTK_SIGNAL_FUNC (filesel),"outsel");
-    /*
-     menuitem = CreateMenuItem (menu, "Set Audio Editor", "^U", 
-                     "Choose Soundfiles Editor", 
-                     GTK_SIGNAL_FUNC (filesel), "audsel");
-    */
 
     menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARATOR
                      NULL, NULL, NULL);
@@ -177,9 +168,9 @@ void Create_menu (GtkWidget *menubar)
                      GTK_SIGNAL_FUNC (EndProgram),NULL);
 
     /* -----------------
-       --- Edit menu ---
+       --- Transformation menu ---
        ----------------- */
-    menu = (GtkWidget *)CreateBarSubMenu (menubar, "Edit");
+    menu = (GtkWidget *)CreateBarSubMenu (menubar, "Transformation");
     menuitem = CreateMenuItem (menu, "Undo", "^0", 
                      "Undo last edition", 
                      GTK_SIGNAL_FUNC (do_undo),GINT_TO_POINTER(-1));
@@ -223,7 +214,26 @@ void Create_menu (GtkWidget *menubar)
 			       "Change Frequency of Seleccion", 
 			       GTK_SIGNAL_FUNC (edit_freq), NULL);
     
+    /* -----------------
+       --- Synthesis  menu ---
+       ----------------- */
+    menu = (GtkWidget *)CreateBarSubMenu (menubar, "Synthesis");
     
+    
+    menuitem = CreateMenuItem (menu, "Parameters", "^P", 
+                     "Set synthesis parameters and resyntezise", 
+                     GTK_SIGNAL_FUNC (get_sparams), "Parameters");
+    /*
+    menuitem = CreateMenuItem (menu, "Edit Output Soundfile", "^E", 
+                     "Load Output Soundfile in the Selected Editor", 
+                     GTK_SIGNAL_FUNC (edit_audio), "edit soundfile");
+    */ 
+    
+    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
+                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, "Synthesize", "^R", 
+                     "render Audio File from Spectral data", 
+                     GTK_SIGNAL_FUNC (do_synthesis), "Synthesize");
     
     /* -----------------
        --- View menu ---
@@ -234,14 +244,18 @@ void Create_menu (GtkWidget *menubar)
                      GTK_SIGNAL_FUNC (list_view), NULL);
     menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
                      NULL, NULL, NULL);
-    menuitem = CreateMenuItem (menu, "Spectrum (lines / dashes)", "^C", 
-                     "View Spectrum Plot(drawn either with lines or dashes)", 
+    menuitem = CreateMenuItem (menu, "Spectrum (Amp / SMR)", "^C", 
+                     "View Spectrum Plot(Toggles between Amplitude or SMR values)", 
                      GTK_SIGNAL_FUNC (set_spec_view), NULL);
 
     menuitem = CreateMenuItem (menu, "Residual", "^D", 
 			       "View Residual Plot", 
 			       GTK_SIGNAL_FUNC (set_res_view), NULL);
-   
+
+    menuitem = CreateMenuItem (menu, "Lines / Dashes", "^M", 
+			       "Toggles between Interpolated or Non Interpolated Frequency Plot",
+			       GTK_SIGNAL_FUNC (set_interpolated_view), NULL);
+			       
     menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
                      NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "unzoom", "^U", 
@@ -263,40 +277,7 @@ void Create_menu (GtkWidget *menubar)
     menuitem = CreateMenuItem (menu, "Data on Header", "^E", 
                      "view specs of ATS file", 
                      GTK_SIGNAL_FUNC (show_header), NULL);
-    /* -----------------
-       --- Analysis menu ---
-       ----------------- */
-    /*
-     menu = (GtkWidget *)CreateBarSubMenu (menubar, "Analysis");
-     menuitem = CreateMenuItem (menu, "Parameters", "^T", 
-                      "Set Analysis Parameters", 
-                      GTK_SIGNAL_FUNC (create_ana_dlg), NULL);
-    */
-    //menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-    //                 NULL, NULL, NULL);
-    //menuitem = CreateMenuItem (menu, "Analyze", "^Z", 
-    //                 "Analyze Soundfile", 
-    //                 GTK_SIGNAL_FUNC (PrintFunc), "Analyze");
-    /* -----------------
-       --- Synthesis  menu ---
-       ----------------- */
-    menu = (GtkWidget *)CreateBarSubMenu (menubar, "Synthesis");
-    
-    
-    menuitem = CreateMenuItem (menu, "Parameters", "^P", 
-                     "Set synthesis parameters and resyntezise", 
-                     GTK_SIGNAL_FUNC (get_sparams), "Parameters");
-    /*
-    menuitem = CreateMenuItem (menu, "Edit Output Soundfile", "^E", 
-                     "Load Output Soundfile in the Selected Editor", 
-                     GTK_SIGNAL_FUNC (edit_audio), "edit soundfile");
-    */ 
-    
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-                     NULL, NULL, NULL);
-    menuitem = CreateMenuItem (menu, "Resynthesize", "^R", 
-                     "Resynthesize", 
-                     GTK_SIGNAL_FUNC (do_synthesis), "Resynthesize");
+   
     
 
     /* -----------------

@@ -48,6 +48,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define SON_VIEW   2
 #define SEL_ONLY   3
 
+
 #define ATS_INSEL  0
 #define ATS_OUTSEL 1
 #define SND_INSEL  2
@@ -56,6 +57,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define APF_OUTSEL 5
 #define RES_OUTSEL 6
 
+#define ATSH_FREQ_OFFSET 1.05
 
 #define VEC_LEN 1024  //curve vector size
 
@@ -93,6 +95,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define SOMETHING_SELECTED vertex1==FALSE && vertex2==TRUE
 #define VIEWING_RES   view_type==RES_VIEW
 #define VIEWING_DET   view_type==SON_VIEW || view_type==SEL_ONLY
+#define SMR_DONE      smr_done=TRUE
+#define AMP_SCALE 0
+#define SMR_SCALE 1
 
 // #define SYNTH_RES  1
 // #define SYNTH_DET  2
@@ -243,8 +248,10 @@ char *apf_tittle;
 char *res_tittle;
 char *info;
 short *selected;
+short smr_done;
 FILE *atsfin, *soundin, *soundout;
 GtkWidget     *win_main;
+GtkWidget     *statusbar;
 
 ATS_HEADER *atshed;
 SPARAMS *sparams;
@@ -265,7 +272,7 @@ int   aveclen, tveclen;
 float maxtim;
 float frame_step, freq_step;
 float valexp;
-int   floaded, view_type,vertex1,vertex2;
+int   floaded, view_type, scale_type, vertex1, vertex2;
 short outype;
 int   depth, interpolated, need_byte_swap, draw;
 
@@ -422,6 +429,8 @@ void set_selection(int from, int to, int x1, int x2, int width);
 void set_hruler(double from, double to, double pos, double max);
 void set_spec_view();
 void set_res_view();
+void set_interpolated_view();
+
 void update_value(GtkAdjustment *adj);
 void unzoom();
 void zoom_sel();

@@ -108,6 +108,7 @@ int main (int argc, char *argv[])
     floaded=FALSE;
     pixmap=NULL;
     view_type=NULL_VIEW;
+    scale_type=AMP_SCALE;
     draw=TRUE;
     ned=0;
     led=1;
@@ -197,6 +198,8 @@ int main (int argc, char *argv[])
     atsh_anargs->SMR_cont = ATSA_SMRCONT ; 
     atsh_anargs->type=ATSA_TYPE;
 
+    smr_done=FALSE;
+
     /* --- Create the window with menus/toolbars. --- */
     if(argc ==2) {   //see if we have an ats file delivered by command line
 	CreateMainWindow (argv[1]); //pass the filename to main function
@@ -268,7 +271,7 @@ void CreateMainWindow (char *cmdl_filename)
     gtk_object_set_data_full (GTK_OBJECT (win_main), "hbox_main1", hbox_main1,
                             (GtkDestroyNotify) gtk_widget_unref);
     gtk_widget_show (hbox_main1);
-    gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main1, FALSE, FALSE,13); ///12 DO NOT CHANGE!!!
+    gtk_box_pack_start (GTK_BOX (vbox_main2), hbox_main1, FALSE, FALSE,12); ///12 DO NOT CHANGE!!!
     ///////////////////////////////
     ///////////////////////////////
     hbox_main2 = gtk_hbox_new (FALSE, 0);
@@ -285,7 +288,6 @@ void CreateMainWindow (char *cmdl_filename)
     Create_menu(GTK_WIDGET(menubar));
 /////////////main graphic area///////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-     
     main_graph= gtk_drawing_area_new();
     gtk_drawing_area_size(GTK_DRAWING_AREA(main_graph),(int)((float)GRAPH_W ), (int)((float)GRAPH_H ));
     gtk_widget_ref (main_graph);
@@ -391,7 +393,7 @@ void CreateMainWindow (char *cmdl_filename)
      gtk_object_set_data_full (GTK_OBJECT (win_main), "vbox_inf", vbox_inf,
                             (GtkDestroyNotify) gtk_widget_unref);
      gtk_widget_show (vbox_inf);
-     gtk_box_pack_start (GTK_BOX (vbox_main2), vbox_inf, FALSE, FALSE,7); //DO NOT CHANGE!!!7
+     gtk_box_pack_start (GTK_BOX (vbox_main2), vbox_inf, FALSE, FALSE,32); //DO NOT CHANGE!!!32
      ///////////////////////////////
      label= gtk_label_new("");//("\n FRAME=  \n =\n FREQ.=  ");
      gtk_widget_ref (label);
@@ -399,15 +401,21 @@ void CreateMainWindow (char *cmdl_filename)
                            (GtkDestroyNotify) gtk_widget_unref);
      gtk_label_set_justify (GTK_LABEL(label), GTK_JUSTIFY_LEFT);
      gtk_box_pack_start (GTK_BOX (vbox_inf), label, FALSE, FALSE, 0);
-     /////////////////////////////////////////    
+     //////////////////////////////////
+     statusbar =gtk_statusbar_new();
+//     gtk_object_set_data_full (GTK_OBJECT (win_main), "statusbar",statusbar,
+//                           (GtkDestroyNotify) gtk_widget_unref);
+     gtk_box_pack_start (GTK_BOX (vbox_main), statusbar, FALSE, FALSE, 0);
+     gtk_widget_show(statusbar);
+
      init_scalers(FALSE);
      gtk_widget_show(main_graph);
      gtk_widget_show (win_main);
      
      draw_default();
-
+     
      if(cmdl_filename) { //DO WE HAVE ANY ATS FILE NAME REQUESTED BY COMMAND LINE...???
-		atsin(cmdl_filename);
+       atsin(cmdl_filename);
      }
      else {
        show_file_name(win_main,NULL);
@@ -432,10 +440,11 @@ void init_scalers(gint how)
    h->prev=h->diff; 
    h_setup();
    
-   gtk_ruler_set_range (GTK_RULER (vruler),(atshed->mf - 1.)/1000., 1., 0.,(atshed->mf - 1.)/1000.);
+   gtk_ruler_set_range (GTK_RULER (vruler),((atshed->mf*ATSH_FREQ_OFFSET) - 1.)/1000., 
+			1., 0.,((atshed->mf*ATSH_FREQ_OFFSET )- 1.)/1000.);
    v->viewstart=1;
-   v->viewend=(int)atshed->mf;
-   v->diff=(int)atshed->mf;
+   v->viewend=(int)(atshed->mf*ATSH_FREQ_OFFSET);
+   v->diff=(int)(atshed->mf*ATSH_FREQ_OFFSET);
    v->prev=v->diff;
    v_setup();
 }
@@ -525,7 +534,7 @@ void v_scroll(GtkObject *adj, gpointer data)
       v->viewend    = (v->viewstart + ((int)GTK_ADJUSTMENT(vadj2)->value));  
       v->diff       = ((int)GTK_ADJUSTMENT(vadj2)->value);      
       
-      GTK_ADJUSTMENT(vadj2)->upper= atshed->mf - GTK_ADJUSTMENT(vadj1)->value ;
+      GTK_ADJUSTMENT(vadj2)->upper= (atshed->mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj1)->value ;
       gtk_adjustment_changed(GTK_ADJUSTMENT(vadj2));
       if(VIEWING_DET) {
 	gtk_ruler_set_range(GTK_RULER (vruler),(float)v->viewend/1000.,(float)v->viewstart/1000.,
@@ -536,7 +545,7 @@ void v_scroll(GtkObject *adj, gpointer data)
   case 2: 
     v->viewend    = v->viewstart +((int)GTK_ADJUSTMENT(vadj2)->value);
     v->diff       = (int)GTK_ADJUSTMENT(vadj2)->value; 
-    GTK_ADJUSTMENT(vadj1)->upper=atshed->mf - GTK_ADJUSTMENT(vadj2)->value;
+    GTK_ADJUSTMENT(vadj1)->upper=(atshed->mf*ATSH_FREQ_OFFSET) - GTK_ADJUSTMENT(vadj2)->value;
     gtk_adjustment_changed (GTK_ADJUSTMENT(vadj1));
     if(VIEWING_DET) {
       gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend/1000.,(float)v->viewstart/1000.,
@@ -561,8 +570,8 @@ void v_setup()
   gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj1),1.);
   //size of view
   GTK_ADJUSTMENT(vadj2)->lower=1.;
-  GTK_ADJUSTMENT(vadj2)->upper=atshed->mf-1.;//ojo
-  gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj2),atshed->mf);
+  GTK_ADJUSTMENT(vadj2)->upper=(atshed->mf* ATSH_FREQ_OFFSET)-1.;//ojo
+  gtk_adjustment_set_value(GTK_ADJUSTMENT(vadj2),(atshed->mf* ATSH_FREQ_OFFSET));
   draw=TRUE;
   draw_pixm();
 return;
@@ -698,6 +707,7 @@ void normalize_amplitude(GtkWidget *widget, gpointer data)
 
     EndProgress();
     draw_pixm();
+    smr_done=FALSE;
     return;
 }
 //////////////////////////////////////////////////////////

@@ -94,9 +94,15 @@ void erase_selection(int pfrom, int pto)//erase previous selection
 	
    for(j=0; j < atshed->par; ++j) {
      if(ats_sound->amp[j][i] > 0. ) {
-       val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
+       if(scale_type==AMP_SCALE) { //using amp values
+	 val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
+       }
+       else { //using smr values
+	 val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(pow(db2amp_spl(ats_sound->smr[j][i]), valexp) *(float)depth);
+       }
+       
        change_color(val,val,val);
-	    
+       
        if(ats_sound->frq[j][i] >= (float)v->viewstart && ats_sound->frq[j][i] <= (float)v->viewend) {
 	 ffac1=(float)v->diff / (ats_sound->frq[j][i]- (float)v->viewstart); 
 	 cury=main_graph->allocation.height -(main_graph->allocation.height / ffac1);
@@ -154,11 +160,21 @@ void draw_selection()//draw current selection
       if(ats_sound->amp[j][i] > 0.) {
 	
 	if(selected[j]==1 && i >= selection->from && i <= selection->to){
-	  val=depth - (int)(ats_sound->amp[j][i] * (float)depth);
+	  if(scale_type==AMP_SCALE) {
+	    val=depth - (int)(ats_sound->amp[j][i] * (float)depth);
+	  }
+	  else { //using smr values
+	    val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(db2amp_spl(ats_sound->smr[j][i]) *(float)depth);
+	  }
 	  change_color(val,0,0);
 	}
 	else {
-	  val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
+	  if(scale_type==AMP_SCALE) { //using amp values
+	    val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
+	  }
+	  else { //using smr values
+	    val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(pow(db2amp_spl(ats_sound->smr[j][i]), valexp) *(float)depth);
+	  }
 	  change_color(val,val,val);
 	}
 	if(ats_sound->frq[j][i] >= (float)v->viewstart && ats_sound->frq[j][i] <= (float)v->viewend) {
@@ -195,7 +211,6 @@ void draw_pixm()//draws the spectrum on a pixmap
   float curx, cury, nextx ,nexty;
   float ffac1, ffac2=0.; 
   float x_line=-1.;
-  //float band_step[ATSA_CRITICAL_BANDS+1];
   float band_step;
   float linear_res;
   //erase previous graph
@@ -225,13 +240,20 @@ void draw_pixm()//draws the spectrum on a pixmap
 	
 	for(j=0; j < (int)atshed->par; ++j) {
 	  if(ats_sound->amp[j][i] > 0. ) {
-	    val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
-	    //	    val=ats_sound->smr[j][i] < 0.0? depth :  
-	    //	      depth - (int)(pow(db2amp_spl(ats_sound->smr[j][i]), valexp) *(float)depth);
-	   
+	    if(scale_type==AMP_SCALE) { //using amp values
+	      val=depth - (int)(pow(ats_sound->amp[j][i], valexp) *(float)depth);
+	    }
+	    else { //using smr values
+	      val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(pow(db2amp_spl(ats_sound->smr[j][i]), valexp) *(float)depth);
+	    }
 	    if(selected[j]==1 && i >= selection->from && i <= selection->to) {
+	      if(scale_type==AMP_SCALE) {
 		val=depth - (int)(ats_sound->amp[j][i] * (float)depth);
-		change_color(val,0,0);
+	      }
+	      else { //using smr values
+		val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(db2amp_spl(ats_sound->smr[j][i]) *(float)depth);
+	      }
+	      change_color(val,0,0);
 	      }
 	      else {
 		change_color(val,val,val);
@@ -298,9 +320,14 @@ void draw_pixm()//draws the spectrum on a pixmap
 	 for(j=0; j < (int)atshed->par; ++j) {
 	   
 	   if(selected[j]==1 && i >= selection->from && i <= selection->to && ats_sound->amp[j][i] > 0.) {
-	       val=depth - (int)(ats_sound->amp[j][i]* (float)depth);
-	       change_color(val,0,0);  
-	       if(ats_sound->frq[j][i] >= (float)v->viewstart && ats_sound->frq[j][i] <= (float)v->viewend ) {
+	     if(scale_type==AMP_SCALE) {
+	       val=depth - (int)(ats_sound->amp[j][i] * (float)depth);
+	     }
+	     else { //using smr values
+		val=ats_sound->smr[j][i] < 0.0? depth : depth - (int)(db2amp_spl(ats_sound->smr[j][i]) *(float)depth);
+	      }  
+	     change_color(val,0,0);  
+	     if(ats_sound->frq[j][i] >= (float)v->viewstart && ats_sound->frq[j][i] <= (float)v->viewend ) {
 	       ffac1=(float)v->diff / (ats_sound->frq[j][i]- (float)v->viewstart); 
 	       cury=main_graph->allocation.height -(main_graph->allocation.height / ffac1);
 	       if(interpolated == TRUE) { //INTERPOLATING OR NOT
@@ -386,7 +413,7 @@ void update_value(GtkAdjustment *adj)
   return;
 }
 /////////////////////////////////////////////////////////////////////////////////
-void set_spec_view()
+void set_spec_view() //SPECTRAL view switch between AMP & SMR plot
 {
   
   if(floaded==1) {
@@ -396,14 +423,19 @@ void set_spec_view()
     gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend/1000.,(float)v->viewstart/1000.,
 			 (float)v->viewstart/1000.,(float)v->diff/1000.);
     gtk_widget_show(GTK_WIDGET(vruler));
-    if(interpolated==TRUE) {interpolated=FALSE;} //switch between interpolated view
-    else{interpolated=TRUE;}
+    if(scale_type==AMP_SCALE) { //switch between AMP & SMR view
+      scale_type=SMR_SCALE;
+      if(smr_done==FALSE) {
+	atsh_compute_SMR(ats_sound, 0, atshed->fra);
+      }
+    } 
+    else{scale_type=AMP_SCALE;}
     draw_pixm();
   }
   return;
 }
 /////////////////////////////////////////////////////////////////////////////////
-void set_res_view()
+void set_res_view() //Show residual data, if any, on a Bark scale
 {
 
   if(floaded==1) {
@@ -418,6 +450,19 @@ void set_res_view()
   }
 return;
 }
+///////////////////////////////////////////////////////////
+void set_interpolated_view() //switch between interpolated & non-interpolated
+{
+  if(floaded==1) {
+    if(interpolated==TRUE) {interpolated=FALSE;}
+    else {
+      interpolated=TRUE;
+    }
+    draw_pixm();
+  }
+  return;
+}
+
 ///////////////////////////////////////////////////////////
 gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
@@ -442,10 +487,20 @@ GdkModifierType state;
    if(VIEWING_DET){ 
      freq_step=(float)main_graph->allocation.height / (float) v->diff;
      position->f1  = v->viewstart + (v->diff - (int)((float) y / freq_step));
-     sprintf(info,"\n FRAME=%d(%6.3f segs.)\n FREQ.=%d Hz.", 
+     /*
+     if(scale_type==AMP_SCALE) {
+       sprintf(info,"\n FRAME=%d(%6.3f segs.)\n FREQ.=%d Hz.\n Amplitude Plot", 
 	     position->from+1, 
 	     ats_sound->time[0][position->from], 
-	     position->f1);    
+	     position->f1);
+     }
+     else{
+       sprintf(info,"\n FRAME=%d(%6.3f segs.)\n FREQ.=%d Hz.\n SMR Plot ", 
+	       position->from+1, 
+	       ats_sound->time[0][position->from], 
+	       position->f1);
+     }
+     */
      gtk_ruler_set_range (GTK_RULER (vruler),(float)v->viewend / 1000.,
 			  (float)v->viewstart / 1000.,
 			  (float)position->f1 / 1000.,

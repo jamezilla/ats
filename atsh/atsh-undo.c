@@ -83,8 +83,13 @@ void do_undo(GtkWidget *widget,gpointer data)
  selection->f2=undat[led].f2;
  vertex1=FALSE; vertex2=TRUE; //something IS selected  
  set_avec();
-
  fclose(pundo);
+ if(scale_type==SMR_SCALE) { //smr values are computed only if the user is viewing them
+   atsh_compute_SMR(ats_sound,selection->from,selection->to);
+ }
+ else {
+   smr_done=FALSE;
+ }
  draw_pixm(); 
  repaint(NULL);
 
