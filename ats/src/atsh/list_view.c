@@ -5,7 +5,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 
-extern char *ats_tittle;
+extern char ats_title[];
 
 /////////////////////////////////////////////////////////////////////////////
 void from_now(GtkWidget *widget, GtkAdjustment *adj)
@@ -192,7 +192,7 @@ int list_view()
     GtkWidget *vbox, *hbox1, *hbox2, *hbox3;
     GtkWidget *scrolled_window;
     gchar *titles[5] = { "Partial #", "Amplitude", "Frequency","SMR", "Phase"};
-    GtkWidget *sc_tittle, *ti_tittle; 
+    GtkWidget *sc_title, *ti_title; 
     GtkObject *adj1;
     GtkWidget *scrollbar;
     GtkWidget *fromb, *tob, *redrawb;
@@ -201,7 +201,7 @@ int list_view()
    
     first=TRUE;
 
-    if(*ats_tittle==0) { //no ATS file data alocated, just ignore the call
+    if(*ats_title==0) { //no ATS file data alocated, just ignore the call
       return(0); 
     }
     
@@ -211,7 +211,7 @@ int list_view()
     window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_set_usize(GTK_WIDGET(window),450,22 * maxval);
 
-    gtk_window_set_title(GTK_WINDOW(window), ats_tittle);
+    gtk_window_set_title(GTK_WINDOW(window), ats_title);
     gtk_signal_connect(GTK_OBJECT(window),
 		       "destroy",
 		       GTK_SIGNAL_FUNC(delete_window),
@@ -227,10 +227,10 @@ int list_view()
     gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, FALSE, 0);
     gtk_widget_show(hbox1);
   
-    sc_tittle = gtk_label_new ("Current frame");
-    gtk_box_pack_start (GTK_BOX (hbox1), sc_tittle, FALSE, FALSE,10);
-    gtk_misc_set_alignment(GTK_MISC(sc_tittle),0.,.8);
-    gtk_widget_show (sc_tittle);
+    sc_title = gtk_label_new ("Current frame");
+    gtk_box_pack_start (GTK_BOX (hbox1), sc_title, FALSE, FALSE,10);
+    gtk_misc_set_alignment(GTK_MISC(sc_title),0.,.8);
+    gtk_widget_show (sc_title);
 
     fr_num = gtk_label_new (" 0    ");
     gtk_box_pack_start (GTK_BOX (hbox1), fr_num, FALSE, FALSE,10);
@@ -258,10 +258,10 @@ int list_view()
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
     gtk_widget_show(hbox2);   
    
-    ti_tittle = gtk_label_new ("Current time ");
-    gtk_box_pack_start (GTK_BOX (hbox2), ti_tittle, FALSE,FALSE,10);
-    gtk_misc_set_alignment(GTK_MISC(ti_tittle),0.,.8);
-    gtk_widget_show (ti_tittle);
+    ti_title = gtk_label_new ("Current time ");
+    gtk_box_pack_start (GTK_BOX (hbox2), ti_title, FALSE,FALSE,10);
+    gtk_misc_set_alignment(GTK_MISC(ti_title),0.,.8);
+    gtk_widget_show (ti_title);
 
     ti_num = gtk_label_new ("0. segs.");
     gtk_box_pack_start (GTK_BOX (hbox2), ti_num, FALSE, FALSE,10);

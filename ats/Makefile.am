@@ -11,7 +11,7 @@ atsa_SOURCES = src/atsa/atsa-nogui.c src/atsa/atsa.c
 atsa_LDADD = libatsa.a
 atsa_CFLAGS = -Isrc/sndlib
 
-atsh_SOURCES = src/atsh/about.c src/atsh/atsh-analysis.c src/atsh/atsh.c src/atsh/atsh-curves.c src/atsh/ats-header.c src/atsh/atsh-files.c src/atsh/atsh-graphics.c src/atsh/atsh.h src/atsh/atsh-mask.c src/atsh/atsh-misc.c src/atsh/atsh-sel.c src/atsh/atsh-undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
+atsh_SOURCES = src/atsh/about.c src/atsh/atsh-analysis.c src/atsh/atsh.c src/atsh/atsh-curves.c src/atsh/ats-header.c src/atsh/atsh-files.c src/atsh/atsh-graphics.c src/atsh/atsh.h src/atsh/atsh-mask.c src/atsh/atsh-sel.c src/atsh/atsh-undo.c src/atsh/get_sparams.c src/atsh/list_view.c src/atsh/my_curve.c src/atsh/my_curve.h src/atsh/popup.c src/atsh/progress.c src/atsh/synth-funcs.c src/atsh/help.c src/atsh/help.h
 atsh_LDADD = libatsa.a @GTK_LIBS@
 atsh_CFLAGS = -Isrc/sndlib -Isrc/atsa @GTK_CFLAGS@
 

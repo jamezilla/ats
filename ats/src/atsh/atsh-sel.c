@@ -13,6 +13,7 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 extern GtkWidget     *main_graph;
 extern VIEW_PAR *h, *v;
+extern int floaded;
 
 ///////////////////////////////////////////////////////
 void set_met(GtkWidget *widget, gpointer data)

@@ -5,6 +5,10 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 #include "my_curve.h"
+
+extern SPARAMS sparams;
+extern short smr_done;
+
 /////////////////////////////////////////////////////////////////////////////
 int get_nbp(GtkWidget *curve) 
 {
@@ -207,7 +211,7 @@ void do_fredit (GtkWidget *widget, ENVELOPE *data)
     atshed->typ = 1.; 
   }
   
-  sparams->upha=FALSE;
+  sparams.upha=FALSE;
  
   for(i=0; i < (int)atshed->par;  ++i) {
     for(x=0; x < aveclen; ++x) {

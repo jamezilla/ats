@@ -5,23 +5,24 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 GtkWidget *freq_entry, *sine_entry, *noise_entry, *sr_entry, *file_entry;
-extern char *out_tittle;
-extern char *ats_tittle;
-
+extern char out_title[];
+extern char ats_title[];
+extern SPARAMS sparams;
+extern int floaded;
 
 void allorsel(GtkWidget *widget, gpointer data)
 {
   if (GTK_TOGGLE_BUTTON (widget)->active) {
-    sparams->allorsel=TRUE;
+    sparams.allorsel=TRUE;
     if(SOMETHING_SELECTED) {
-      sparams->beg=ats_sound->time[0][selection->from];
-      sparams->end=ats_sound->time[0][selection->to]+ ats_sound->time[0][1];
+      sparams.beg=ats_sound->time[0][selection->from];
+      sparams.end=ats_sound->time[0][selection->to]+ ats_sound->time[0][1];
     }
   } else {
-    sparams->allorsel=FALSE;
+    sparams.allorsel=FALSE;
     if(SOMETHING_SELECTED) {
-      sparams->beg=0.;
-      sparams->end=ats_sound->time[0][(int)atshed->fra - 1] + ats_sound->time[0][1];
+      sparams.beg=0.;
+      sparams.end=ats_sound->time[0][(int)atshed->fra - 1] + ats_sound->time[0][1];
     }
   }
 }
@@ -31,29 +32,29 @@ void set_params(void)
   gchar *str;
 
   str=gtk_editable_get_chars(GTK_EDITABLE(sine_entry),0,9);
-  sparams->amp=(float)atof((char*)str);
+  sparams.amp=(float)atof((char*)str);
   g_free(str);
 
   if(FILE_HAS_NOISE) {
     str=gtk_editable_get_chars(GTK_EDITABLE(noise_entry),0,9);
-    sparams->ramp=(float)atof((char*)str);
+    sparams.ramp=(float)atof((char*)str);
     g_free(str);
   }
 
   str=gtk_editable_get_chars(GTK_EDITABLE(freq_entry),0,9);
-  sparams->frec=(float)atof((char*)str);
+  sparams.freq=(float)atof((char*)str);
   g_free(str);
  
   str=gtk_editable_get_chars(GTK_EDITABLE(sr_entry),0,9);
-  sparams->sr=(float)atof((char*)str);
+  sparams.sr=(float)atof((char*)str);
   g_free(str);
 
   str=gtk_editable_get_chars(GTK_EDITABLE(file_entry),0,-1);
-  strcpy(out_tittle, str);
+  strcpy(out_title, str);
   g_free(str);
 
   /* Phase information is not used for synthesis at present */
-  sparams->upha=FALSE;
+  sparams.upha=FALSE;
 }
 
 //void delete_event (GtkWidget *widget, gpointer data)
@@ -95,7 +96,7 @@ void get_sparams(void)
     sine_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(sine_entry), 10);
     gtk_widget_set_usize(GTK_WIDGET(sine_entry),60,20);
-    sprintf(str, "%2.3f", sparams->amp);
+    sprintf(str, "%2.3f", sparams.amp);
     gtk_entry_set_text(GTK_ENTRY(sine_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), sine_entry, FALSE, FALSE, 0);
     gtk_widget_show(sine_entry);
@@ -109,7 +110,7 @@ void get_sparams(void)
     noise_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(noise_entry), 10);
     gtk_widget_set_usize(GTK_WIDGET(noise_entry),60,20);
-    sprintf(str, "%2.3f", sparams->ramp);
+    sprintf(str, "%2.3f", sparams.ramp);
     gtk_entry_set_text(GTK_ENTRY(noise_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), noise_entry, FALSE, FALSE, 0);
     gtk_editable_set_editable(GTK_EDITABLE(noise_entry), FILE_HAS_NOISE);
@@ -124,7 +125,7 @@ void get_sparams(void)
     freq_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(freq_entry), 10);
     gtk_widget_set_usize(GTK_WIDGET(freq_entry),60,20);
-    sprintf(str, "%2.3f", sparams->frec);
+    sprintf(str, "%2.3f", sparams.freq);
     gtk_entry_set_text(GTK_ENTRY(freq_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), freq_entry, FALSE, FALSE, 0);
     gtk_widget_show(freq_entry);
@@ -138,7 +139,7 @@ void get_sparams(void)
     sr_entry = gtk_entry_new();
     gtk_entry_set_max_length(GTK_ENTRY(sr_entry), 10);
     gtk_widget_set_usize(GTK_WIDGET(sr_entry),60,20);
-    sprintf(str, "%d", (int)sparams->sr);
+    sprintf(str, "%d", (int)sparams.sr);
     gtk_entry_set_text(GTK_ENTRY(sr_entry), str);
     gtk_box_pack_start(GTK_BOX(hbox), sr_entry, FALSE, FALSE, 0);
     gtk_widget_show(sr_entry);
@@ -153,7 +154,7 @@ void get_sparams(void)
 //     /* Create the toggle button for Partials */
 //     tlabel1 = gtk_label_new ("Selected Partials Only");
 //     button= gtk_toggle_button_new();
-//     gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(button),sparams->allorsel);
+//     gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(button),sparams.allorsel);
 //     gtk_signal_connect (GTK_OBJECT (button), "toggled",
 //                         GTK_SIGNAL_FUNC (allorsel),NULL);
 //     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->vbox), button, FALSE, FALSE, 2);
@@ -164,7 +165,7 @@ void get_sparams(void)
 
     /* Create the check button for Partials */
     button = gtk_check_button_new_with_label("Selected Partials Only");
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), sparams->allorsel);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), sparams.allorsel);
     gtk_signal_connect(GTK_OBJECT(button), "toggled", GTK_SIGNAL_FUNC(allorsel), NULL);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), button, FALSE, FALSE, 2);
     gtk_widget_show (button);
@@ -184,7 +185,7 @@ void get_sparams(void)
     
     file_entry = gtk_entry_new();
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(window)->vbox), file_entry, FALSE, FALSE, 2);
-    gtk_entry_set_text(GTK_ENTRY(file_entry), out_tittle);
+    gtk_entry_set_text(GTK_ENTRY(file_entry), out_title);
     gtk_widget_show (file_entry);
     
     /* create a void box as separator */

@@ -4,7 +4,7 @@ Oscar Pablo Di Liscia / Juan Pampin
  */
 
 #include "atsh.h"
-extern char *ats_tittle;
+extern char ats_title[];
 extern int floaded;
 
 void show_header (void)
@@ -29,7 +29,7 @@ void show_header (void)
     gtk_container_set_border_width(GTK_CONTAINER(box), 20);
     gtk_container_add(GTK_CONTAINER(window), box);
 
-    sprintf(str, "Filename: %s", ats_tittle);
+    sprintf(str, "Filename: %s", ats_title);
     label = gtk_label_new(str);
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     gtk_widget_show(label);

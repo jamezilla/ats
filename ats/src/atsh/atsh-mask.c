@@ -3,6 +3,8 @@ ATSH-MASK.C
 Oscar Pablo Di Liscia / Juan Pampin
 */
 
+extern short smr_done;
+
 #include "atsh.h"
 
 /* make_peaks

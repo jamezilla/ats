@@ -13,13 +13,20 @@ extern GtkWidget     *isfile_label;
  GtkWidget     *osfile_label;
 extern GtkWidget     *afile_label;
 extern GtkWidget     *rfile_label;
-char *in_tittle;
-extern char *out_tittle;
-extern char *out_ats_tittle;
-char *ats_tittle;
-extern ANARGS *atsh_anargs;
+extern char in_title[];
+extern char out_title[];
+extern char out_ats_title[];
+extern char ats_title[];
+extern char res_title[];
+extern char apf_title[];
+extern char undo_file[];
+
+extern ANARGS *anargs;
 extern GtkObject *valadj;
 short tbflag;
+extern SPARAMS sparams;
+extern short smr_done;
+extern int floaded;
 
 typedef struct {
   void (*func)();
@@ -159,12 +166,12 @@ void set_filter(GtkWidget *widget, gpointer data)
 /*
  * --- Filename, remember it.
  */
-static   char        *tittle = NULL; 
+static   char        *title = NULL; 
 
 char *GetExistingFile ()
 {
-  gtk_label_set_text(GTK_LABEL(slabel),tittle);
-  return (tittle);
+  gtk_label_set_text(GTK_LABEL(slabel),title);
+  return (title);
     
 }
     
@@ -188,25 +195,25 @@ void FileOk (GtkWidget *w, gpointer data)
   sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (filew));
 
   /* --- Free old memory --- */
-  if (tittle) g_free (tittle);
+  if (title) g_free (title);
 
   /* --- Duplicate the string --- */
-  tittle = g_strdup (sTempFile); 
+  title = g_strdup (sTempFile); 
 
   /* --- Call the function that does the work. --- */
-  (*(localdata->func)) (tittle);
+  (*(localdata->func)) (title);
   switch(localdata->opid) {
   case SND_INSEL:
-    gtk_entry_set_text(GTK_ENTRY (isfile_label), in_tittle);
+    gtk_entry_set_text(GTK_ENTRY (isfile_label), in_title);
     break;
   case ATS_OUTSEL:
-    gtk_entry_set_text(GTK_ENTRY (afile_label), out_ats_tittle);
+    gtk_entry_set_text(GTK_ENTRY (afile_label), out_ats_title);
     break;
   case SND_OUTSEL:
-    gtk_entry_set_text(GTK_ENTRY(osfile_label),out_tittle);
+    gtk_entry_set_text(GTK_ENTRY(osfile_label),out_title);
     break;
   case RES_OUTSEL:
-    gtk_entry_set_text(GTK_ENTRY(rfile_label),res_tittle);
+    gtk_entry_set_text(GTK_ENTRY(rfile_label),res_title);
     break;
   }
 
@@ -342,44 +349,44 @@ void filesel(GtkWidget *widget,char *what)
   filt=(char*)malloc(64 * sizeof(char));
   
   if(strcmp(what,"atsin")==0){
-    GetFilename("Select ATS file",atsin,ats_tittle,"*.ats",ATS_INSEL);  
+    GetFilename("Select ATS file",atsin,ats_title,"*.ats",ATS_INSEL);  
   }  
   
   if(strcmp(what,"atsave")==0){
-    GetFilename("Save ATS file",atsout,ats_tittle,"*.ats",ATS_INSEL);  
+    GetFilename("Save ATS file",atsout,ats_title,"*.ats",ATS_INSEL);  
   }
   
 
   if(strcmp(what,"insel")==0){    
-    GetFilename("Select Input Soundfile for analysis",setin,in_tittle,"*",SND_INSEL);
+    GetFilename("Select Input Soundfile for analysis",setin,in_title,"*",SND_INSEL);
   }
   
   if(strcmp(what,"outsel")==0){
     if(outype==WAV16 || outype==WAV32 ) {
-      GetFilename("Select Output Soundfile",setout,out_tittle,"*.wav",SND_OUTSEL);  
+      GetFilename("Select Output Soundfile",setout,out_title,"*.wav",SND_OUTSEL);  
     }
     if(outype==AIF16 || outype==AIF32 ) {
-      GetFilename("Select Output Soundfile",setout,out_tittle,"*.aif",SND_OUTSEL);  
+      GetFilename("Select Output Soundfile",setout,out_title,"*.aif",SND_OUTSEL);  
     }
     if(outype==SND16 || outype==SND32) {
-      GetFilename("Select Output Soundfile",setout,out_tittle,"*.snd",SND_OUTSEL);  
+      GetFilename("Select Output Soundfile",setout,out_title,"*.snd",SND_OUTSEL);  
     }
 
   }
  
   if(strcmp(what,"atsoutsel")==0){    
-    GetFilename("Select output ats file",setout_ats,out_ats_tittle,"*.ats",ATS_OUTSEL);  
+    GetFilename("Select output ats file",setout_ats,out_ats_title,"*.ats",ATS_OUTSEL);  
   }
 
   if(strcmp(what,"getap")==0){    
-    GetFilename("Load Analysis Parameters file",getap,apf_tittle,"*.apf",APF_INSEL);  
+    GetFilename("Load Analysis Parameters file",getap,apf_title,"*.apf",APF_INSEL);  
   }
   if(strcmp(what,"savap")==0){    
-    GetFilename("Save Analysis Parameters file",savap,apf_tittle,"*.apf",APF_OUTSEL);  
+    GetFilename("Save Analysis Parameters file",savap,apf_title,"*.apf",APF_OUTSEL);  
   } 
   
   if(strcmp(what,"res_sel")==0){    
-    GetFilename("Select Residual Output Soundfile",setres,res_tittle,"*.wav",RES_OUTSEL);  
+    GetFilename("Select Residual Output Soundfile",setres,res_title,"*.wav",RES_OUTSEL);  
   } 
 
   return;
@@ -387,9 +394,9 @@ void filesel(GtkWidget *widget,char *what)
 /////////////////////////////////////////////////////////////////////////////
 void setres(char *pointer)
 {
-  *res_tittle=0;
+  *res_title=0;
 
-  strcat(res_tittle,pointer);
+  strcat(res_title,pointer);
 
   return;
 }
@@ -402,9 +409,9 @@ void setaud(char *pointer)
 /////////////////////////////////////////////////////////////////////////////
 void setin(char *pointer)
 {
-  *in_tittle=0;
+  *in_title=0;
 
-  strcat(in_tittle,pointer);
+  strcat(in_title,pointer);
   //g_print ("%s\n", pointer);
 
   return;
@@ -412,9 +419,9 @@ void setin(char *pointer)
 /////////////////////////////////////////////////////////////////////////////
 void setout(char *pointer)
 {
-  *out_tittle=0;
+  *out_title=0;
 
-  strcat(out_tittle,pointer);
+  strcat(out_title,pointer);
   //g_print ("%s\n", pointer);
 
   return;
@@ -423,9 +430,9 @@ void setout(char *pointer)
 /////////////////////////////////////////////////////////////////////////////
 void setout_ats(char *pointer)
 {
-  *out_ats_tittle=0;
+  *out_ats_title=0;
 
-  strcat(out_ats_tittle,pointer);
+  strcat(out_ats_title,pointer);
   //g_print ("%s\n", pointer);
 
   return;
@@ -459,20 +466,20 @@ void atsin(char *pointer)
   //the contrast of display
   valexp=.5;
 
-  *ats_tittle=0;
-  strcat(ats_tittle,pointer);    
+  *ats_title=0;
+  strcat(ats_title,pointer);    
 
   //g_print ("%s ", pointer);
 
-  if((atsfin=fopen(ats_tittle,"rb"))==0) {
+  if((atsfin=fopen(ats_title,"rb"))==0) {
     strcat(info, "Could not open ");
-    strcat(info, ats_tittle);
+    strcat(info, ats_title);
     Popup(info);
-    *ats_tittle=0;
+    *ats_title=0;
     floaded=FALSE;
     draw_default();
     init_scalers(FALSE);
-    show_file_name(win_main,NULL);
+    show_file_name(NULL);
     return;
   }
 
@@ -488,13 +495,13 @@ void atsin(char *pointer)
 
     if((int)atshed->mag != (int)magic) { 
       Popup("ERROR:ATS MAGIC NUMBER NOT FOUND IN HEADER...");
-      *ats_tittle=0;
+      *ats_title=0;
       fclose(atsfin);
       floaded=FALSE;
       need_byte_swap=FALSE;
       init_scalers(FALSE);
       draw_default();
-      show_file_name(win_main,NULL);
+      show_file_name(NULL);
       return;
     } 
     else {
@@ -523,19 +530,19 @@ void atsin(char *pointer)
 
   if(sizef != length) { //error: the file size does not match the header data
     Popup("ERROR: FILE SIZE DOES NOT MATCH HEADER DATA...");
-    *ats_tittle=0;
+    *ats_title=0;
     fclose(atsfin);
     floaded=FALSE;
     init_scalers(FALSE);
     draw_default();
-    show_file_name(win_main,NULL);
+    show_file_name(NULL);
     return; 
   }
   //////////////////////////
  
   //     if(!ats_sound) {
   //       Popup("Could not allocate enough memory for ATS data");
-  //       *ats_tittle=0;
+  //       *ats_title=0;
   //       fclose(atsfin);
   //       floaded=FALSE;
   //       init_scalers(FALSE);
@@ -626,26 +633,26 @@ void atsin(char *pointer)
  
 
     if (FILE_HAS_PHASE) {
-      sparams->upha=TRUE;
+      sparams.upha=TRUE;
     }
     else{
-      sparams->upha=FALSE;
+      sparams.upha=FALSE;
     }
  
     //Default initialization of synthesis data...
-    sparams->sr  = 44100.; 
-    sparams->amp = 1.;
+    sparams.sr  = 44100.; 
+    sparams.amp = 1.;
     if(FILE_HAS_NOISE) {
-      sparams->ramp = 1.;
+      sparams.ramp = 1.;
     }
     else {
-      sparams->ramp = 0.;
+      sparams.ramp = 0.;
     }
-    sparams->frec = 1.;
-    sparams->max_stretch= 1.;
-    sparams->beg = 0.;
-    sparams->end = ats_sound->time[0][(int)atshed->fra-1] + ats_sound->time[0][1];
-    sparams->allorsel=FALSE;
+    sparams.freq = 1.;
+    sparams.max_stretch= 1.;
+    sparams.beg = 0.;
+    sparams.end = ats_sound->time[0][(int)atshed->fra-1] + ats_sound->time[0][1];
+    sparams.allorsel=FALSE;
 
     //initialization of smart selection data
 
@@ -673,7 +680,7 @@ void atsin(char *pointer)
     else {
       set_time_env(timenv, TRUE);
     }
-    show_file_name(win_main,pointer);
+    show_file_name(pointer);
     fclose(atsfin);
     draw_pixm(); 
  
@@ -685,11 +692,11 @@ void atsout(char *pointer)
   int i,x, length;
   double aux;
 
-  *ats_tittle=0;
-  strcat(ats_tittle,pointer);
+  *ats_title=0;
+  strcat(ats_title,pointer);
   //g_print ("%s\n", pointer);
 
-  if((atsfin=fopen(ats_tittle,"wb"))==0) {
+  if((atsfin=fopen(ats_title,"wb"))==0) {
     Popup("Could not open output file for writing");
     return;
   }
@@ -731,62 +738,59 @@ void atsout(char *pointer)
   return;
 }
 ////////////////////////////////////////////////////////////////////////////
-void stringinit()
-{
-  in_tittle     =(char*)malloc(1024*sizeof(char));
-  out_tittle    =(char*)malloc(1024*sizeof(char));
-  out_ats_tittle=(char*)malloc(1024*sizeof(char));
-  ats_tittle    =(char*)malloc(1024*sizeof(char));
-  undo_file     =(char*)malloc(1024*sizeof(char));
-  apf_tittle    =(char*)malloc(1024*sizeof(char));
-  res_tittle    =(char*)malloc(1024*sizeof(char));
+// void stringinit(void)
+// {
+//   in_title     =(char*)malloc(1024*sizeof(char));
+//   out_title    =(char*)malloc(1024*sizeof(char));
+//   out_ats_title=(char*)malloc(1024*sizeof(char));
+//   ats_title    =(char*)malloc(1024*sizeof(char));
+//   undo_file     =(char*)malloc(1024*sizeof(char));
+//   apf_title    =(char*)malloc(1024*sizeof(char));
+//   res_title    =(char*)malloc(1024*sizeof(char));
 
-  *in_tittle=*out_tittle=*out_ats_tittle=*ats_tittle=*undo_file=*res_tittle=0;
+//   *in_title=*out_title=*out_ats_title=*ats_title=*undo_file=*res_title=0;
 
-  return;
-}
+//   return;
+// }
 ////////////////////////////////////////////////////////////////////////////
-void stringfree()
-{
-  free(in_tittle);
-  free(out_tittle);
-  free(out_ats_tittle);
-  free(ats_tittle);
-  free(undo_file);
-  free(apf_tittle);
-  free(res_tittle);
-}
+// void stringfree()
+// {
+//   free(in_title);
+//   free(out_title);
+//   free(out_ats_title);
+//   free(ats_title);
+//   free(undo_file);
+//   free(apf_title);
+//   free(res_title);
+// }
 ////////////////////////////////////////////////////////////////////////////
-void edit_audio()
-{
-
-
-
-  return;
-}
+// void edit_audio()
+// {
+//   return;
+// }
 ////////////////////////////////////////////////////////////////////////////
 void getap(char *pointer)
 {
   FILE *in;
 
-  *apf_tittle=0;
-  strcat(apf_tittle,pointer);    
+  *apf_title=0;
+  strcat(apf_title,pointer);    
 
-  if((in=fopen(apf_tittle,"rb"))==0) {
+  if((in=fopen(apf_title,"rb"))==0) {
     *info=0; 
     strcat(info, "Could not open ");
-    strcat(info, apf_tittle);
+    strcat(info, apf_title);
     Popup(info);
-    *apf_tittle=0;
+    *apf_title=0;
     return;
   }
   
-  if(fread(atsh_anargs,1,sizeof(ANARGS),in)==0) {
+  if(fread(anargs,1,sizeof(ANARGS),in)==0) {
     *info=0; 
     strcat(info, "Error: Could not read ");
-    strcat(info, apf_tittle);
+    strcat(info, apf_title);
     Popup(info);
-    *apf_tittle=0;
+    *apf_title=0;
     fclose(in);
     return;
   }
@@ -800,24 +804,24 @@ void savap(char *pointer)
 {
   FILE *out;
 
-  *apf_tittle=0;
-  strcat(apf_tittle,pointer);    
+  *apf_title=0;
+  strcat(apf_title,pointer);    
   
-  if((out=fopen(apf_tittle,"wb"))==0) {
+  if((out=fopen(apf_title,"wb"))==0) {
     *info=0; 
     strcat(info, "Error: Could not open ");
-    strcat(info, apf_tittle);
+    strcat(info, apf_title);
     Popup(info);
-    *apf_tittle=0;
+    *apf_title=0;
     return;
   }
 
-  if(fwrite(atsh_anargs,1,sizeof(ANARGS),out)==0) {
+  if(fwrite(anargs,1,sizeof(ANARGS),out)==0) {
     *info=0; 
     strcat(info, "Error: Could not write on ");
-    strcat(info, apf_tittle);
+    strcat(info, apf_title);
     Popup(info);
-    *apf_tittle=0;
+    *apf_title=0;
     fclose(out);
     return;
   }

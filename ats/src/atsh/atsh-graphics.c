@@ -11,9 +11,11 @@ extern GtkObject *hadj1,*hadj2;
 extern GtkWidget *vscale1, *vscale2;
 extern GtkWidget *hruler, *vruler;
 extern VIEW_PAR *h, *v;
-extern GdkPixmap *pixmap;
 extern GtkWidget *statusbar;
 extern gint context_id;
+extern int floaded;
+extern short smr_done;
+GdkPixmap *pixmap = NULL;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -361,41 +363,30 @@ void draw_pixm()//draws the spectrum on a pixmap
 ////////////////////////////////////////////////////////////////////////////
 void repaint(gpointer data)
 {
-//repaint the widget
-    update_rect.x=0;
-    update_rect.y=0;
-    update_rect.width=main_graph->allocation.width;
-    update_rect.height=main_graph->allocation.height;
-    gtk_widget_draw(main_graph,&update_rect);
-return;
+  //repaint the widget
+  update_rect.x=0;
+  update_rect.y=0;
+  update_rect.width=main_graph->allocation.width;
+  update_rect.height=main_graph->allocation.height;
+  gtk_widget_draw(main_graph,&update_rect);
 }
 ////////////////////////////////////////////////////////////////////////////
 
 void draw_default() //draws the default screen on a pixmap...we will do a nicer draw later...
 {
-  int i,x,y,val, colfac, xval;
+  int i, x = 0, y,val = 16384, colfac, xval;
 
-  xval = 0;
-  val = 16384;
-  x= 0;
   y= main_graph->allocation.height;
   colfac= (depth-16384) / 50;
   xval=main_graph->allocation.width / 100;
 
- for(i=0; i<100; ++i) {
- 	change_color(val/2,0,val);
-	gdk_draw_rectangle(pixmap,draw_pen,1,x,0,x+xval,y);
-   	x +=xval;
-   	if(i < 50) {
-		val +=colfac;
-	}
-	else {
-		val -=colfac;
-	}
-}
-
-
-return; 
+  for(i=0; i<100; i++) {
+    change_color(val/2,0,val);
+    gdk_draw_rectangle(pixmap,draw_pen,1,x,0,x+xval,y);
+    x +=xval;
+    if(i < 50) val += colfac;
+    else val -= colfac;
+  }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void update_value(GtkAdjustment *adj)

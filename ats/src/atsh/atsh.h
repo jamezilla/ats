@@ -106,9 +106,6 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define AMP_SCALE 0
 #define SMR_SCALE 1
 
-// #define SYNTH_RES  1
-// #define SYNTH_DET  2
-// #define SYNTH_BOTH 3
 
 //MACROS
 /*
@@ -128,10 +125,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define INTERP_PHASE(pha_1, frq_1, alpha, beta, i) (beta * i * i * i) + (alpha * i * i)+ (frq_1 * i) + pha_1
 
 typedef struct { //parameters for resynthesis
-
   float amp;  //Deterministic amplitude scalar
   float ramp; //Residual amplitude scalar
-  float frec; //Global frequency scalar
+  float freq; //Global frequency scalar
   float max_stretch; //MAX TIME SCALAR
   float beg;  //Begin synthesis time
   float end;  //End synthesis time
@@ -141,17 +137,14 @@ typedef struct { //parameters for resynthesis
 }SPARAMS;
 
 typedef struct {
-
   int viewstart;
   int viewend;
   int diff;
   int step;
   int prev;
-
 } VIEW_PAR;
 
 typedef struct {
-  
   int from; //from frame of selection
   int to;   //to frame of slection
   int f1;   //low frequency bound  of selection (Hz)
@@ -164,30 +157,25 @@ typedef struct {
 } SELECTION;
 
 typedef struct {
-  
   int from; //from frame of selection
   int to;   //to frame of slection
   int f1;   //low frequency bound  of selection (Hz)
   int f2;   //high frequency bound  of selection (Hz) 
   int nsel; //number of partials selected
   int ed_kind; //the kind of edition done (either frequency or amplitude at present)
-
 } UNDO_DATA;
 
 
 
 typedef struct {
-
   GtkWidget *progressbar;
   GtkWidget *window;
   int bProgressUp;
   int nLastPct;
-
 }typProgressData;
 
 
 typedef struct { //the envelope window data
-
   GtkWidget *curve;         //curve storing the envelope
   GtkWidget *whatodo;       //either scale or add  values toggling this button
   GtkWidget *tlabel;        //the label for the button
@@ -213,55 +201,22 @@ typedef struct { //the time data for each time breakpoint of the time function
 } TIME_DATA;
 
 typedef struct { //the data for the smart selection menu
-
   int from;        //from partial #
   int to;          //to partial #
   int step;        //the step
   float tres;      //amplitude treshold
   int met;         //amplitude evaluation method (0=peak, 1=RMS Power)
-
 } SMSEL_DATA;
 
-// typedef struct { //the data for the randi UG
-//   int   size; //size of the frame in samples this should be sr/freq.
-//   float a1;   //first amplitude value
-//   float a2;   //next  amplitude value
-//   int   cnt;  //sample position counter
-// } RANDI;
-
-//GLOBAL VARIABLES
-
-//double tl_sr;
-//float *sine_table;
-
-//FROM MAIN
-//GtkWidget     *win_main;
-//GtkTooltips   *tooltips;
-//GtkAccelGroup *accel_group;
-//GtkWidget     *toolbar;
-//GtkWidget     *main_graph;
-//GtkWidget     *label;
-//GtkWidget     *isfile_label;
-//GtkWidget     *osfile_label;
-//GtkWidget     *afile_label;
-//GtkWidget     *rfile_label;
-
-//char *in_tittle;
-//char *out_tittle;
-//char *out_ats_tittle;
-//char *ats_tittle;
-char *undo_file;
-char *apf_tittle;
-char *res_tittle;
 char *info;
 short *selected;
-short smr_done;
+//short smr_done;
 FILE *atsfin, *soundin, *soundout;
-GtkWidget     *win_main;
+//GtkWidget     *win_main;
 GtkWidget     *statusbar;
 
 ATS_HEADER *atshed;
-SPARAMS *sparams;
+//SPARAMS *sparams;
 SELECTION *selection, *position;
 ENVELOPE  *ampenv, *freenv, *timenv;
 SMSEL_DATA *sdata;
@@ -279,35 +234,20 @@ int   aveclen, tveclen;
 float maxtim;
 float frame_step, freq_step;
 float valexp;
-int   floaded, view_type, scale_type, vertex1, vertex2;
+int   view_type, scale_type, vertex1, vertex2;
 short outype;
 int   depth, interpolated, need_byte_swap, draw;
-
-//VIEW_PAR *h, *v;
-//UNDO_DATA *undat;
-
-//ANARGS *atsh_anargs;
-
-//GtkObject *hadj1,*hadj2;
-//GtkObject *vadj1,*vadj2, *valadj;
-//GtkWidget *hscale1, *hscale2;
-//GtkWidget *vscale1, *vscale2, *valscale;
-//GtkWidget *hruler, *vruler;
 
 GtkWidget *fWedit;
 GtkWidget *aWedit;
 GtkWidget *tWedit;
 
-//GtkWidget **entry;
-//GdkPixmap *pixmap;
 GdkGC *draw_pen;
 GdkColor *draw_col;
 GdkRectangle update_rect;
 
 GtkWidget *optionmenu1,*optionmenu2;
 GtkWidget **entrys;
-//
-GtkWidget *window1;
 typProgressData *pdata;
 //from list view
 gchar  *ats_data[5];
@@ -317,43 +257,21 @@ GtkWidget *clist;
 GtkObject *adj1;
 GtkWidget *ti_num, *fr_num, *fr_from, *fr_to;
 //From getsparams.c
-//char **param_list;
-//GtkWidget *tlabel1, *tlabel2;
-//From header
-//char *hdata;
 GtkWidget *window1;
-//
+
 
 //SYNTHESIS FUNCTIONS
 void do_synthesis(void);
-//void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
 void make_sine_table(void);
-//float ioscilator(float amp,float frec,int op,float *oscpt);
-//int locate_frame(int from_frame, float time, float dif);
-// void set_output_type(int *format, int *header);
-// void randi_setup(float sr, float freq, RANDI *radat);
-// float randi(RANDI *radat);
-// float randif(RANDI *radat, float freq);
-// void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps, int op, float *oscpt);
-// void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata);
-// void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
 
 //MAIN PROGRAM FUNCTIONS
-//void CreateMainWindow (char *cmdl_filename);
-//void DeSelectMenu (GtkWidget *widget, gpointer data);
-//GtkWidget *CreateMenuItem (GtkWidget *menu, char *szName, char *szAccel, char *szTip, GtkSignalFunc func,gpointer data);
-//GtkWidget *CreateMenuCheck (GtkWidget *menu, char *szName, GtkSignalFunc func,gpointer data);
-//void CreateToolbar (GtkWidget *vbox_main);
-void Create_menu (GtkWidget *menubar);
+//void Create_menu (GtkWidget *menubar);
 
 gint EndProgram (void);
-void PrintFunc (GtkWidget *widget, gpointer data);
-void show_file_name(GtkWidget *window,char *name);
+//void PrintFunc (GtkWidget *widget, gpointer data);
+void show_file_name(char *name);
 void init_scalers(gint how);
-//void h_scroll(GtkObject *adj,gpointer data);
 void h_setup(void);
-//void v_scroll(GtkObject *adj,gpointer data);
-//void v_setup(void);
 
 void set_avec(void);
 void edit_freq(GtkWidget *widget, gpointer data);
@@ -414,7 +332,6 @@ GtkWidget *CreateEditField (char *name, int what);
 char **alocstring(int np , int nc);
 void set_params(void);
 void allorsel (GtkWidget *widget, gpointer data);
-//void upha(GtkWidget *widget, gpointer data);
 
 //UNDO FUNCTIONS
 void do_undo(GtkWidget *widget,gpointer data);
@@ -452,8 +369,6 @@ void revert_sel(void);
 
 //ABOUT WINDOW FUNCTIONS
 void show_header (void);
-//void hclose(GtkWidget *widget, gpointer data);
-//void create_hsep(void);
 void about(void);
 void help(void);
 
@@ -473,10 +388,10 @@ void GetFilename (char *sTitle, void (*callback) (char *),char* selected, char *
 void FileOk (GtkWidget *w, gpointer data);
 void destroy (GtkWidget *widget, gpointer *data);
 void filesel(GtkWidget *widget,char *what);
-void stringinit(void);
-void stringfree(void);
+//void stringinit(void);
+//void stringfree(void);
 int  my_filelength(FILE *fpt);
-void edit_audio(void);
+//void edit_audio(void);
 void choose_output(GtkWidget *widget, gpointer data);
 void getap(char *pointer);
 void savap(char *pointer);
