@@ -1,5 +1,5 @@
 /* ATScsound Ugens, adapted by Alex Norman (2003) from the phase vocoder csound code by Richard Karpen
-*  also uses code from the randi csound function
+*  uses noise generations fucntions from atsh
 *  the following needs to be put in entry.c
 
 #include "ugnorman.h"
@@ -60,12 +60,6 @@ ifn for atsaddnz and atscrossnz needs to be 1 cycle of a cosine wave for now, th
 */
 
 
-/* PROBLEMS:
-	atsaddnz segfaults when an opcode is after it
-
-*/
-
-
 #include "cs.h"
 #include "ugnorman.h"
 #include "oload.h"
@@ -74,7 +68,6 @@ ifn for atsaddnz and atscrossnz needs to be 1 cycle of a cosine wave for now, th
 
 #include "ftgen.h"
 
-#define RNDMUL  15625L
 
 #define costabsz 4096
 #define ATSA_NOISE_VARIANCE 0.04
