@@ -67,7 +67,7 @@
 /* last peak contribution for tracking (ratio) */
 #define  ATSA_LPKCONT 0.0
 /* SMR contribution for tracking (ratio) */
-#define  ATSA_SMRCONT 0.0
+#define  ATSA_SMRCONT 0.5
 /* minimum number of frames for analysis (frames) */
 #define ATSA_MFRAMES 4
 /* default analysis file type 
