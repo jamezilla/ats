@@ -7,12 +7,6 @@ typedef struct atsdataloc
         double freq;
 }       ATS_DATA_LOC;
 
-typedef struct _atspinfo
-{
-        float   amp;
-        float   freq;
-}       atspinfo;               //a sturucture that holds the amp and freq of 1 partial
-
 typedef struct _randiats
 { //the data for the randi UG
   int   size; //size of the frame in samples this should be sr/freq.
@@ -122,20 +116,20 @@ typedef struct _atsaddnz
 typedef struct _atsbufread
 {
         OPDS    h;
-        float   *ktimpnt, *kfmod, *ifilno, *iptls;
+        float   *ktimpnt, *kfmod, *ifileno, *iptls;
         float   *iptloffset, *iptlincr; // optional arguments
         MEMFIL  *mfp;
-        double  maxFr, frSiz, prFlg;
+        int  maxFr, prFlg;
         /* base Frame (in frameData0) and maximum frame on file, ptr to fr, size */
         AUXCH   auxch;
-        atspinfo *table;        //store freq and amp info for later use
+        ATS_DATA_LOC *table;        //store freq and amp info for later use
         int     frmInc;         // amount to increment frame pointer to get to next frame
         int     firstpartial;   // location of first wanted partial in the frame
         int     partialinc;     // amount to increment pointer by to get at the next partial in a frame
-        int     mems;           // memory size of aux channel
+        int     memsize;           // memory size of aux channel
         double  timefrmInc;
         float   MaxAmp;         // maximum amplitude in anaylsis file
-        double  *frPtr;         // pointer to the data (past the header)
+        double  *datastart;         // pointer to the data (past the header)
 	ATSSTRUCT atshead;
 } ATSBUFREAD;
 
