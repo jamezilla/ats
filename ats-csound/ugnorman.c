@@ -8,6 +8,7 @@
 void    atsreadset(void*), atsread(void*);
 void    atsreadnzset(void*), atsreadnz(void*);
 void    atsaddset(void*), atsadd(void*);
+void    atssinnoiset(void*), atssinnoi(void*);
 
 taken out for now:
 void    atsaddnzset(void*), atsaddnz(void*);
@@ -20,6 +21,7 @@ void    atscrossnzset(void*), atscrossnz(void*);
 { "atsreadnz", S(ATSREADNZ), 3, "k", "kSi", atsreadnzset, atsreadnz, NULL},
 { "atsadd",    S(ATSADD),       5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd},
 { "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
+{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
 
 taken out for now:
 { "atsbufread", S(ATSBUFREAD),  3,      "", "kkSiop", atsbufreadset, atsbufread, NULL},
@@ -45,6 +47,9 @@ add functions:
 
 ar      atsadd      ktimepnt, kfmod, iatsfile, ifn, ipartials[, ipartialoffset, ipartialincr, igatefn]
 ar      atsaddnz    ktimepnt, iatsfile, ibands[, ibandoffset, ibandincr]
+
+sinnoi function:
+ar	atssinnoi  ktimepnt, ksinlev, knzlev, kfreqscale, iatsfile, ipartials[, ipartialoffset, ipartialincr]
 
 buf/cross functions:
 
@@ -1313,9 +1318,11 @@ GLOBALS *pcglob;
 #define S(x)       sizeof(x)
 
 static OENTRY localops[] = {
-  { "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
-  { "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL}
-  //{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd}
+  	{ "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
+  	{ "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL}
+  	{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd}
+	{ "atsaddnz",    S(ATSADDNZ),   5,     "a", "kSiop", atsaddnzset,     NULL,   atsaddnz},
+	{ "atssinnoi",    S(ATSSINNOI),   5,     "a", "xxxxSiop", atssinnoiset,     NULL,   atssinnoi},
 };
 
 long opcode_size(void)
