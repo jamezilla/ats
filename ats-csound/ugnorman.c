@@ -472,16 +472,16 @@ void AtsAmpGate(ATS_DATA_LOC *, int, FUNC *, double);
 void atsaddset(ATSADD *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
-       	FUNC *ftp, *AmpGateFunc; 
-	int i, memsize;
-        
+	FUNC *ftp, *AmpGateFunc; 
+	int i, memsize, n_partials, type;
+	
 	// set up function table for synthesis
-        if ((ftp = ftfind(p->ifn)) == NULL){
+	if ((ftp = ftfind(p->ifn)) == NULL){
 		sprintf(errmsg, "ATSADD: Function table number for synthesis waveform not valid\n");
 		initerror(errmsg);
-                return;
+		return;
 	}
-        p->ftp = ftp;
+	p->ftp = ftp;
 	
 	// set up gate function table
 	if(*p->igatefun > 0){
@@ -514,12 +514,22 @@ void atsaddset(ATSADD *p){
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
 	//make sure that this is an ats file
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSADD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSADD: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSADD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
+
+
 	//calculate how much memory we have to allocate for this
 	memsize = (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
 	// allocate space if we need it
@@ -533,14 +543,25 @@ void atsaddset(ATSADD *p){
 	// set up the buffer, phase, etc.
 	p->buf = (ATS_DATA_LOC *)(p->auxch.auxp);
 	p->oscphase = (double *)(p->buf + (int)(*p->iptls));
-	p->maxFr = (int)atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
-	p->MaxAmp = atsh->ampmax;        // store the maxium amplitude
+	//byte swap if nessisary
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		n_partials = (int)bswap(&atsh->npartials);
+		p->MaxAmp = bswap(&atsh->ampmax);        // store the maxium amplitude
+		type = (int)bswap(&atsh->type);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		n_partials = (int)atsh->npartials;
+		p->MaxAmp = atsh->ampmax;        // store the maxium amplitude
+		type = (int)atsh->type;
+	}
 	
 	// make sure partials are in range
-	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > n_partials || (int)(*p->iptloffset) < 0)
 	{
-		sprintf(errmsg, "ATSADD: Partial(s) out of range, max partial allowed is %i", (int)atsh->npartials);
+		sprintf(errmsg, "ATSADD: Partial(s) out of range, max partial allowed is %i", n_partials);
 		initerror(errmsg);
 		return;
 	}
@@ -548,26 +569,26 @@ void atsaddset(ATSADD *p){
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 
 	// get increments for the partials
-	switch ( (int)(atsh->type))
+	switch (type)
 	{
 		case 1 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 					p->partialinc = 2 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 2 + 1);
+					p->frmInc = n_partials * 2 + 1;
 					break;
 		
 		case 2 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 					p->partialinc = 3 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 3 + 1);
+					p->frmInc = n_partials * 3 + 1;
 					break;
 		
 		case 3 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 					p->partialinc = 2 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 2 + 26);
+					p->frmInc = n_partials * 2 + 26;
 					break;
 		
 		case 4 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 					p->partialinc = 3 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 3 + 26);
+					p->frmInc = n_partials * 3 + 26;
 					break;
 		
 		default:	sprintf(errmsg, "ATSADD: Type not implemented");
@@ -666,9 +687,12 @@ void atsadd(ATSADD *p){
 }
 
 void FetchADDPartials(ATSADD *p, ATS_DATA_LOC *buf, float position)
+
 {
 	float	frac;           // the distance in time we are between frames
 	double * frm0, * frm1;
+	double temp0amp, temp1amp;
+	double temp0freq, temp1freq;
 	int	frame;
 	int	i;      // for the for loop
 	int	partialloc = p->firstpartial;
@@ -682,8 +706,13 @@ void FetchADDPartials(ATSADD *p, ATS_DATA_LOC *buf, float position)
 	{
 		for(i = 0; i < npartials; i++)
 		{
-			buf[i].amp = frm0[partialloc]; // calc amplitude
-			buf[i].freq = frm0[partialloc + 1];
+			if (p->swapped == 1) {
+				buf[i].amp = bswap(&frm0[partialloc]); // calc amplitude
+				buf[i].freq = bswap(&frm0[partialloc + 1]);	//freq
+			} else {
+				buf[i].amp = frm0[partialloc]; // calc amplitude
+				buf[i].freq = frm0[partialloc + 1];	//freq
+			}
 			partialloc += p->partialinc;
 		}
 		return;
@@ -694,8 +723,19 @@ void FetchADDPartials(ATSADD *p, ATS_DATA_LOC *buf, float position)
 
 	for(i = 0; i < npartials; i++)
 	{
-		buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
-		buf[i].freq = frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1]); // calc freq
+		if (p->swapped == 1){
+			temp0amp = bswap(&frm0[partialloc]);
+			temp1amp = bswap(&frm1[partialloc]);
+			temp0freq = bswap(&frm0[partialloc + 1]);
+			temp1freq = bswap(&frm1[partialloc + 1]);
+		} else {
+			temp0amp = frm0[partialloc];
+			temp1amp = frm1[partialloc];
+			temp0freq = frm0[partialloc + 1];
+			temp1freq = frm1[partialloc + 1];
+		}
+		buf[i].amp = temp0amp + frac * (temp1amp - temp0amp); // calc amplitude
+		buf[i].freq = temp0freq + frac * (temp1freq - temp0freq); // calc freq
 		partialloc += p->partialinc;       // get to the next partial
 	}
 }
@@ -788,6 +828,7 @@ void FetchADDNZbands(
 {
 	double	frac;           // the distance in time we are between frames
 	double	* frm0, * frm1;
+	double	frm0val, frm1val;
 	int	frame;
 	int	i;      // for the for loop
 	int	firstband = p->firstband;
@@ -799,22 +840,30 @@ void FetchADDNZbands(
 	if(frame == p->maxFr)
 	{
 		for(i = 0; i < 25; i++)
-			buf[i] = frm0[firstband + i]; // output value 
+			buf[i] = (p->swapped == 1) ? bswap(&frm0[firstband + i]) : frm0[firstband + i]; // output value 
 		return;
 	}
 	
 	frm1 = frm0 + p->frmInc;
 	frac = (double)(position - frame);
 
-	for(i = 0; i < 25; i++)
-		buf[i] = frm0[firstband + i] + frac * (frm1[firstband + i] - frm0[firstband + i]); // calc energy
+	for(i = 0; i < 25; i++){
+		if (p->swapped == 1) {
+			frm0val = bswap(&(frm0[firstband + i]));
+			frm1val = bswap(&(frm1[firstband + i]));
+		} else {
+			frm0val = frm0[firstband + i];
+			frm1val = frm1[firstband + i];
+		}
+		buf[i] = frm0val + frac * (frm1val - frm0val); // calc energy
+	}
 	return;
 }
 
 void atsaddnzset(ATSADDNZ *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
-	int i;
+	int i, type, n_partials;
 	
 	/* copy in ats file name */
 	if (*p->ifileno == sstrcod){
@@ -833,29 +882,47 @@ void atsaddnzset(ATSADDNZ *p){
 	//point the header pointer at the header data
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
-	//make sure that this is an ats file & byte endianness is correct
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSADDNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	//make sure that this is an ats file
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSADDNZ: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSADDNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
 	// make sure that this file contains noise
-	if(atsh->type != 4 && atsh->type != 3)
+	type = (p->swapped == 1) ? (int)bswap(&atsh->type) : (int)atsh->type;
+	
+	if(type != 4 && type != 3)
 	{
-		if (atsh->type < 5)
+		if (type < 5)
 			sprintf(errmsg, "ATSADDNZ: This file type contains no noise");
 		else
 			sprintf(errmsg, "ATSADDNZ: This file type has not been implemented in this code yet.");
 		initerror(errmsg);
 		return;
 	}
-
-	// point the data pointer to the correct partial
+	
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
-	p->maxFr = atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
-	p->winsize = (float)atsh->winsz;
+	//byte swap if nessisary
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		n_partials = (int)bswap(&atsh->npartials);
+		p->winsize = (float)bswap(&atsh->winsz);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		n_partials = (int)atsh->npartials;
+		p->winsize = (float)atsh->winsz;
+	}
 		
 	// make sure partials are in range
 	if( (int)(*p->ibandoffset + *p->ibands * *p->ibandincr)  > 25 || (int)(*p->ibandoffset) < 0)
@@ -866,14 +933,14 @@ void atsaddnzset(ATSADDNZ *p){
 	}
 
 	// point the data pointer to the correct partials
-	switch ( (int)(atsh->type))
+	switch (type)
 	{
-		case 3 :	p->firstband = 1 + 2 * (int)(atsh->npartials);
-					p->frmInc = (int)(atsh->npartials * 2 + 26);
+		case 3 :	p->firstband = 1 + 2 * n_partials;
+					p->frmInc = n_partials * 2 + 26;
 					break;
 		
-		case 4 :	p->firstband = 1 + 3 * (int)(atsh->npartials);
-					p->frmInc = (int)(atsh->npartials * 3 + 26);
+		case 4 :	p->firstband = 1 + 3 * n_partials;
+					p->frmInc = n_partials * 3 + 26;
 					break;
 		
 		default:	sprintf(errmsg, "ATSADDNZ: Type either has no noise or is not implemented (only type 3 and 4 work now)");
@@ -1400,7 +1467,6 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 	}
 	
 	return;
-
 }
 
 /************************************************************/
