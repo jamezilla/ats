@@ -289,7 +289,7 @@ void Create_menu (GtkWidget *menubar)
                      "View help file(HTML format)", 
                      GTK_SIGNAL_FUNC (PrintFunc), "help");
     */
-    menuitem = CreateMenuItem (menu, "About", "", 
+    menuitem = CreateMenuItem (menu, "About ATSH", "", 
                      "About ATSH", 
                      GTK_SIGNAL_FUNC (about), NULL);
     

@@ -31,7 +31,8 @@ void about(void)
                         "http://www.unq.edu.ar/cme\n"                   \
                         "Center for Digital Arts and Experimental Media (DXARTS)\n" \
                         "University of Washington, Seattle\n"          \
-                        "http://www.washington.edu/dxarts");
+                        "http://www.washington.edu/dxarts\n\n" \
+                        "ATS Homepage:\nhttp://www.dxarts.washington.edu/ats");
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
   gtk_widget_show(label);
 
