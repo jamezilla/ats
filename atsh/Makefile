@@ -3,8 +3,8 @@ DEFS = -DLINUX
 CFLAGS = -I$(ATSA_LOC) -ggdb -O2 -Wall
 GTK_LIBS = `gtk-config --libs`
 GTK_CFLAGS = `gtk-config --cflags`
-LIBS = -lm $(ATSA_LOC)/atsa.a
-ATSA_LOC = ../atsa
+LIBS = -lm $(ATSA_LOC)/atsa.a # must include -lgsl -lgslcblas if you're using gsl
+ATSA_LOC = ../atsa # edit to reflect the location of atsa on your system
 
 .c.o:
 	$(CC) -c $(DEFS) $(GTK_CFLAGS) $(CFLAGS) $<
