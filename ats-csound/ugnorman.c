@@ -1304,13 +1304,14 @@ void atsbufreadset(ATSBUFREAD *p)
 	p->maxFr = (int)(atsh->nfrms) - 1;
 	p->timefrmInc = atsh->nfrms / atsh->dur;
 	
-	memsize = (int)(*p->iptls + 2); // we need room for 1 table + 2 for 20 and 20,000 hz
+	memsize = 2 * (int)(*p->iptls + 2); // we need room for 2 * (1 table + 2 for 20 and 20,000 hz) (one sorted one unsorted)
 	
 	if (p->auxch.auxp == NULL || memsize != p->memsize)
 		auxalloc((memsize * sizeof(ATS_DATA_LOC)), &p->auxch);
 	
 	fltp = (ATS_DATA_LOC *) p->auxch.auxp;
 	p->table = fltp;
+	p->utable = fltp + (int)(*p->iptls + 2);
 	p->memsize=memsize;
 
 	// check to see if partial is valid
@@ -1351,10 +1352,10 @@ void atsbufreadset(ATSBUFREAD *p)
 	}
 
 	// put 20 hertz = 0amp and 20000 hz = 0amp to make interpolation easier later
-	p->table[0].freq = 20;
-	p->table[0].amp = 0;
-	p->table[(int)*p->iptls + 1].freq = 20000;
-	p->table[(int)*p->iptls + 1].amp = 0;
+	p->table[0].freq = p->utable[0].freq = 20;
+	p->table[0].amp = p->utable[0].amp = 0;
+	p->table[(int)*p->iptls + 1].freq = p->utable[(int)*p->iptls + 1].freq = 20000;
+	p->table[(int)*p->iptls + 1].amp = p->utable[(int)*p->iptls + 1].amp = 0;
 	
 	return;
 }
@@ -1372,7 +1373,7 @@ int mycomp(const void * p1, const void * p2)
 		return 1;
 }
 
-void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, float position)
+void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, ATS_DATA_LOC *buf2, float position)
 {
 	float   frac;           // the distance in time we are between frames
 	double * frm0, * frm1;
@@ -1389,8 +1390,8 @@ void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, float position)
 	{
 		for(i = 0; i < npartials; i++)
 		{
-			buf[i].amp = frm0[partialloc]; // calc amplitude
-			buf[i].freq = frm0[partialloc + 1];
+			buf[i].amp = buf2[i].amp = frm0[partialloc]; // calc amplitude
+			buf[i].freq = buf2[i].freq = frm0[partialloc + 1];
 			partialloc += p->partialinc;
 		}
 		return;
@@ -1401,8 +1402,8 @@ void FetchBUFPartials(ATSBUFREAD *p, ATS_DATA_LOC *buf, float position)
 	
 	for(i = 0; i < npartials; i++)
 	{
-		buf[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
-		buf[i].freq = *p->kfmod * (frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1])); // calc freq
+		buf[i].amp = buf2[i].amp = frm0[partialloc] + frac * (frm1[partialloc] - frm0[partialloc]); // calc amplitude
+		buf[i].freq = buf2[i].freq = *p->kfmod * (frm0[partialloc + 1] + frac * (frm1[partialloc + 1 ] - frm0[partialloc + 1])); // calc freq
 		partialloc += p->partialinc;       // get to the next partial
 	}
 }
@@ -1412,6 +1413,7 @@ void atsbufread(ATSBUFREAD *p)
 {
 	MYFLT frIndx;
 	ATS_DATA_LOC * buf;
+	ATS_DATA_LOC * buf2;
         
 	atsbufreadaddr = p;
 
@@ -1445,7 +1447,8 @@ void atsbufread(ATSBUFREAD *p)
 
 	// skip the first value in the table because we will never have to change it as it is 20hz with amp 0
 	buf = p->table + 1;
-	FetchBUFPartials(p, buf, frIndx);
+	buf2 = p->utable + 1;
+	FetchBUFPartials(p, buf, buf2, frIndx);
 	//must sort the buffered values
 	qsort(buf, (int)*p->iptls, sizeof(ATS_DATA_LOC), mycomp);
 }
@@ -1458,9 +1461,9 @@ void atspartialtapset(ATSPARTIALTAP *p)
    	initerror(errmsg);
 		return;
 	}
-	if((int)*p->iparnum > (int)(atsbufreadaddr->iptls))
+	if((int)*p->iparnum > (int)*(atsbufreadaddr->iptls))
 	{
-		sprintf(errmsg,"ATSPARTIALTAP: exceeded max partial %i", (int)(atsbufreadaddr->iptls));
+		sprintf(errmsg,"ATSPARTIALTAP: exceeded max partial %i", (int)*(atsbufreadaddr->iptls));
 		initerror(errmsg);
 		return;
 	}
@@ -1472,6 +1475,7 @@ void atspartialtapset(ATSPARTIALTAP *p)
 	}
 	
 }
+
 void atspartialtap(ATSPARTIALTAP *p)
 {
 	if(atsbufreadaddr == NULL)
@@ -1479,8 +1483,8 @@ void atspartialtap(ATSPARTIALTAP *p)
 		fprintf(stderr,"ATSPARTIALTAP: you must have a atsbufread before an atspartialtap");
 		return;
 	}
-	*p->kfreq = (float)((atsbufreadaddr->table)[(int)(*p->iparnum)].freq);
-	*p->kamp = (float)((atsbufreadaddr->table)[(int)(*p->iparnum)].amp);
+	*p->kfreq = (float)((atsbufreadaddr->utable)[(int)(*p->iparnum)].freq);
+	*p->kamp = (float)((atsbufreadaddr->utable)[(int)(*p->iparnum)].amp);
 }
 
 void atsinterpreadset(ATSINTERPREAD *p)
@@ -1493,6 +1497,8 @@ void atsinterpreadset(ATSINTERPREAD *p)
 	}
 	p->overflowflag = 1; /*true */
 }
+
+
 void atsinterpread(ATSINTERPREAD *p)
 {
 	int i;
@@ -1531,7 +1537,6 @@ void atsinterpread(ATSINTERPREAD *p)
 	*p->kamp = (float)((atsbufreadaddr->table[i]).amp + frac * ((atsbufreadaddr->table[i + 1]).amp - (atsbufreadaddr->table[i]).amp));
 	//*p->kamp = (float)(atsbufreadaddr->table[i]).amp;
 }
-/* the below is to allow this to be a plugin */
 
 void atscrossset(ATSCROSS *p)
 {

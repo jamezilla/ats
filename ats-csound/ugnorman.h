@@ -127,6 +127,7 @@ typedef struct _atsbufread
 	/* base Frame (in frameData0) and maximum frame on file, ptr to fr, size */
 	AUXCH   auxch;
 	ATS_DATA_LOC *table;        //store freq and amp info for later use
+	ATS_DATA_LOC *utable;        //store freq and amp info for later use (unsorted)
 	int     frmInc;         // amount to increment frame pointer to get to next frame
 	int     firstpartial;   // location of first wanted partial in the frame
 	int     partialinc;     // amount to increment pointer by to get at the next partial in a frame
