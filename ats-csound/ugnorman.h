@@ -57,6 +57,7 @@ typedef struct _atsread
 	int	partialloc, frmInc;	//tells the location of the partal to output and the number of doubles to increment to get to the next frame
 	MEMFIL * atsmemfile;
 	double timefrmInc;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSREAD;
 
 typedef struct _atsreadnz
@@ -69,6 +70,7 @@ typedef struct _atsreadnz
 	int nzbandloc, frmInc;
 	MEMFIL * atsmemfile;
 	double  timefrmInc;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSREADNZ;
 
 typedef struct _atsadd
@@ -90,6 +92,7 @@ typedef struct _atsadd
 	int memsize;	//stores the size of memeory in the aux alloc
 	double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSADD;
 
 typedef struct _atsaddnz
@@ -115,6 +118,7 @@ typedef struct _atsaddnz
 	RANDIATS randinoise[25];	// a pointer to the interpolated random noise info
 	double	nfreq[25];
 	ATSSTRUCT atshead;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSADDNZ;
 
 typedef struct _atsbufread
@@ -136,6 +140,7 @@ typedef struct _atsbufread
 	float   MaxAmp;         // maximum amplitude in anaylsis file
 	double  *datastart;         // pointer to the data (past the header)
 	ATSSTRUCT atshead;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSBUFREAD;
 
 typedef struct _atscross
@@ -157,6 +162,7 @@ typedef struct _atscross
 	int memsize;	//stores the size of memeory in the aux alloc
 	double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSCROSS;       //modified from atsadd
 
 typedef struct _atssinnoi
@@ -190,6 +196,7 @@ typedef struct _atssinnoi
 	RANDIATS * randinoise;	// a pointer to the interpolated random noise info
 	ATSSTRUCT * atshead;
 	char * filename;
+	int swapped;	//indicates if the data file is byte swapped or not
 } ATSSINNOI;
 
 typedef struct _atspartialtap

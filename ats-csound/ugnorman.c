@@ -84,6 +84,7 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 
 // static variables used for atsbufread and atsbufreadnz
 static	ATSBUFREAD	*atsbufreadaddr = NULL;
+static	int swapped_warning = 0;	//global indicator that says if we've issued a byte swapped warning before
 
 //byte swaps a double
 double bswap(double * swap_me)
@@ -102,7 +103,6 @@ double bswap(double * swap_me)
 }
 
 //ats info simply reads data out of the header of an atsfile. (i-rate)
-
 void atsinfo (ATSINFO *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
@@ -132,7 +132,11 @@ void atsinfo (ATSINFO *p){
 		//check to see if it's byteswapped
 		if(123 == (int)(bswap(&atsh->magic))){
 			swapped = 1;	//true
-			fprintf(stderr,"ATSINFO: %s is byte-swapped\n", atsfilname);
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSINFO: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
 		} else {
 			sprintf(errmsg, "ATSINFO: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
 			initerror(errmsg);
@@ -179,6 +183,7 @@ void FetchPartial(
 	float	frac;		// the distance in time we are between frames
 	int	frame;		// the number of the first frame
 	double * frm1, * frm2;	// a pointer to frame 1 and frame 2
+	double temp1, temp2;
 	
 	frame = (int)position;
 	frm1 = p->datastart + p->frmInc * frame + p->partialloc;
@@ -186,20 +191,27 @@ void FetchPartial(
 	// if we're using the data from the last frame we shouldn't try to interpolate
 	if(frame == p->maxFr)
 	{
-		buf[0] = (float)*frm1;	// calc amplitude
-		buf[1] = (float)*(frm1 + 1); // calc freq
+		buf[0] = (p->swapped == 1) ? (float)bswap(frm1) : (float)*frm1;	// calc amplitude
+		buf[1] = (p->swapped == 1) ? (float)bswap(frm1 + 1) : (float)*(frm1 + 1); // calc freq
 		return;
 	}
 	frm2 = frm1 + p->frmInc;
 	frac = position - frame;
 	
-	buf[0] = (float)(*frm1 + frac * (*frm2 - *frm1));	// calc amplitude
-	buf[1] = (float)(*(frm1 + 1) + frac * (*(frm2 + 1) - *(frm1 + 1))); // calc freq
+	temp1 = (p->swapped == 1) ? bswap(frm1) : *frm1;
+	temp2 = (p->swapped == 1) ? bswap(frm2) : *frm2;
+	buf[0] = (float)(temp1 + frac * (temp2 - temp1));	// calc amplitude
+	
+	temp1 = (p->swapped == 1) ? bswap(frm1 + 1) : *(frm1 + 1);
+	temp2 = (p->swapped == 1) ? bswap(frm2 + 1) : *(frm2 + 1);
+	buf[1] = (float)(temp1 + frac * (temp2 - temp1));	// calc freq
 }
 
 void atsreadset(ATSREAD *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
+	int n_partials;
+	int type;
 	
 	/* copy in ats file name */
 	if (*p->ifileno == sstrcod){
@@ -216,43 +228,58 @@ void atsreadset(ATSREAD *p){
 		initerror(errmsg);
 		return;
 	}
+
+	p->swapped = 0;	//false.. not swapped
 	
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	//make sure that this is an ats file
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSREAD: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSINFO: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
 
-	p->maxFr = (int)atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
-		
+	//byte swap if nessisary
+	p->maxFr = (p->swapped == 1) ? (int)bswap(&atsh->nfrms) - 1 : (int)atsh->nfrms - 1;
+	p->timefrmInc = (p->swapped == 1) ? bswap(&atsh->nfrms) / bswap(&atsh->dur) : atsh->nfrms / atsh->dur;
+	n_partials = (p->swapped == 1) ? (int)bswap(&atsh->npartials) : (int)atsh->npartials;
+
 	// check to see if partial is valid
-	if( (int)(*p->ipartial) > (int)(atsh->npartials) || (int)(*p->ipartial) <= 0)
+	if( (int)(*p->ipartial) > n_partials || (int)(*p->ipartial) <= 0)
 	{
-		sprintf(errmsg, "ATSREAD: partial %i out of range, max allowed is %i", (int)(*p->ipartial), (int)(atsh->npartials));
+		sprintf(errmsg, "ATSREAD: partial %i out of range, max allowed is %i", (int)(*p->ipartial), n_partials);
 		initerror(errmsg);
 		return;
 	}
+	
+	type = (p->swapped == 1) ? (int)bswap(&atsh->type) : (int)atsh->type;
 
 	// point the data pointer to the correct partial
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 
-	switch ( (int)(atsh->type))
+	
+	switch (type)
 	{
 		case 1 :	p->partialloc = 1 + 2 * (*p->ipartial - 1);
-		        	p->frmInc = (int)(atsh->npartials * 2 + 1);
+		        	p->frmInc = n_partials * 2 + 1;
 		        	break;
 		case 2 :	p->partialloc = 1 + 3 * (*p->ipartial - 1);
-		        	p->frmInc = (int)(atsh->npartials * 3 + 1);
+		        	p->frmInc = n_partials * 3 + 1;
 		        	break;
 		case 3 :	p->partialloc = 1 + 2 * (*p->ipartial - 1);
-		        	p->frmInc = (int)(atsh->npartials * 2 + 26);
+		        	p->frmInc = n_partials * 2 + 26;
 		        	break;
 		case 4 :	p->partialloc = 1 + 3 * (*p->ipartial - 1);
-		        	p->frmInc = (int)(atsh->npartials * 3 + 26);
+		        	p->frmInc = n_partials * 3 + 26;
 		        	break;
 		default:	sprintf(errmsg, "Type not implemented");
 		        	initerror(errmsg);
