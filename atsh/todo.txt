@@ -1,0 +1,25 @@
+Synthesis:
+1-Add second synthesis metod (modulation of sinusoidal partials) for the residual
+2-Add DC Blocker to the residual
+3-Substractive Synthesis
+4-Rethink Time envelope
+
+
+Edition:
+1-Amplitude of residual bands with curves.
+2-Track deleting
+3-Region deleting
+4-Add dismiss button to list view.
+5-SMR/Amplitude display.
+6-Smart sellection using frequency with harmonic factor and SMR threshold.
+
+
+Analysis:
+1-Re-order analysis parameters
+2-Amp. threshold default should be -72
+
+ATSA:
+1-Move residual bands memory alloc. from residual-analysis.c to init_sound in utilities.c.
+
+GENERAL:
+1-Optimize MAKEFILE

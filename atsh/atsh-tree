@@ -1,0 +1,71 @@
+.
+|-- Makefile
+|-- README
+|-- about.c
+|-- ats-header.c
+|-- atsa
+|   |-- atsa.c
+|   |-- atsa.h
+|   |-- critical-bands.c
+|   |-- other-utils.c
+|   |-- peak-detection.c
+|   |-- peak-tracking.c
+|   |-- save-load-sound.c
+|   |-- tracker.c
+|   `-- utilities.c
+|-- atsh-analysis.c
+|-- atsh-curves.c
+|-- atsh-doc
+|   |-- ATSH-doc-2003.htm
+|   |-- analysis.jpg
+|   |-- edit-linear.jpg
+|   |-- edit-spline.jpg
+|   |-- header-view.jpg
+|   |-- list-view.jpg
+|   |-- main-screen-selection-discont.jpg
+|   |-- main-screen-selection-zoom.jpg
+|   |-- main-screen-selection.jpg
+|   |-- main-screen.jpg
+|   |-- smart_sel.jpg
+|   |-- synthesis-main.jpg
+|   `-- synthesis-time.jpg
+|-- atsh-files.c
+|-- atsh-graphics.c
+|-- atsh-misc.c
+|-- atsh-sel.c
+|-- atsh-sndlib
+|   |-- README
+|   |-- clm-strings.h
+|   |-- clm.c
+|   |-- clm.h
+|   |-- config.guess
+|   |-- config.h
+|   |-- config.h.in
+|   |-- config.log
+|   |-- config.status
+|   |-- config.sub
+|   |-- configure
+|   |-- headers.c
+|   |-- install-sh
+|   |-- io.c
+|   |-- makefile
+|   |-- makefile.in
+|   |-- sndlib-config
+|   |-- sndlib-config.in
+|   |-- sndlib-strings.h
+|   |-- sndlib.a
+|   |-- sndlib.h
+|   `-- sound.c
+|-- atsh-tree
+|-- atsh-undo.c
+|-- atsh.c
+|-- atsh.h
+|-- get_sparams.c
+|-- list_view.c
+|-- my_curve.c
+|-- my_curve.h
+|-- popup.c
+|-- progress.c
+`-- synth-funcs.c
+
+3 directories, 65 files
