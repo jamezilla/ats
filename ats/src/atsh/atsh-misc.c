@@ -152,16 +152,13 @@ void Create_menu (GtkWidget *menubar)
                      "Save Analysis File", 
                      GTK_SIGNAL_FUNC (filesel),"atsave");
 
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-   
-                  NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     
     menuitem = CreateMenuItem (menu, "New ATS File", "^A", 
                      "Select and Analyze input soundfile", 
                      GTK_SIGNAL_FUNC (create_ana_dlg),NULL);
 
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARATOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     
     menuitem = CreateMenuItem (menu, "Quit", "^Q", 
                      "Exit ATSH", 
@@ -178,8 +175,7 @@ void Create_menu (GtkWidget *menubar)
     //                 "Redo last edition", 
     //                 GTK_SIGNAL_FUNC (do_undo),GINT_TO_POINTER(1));
 
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARATOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "Select All", "^1", 
                      "Select entire file", 
                      GTK_SIGNAL_FUNC (sel_all), NULL);
@@ -199,11 +195,10 @@ void Create_menu (GtkWidget *menubar)
                      "Select partials using rules", 
                      GTK_SIGNAL_FUNC (create_sel_dlg), NULL);
 
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARATOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     
     menuitem = CreateMenuItem (menu, "Edit Amplitude", "^7", 
-                     "Change Amplitude of Seleccion", 
+                     "Change Amplitude of Selection", 
                  GTK_SIGNAL_FUNC (edit_amp),NULL);
 
     menuitem = CreateMenuItem (menu, "Normalize Selection", "^8", 
@@ -211,7 +206,7 @@ void Create_menu (GtkWidget *menubar)
 			       GTK_SIGNAL_FUNC (normalize_amplitude), NULL);
 
     menuitem = CreateMenuItem (menu, "Edit Frequency", "^9", 
-			       "Change Frequency of Seleccion", 
+			       "Change Frequency of Selection", 
 			       GTK_SIGNAL_FUNC (edit_freq), NULL);
     
     /* -----------------
@@ -221,7 +216,7 @@ void Create_menu (GtkWidget *menubar)
     
     
     menuitem = CreateMenuItem (menu, "Parameters", "^P", 
-                     "Set synthesis parameters and resyntezise", 
+                     "Set Synthesis Parameters and Synthesize", 
                      GTK_SIGNAL_FUNC (get_sparams), "Parameters");
     /*
     menuitem = CreateMenuItem (menu, "Edit Output Soundfile", "^E", 
@@ -229,10 +224,9 @@ void Create_menu (GtkWidget *menubar)
                      GTK_SIGNAL_FUNC (edit_audio), "edit soundfile");
     */ 
     
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "Synthesize", "^R", 
-                     "render Audio File from Spectral data", 
+                     "Render Audio File from Spectral data", 
                      GTK_SIGNAL_FUNC (do_synthesis), "Synthesize");
     
     /* -----------------
@@ -242,8 +236,7 @@ void Create_menu (GtkWidget *menubar)
     menuitem = CreateMenuItem (menu, "List", "^T", 
                      "View Amp., Freq. and Phase on a list", 
                      GTK_SIGNAL_FUNC (list_view), NULL);
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "Spectrum (Amp / SMR)", "^C", 
                      "View Spectrum Plot(Toggles between Amplitude or SMR values)", 
                      GTK_SIGNAL_FUNC (set_spec_view), NULL);
@@ -256,8 +249,7 @@ void Create_menu (GtkWidget *menubar)
 			       "Toggles between Interpolated or Non Interpolated Frequency Plot",
 			       GTK_SIGNAL_FUNC (set_interpolated_view), NULL);
 			       
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "unzoom", "^U", 
                      "zoom out full", 
                      GTK_SIGNAL_FUNC (unzoom), NULL);
@@ -272,8 +264,7 @@ void Create_menu (GtkWidget *menubar)
     menuitem = CreateMenuItem (menu, "all / only selection", "^W", 
 			       "switch between view only selection /view all", 
 			       GTK_SIGNAL_FUNC (sel_only), NULL);
-    menuitem = CreateMenuItem (menu, NULL, NULL, //SEPARADOR
-                     NULL, NULL, NULL);
+    menuitem = CreateMenuItem (menu, NULL, NULL, NULL, NULL, NULL);
     menuitem = CreateMenuItem (menu, "Data on Header", "^E", 
                      "view specs of ATS file", 
                      GTK_SIGNAL_FUNC (show_header), NULL);

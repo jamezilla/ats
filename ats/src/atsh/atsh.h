@@ -414,7 +414,7 @@ GtkWidget *CreateEditField (char *name, int what);
 char **alocstring(int np , int nc);
 void set_params();
 void allorsel (GtkWidget *widget, gpointer data);
-void upha(GtkWidget *widget, gpointer data);
+//void upha(GtkWidget *widget, gpointer data);
 
 //UNDO FUNCTIONS
 void do_undo(GtkWidget *widget,gpointer data);

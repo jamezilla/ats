@@ -29,7 +29,7 @@ void about(void)
                         "This Program is partially supported by:\n"     \
                         "Universidad Nacional de Quilmes, Argentina\n"  \
                         "http://www.unq.edu.ar/cme\n"                   \
-                        "Center for Digital Arts and Experimental Media (DxArts)\n" \
+                        "Center for Digital Arts and Experimental Media (DXARTS)\n" \
                         "University of Washington, Seattle\n"          \
                         "http://www.washington.edu/dxarts");
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
