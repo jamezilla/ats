@@ -57,8 +57,6 @@ kamp 		atsinterpread kfreq
 
 
 #include "cs.h"
-// Use the below instead of the above if using as a plugin
-//#include "csdl.h"
 
 #include "ugnorman.h"
 #include <math.h>
@@ -2210,9 +2208,9 @@ void atscross(ATSCROSS *p)
 
 }
 
+/* end of ugnorman.c */
 
-GLOBALS *pcglob;
-#define S(x)       sizeof(x)
+#define S	sizeof
 
 static OENTRY localops[] = {
   	{ "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
@@ -2232,9 +2230,7 @@ long opcode_size(void)
     return sizeof(localops);
 }
 
-OENTRY *opcode_init(GLOBALS *xx)
+OENTRY *opcode_init(ENVIRON *xx)
 {
-    pcglob = xx;
     return localops;
 }
-
