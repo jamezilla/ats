@@ -323,7 +323,10 @@ void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_
       sound->smr[i][j] = (double)0.0;
       sound->res[i][j] = (double)0.0;
     }
-  }      
+  }    
+  sound->band_energy = (void *)malloc(ATSA_CRITICAL_BANDS * sizeof(void *));
+  for(i=0; i<ATSA_CRITICAL_BANDS; i++)
+    sound->band_energy[i] = (double *)malloc(frames * sizeof(double));
 }  
 
 

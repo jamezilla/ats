@@ -1,6 +1,6 @@
 CC = gcc
 DEFS = -DLINUX
-CFLAGS = -I. -g -O2
+CFLAGS = -I. -ggdb -O2 -Wall
 LIBS = ./atsa-sndlib/sndlib.a
 NOGUI_LIBS = -lm atsa.a
 LD = ld

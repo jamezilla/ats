@@ -15,7 +15,6 @@
  */
 int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
 { 
-  int k;
   /* create pointers and structures */
   ATS_SOUND *sound = NULL;
   FILE *outfile;
