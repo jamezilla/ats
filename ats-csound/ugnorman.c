@@ -229,10 +229,10 @@ void atsreadset(ATSREAD *p){
 		return;
 	}
 
-	p->swapped = 0;	//false.. not swapped
 	
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	//make sure that this is an ats file
+	p->swapped = 0;	//false.. not swapped
 	if (atsh->magic != 123) {
 		if(123 == (int)(bswap(&atsh->magic))){
 			p->swapped = 1;	//true
@@ -379,6 +379,7 @@ void atsreadnzset(ATSREADNZ *p){
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	        
 	//make sure that this is an ats file
+	p->swapped = 0;
 	if (atsh->magic != 123) {
 		if(123 == (int)(bswap(&atsh->magic))){
 			p->swapped = 1;	//true
@@ -514,6 +515,7 @@ void atsaddset(ATSADD *p){
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
 	//make sure that this is an ats file
+	p->swapped = 0;
 	if (atsh->magic != 123) {
 		if(123 == (int)(bswap(&atsh->magic))){
 			p->swapped = 1;	//true
@@ -883,6 +885,7 @@ void atsaddnzset(ATSADDNZ *p){
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
 	//make sure that this is an ats file
+	p->swapped = 0;
 	if (atsh->magic != 123) {
 		if(123 == (int)(bswap(&atsh->magic))){
 			p->swapped = 1;	//true
@@ -1169,7 +1172,7 @@ void atssinnoiset(ATSSINNOI *p)
 {
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
-	int i, memsize, nzmemsize;
+	int i, memsize, nzmemsize, type;
 	
 	/* copy in ats file name */
 	if (*p->ifileno == sstrcod){
@@ -1190,11 +1193,20 @@ void atssinnoiset(ATSSINNOI *p)
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	p->atshead = atsh;
 	//make sure that this is an ats file
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSSINNOI: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	p->swapped = 0;
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSSINNOI: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSSINNOI: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
 	//calculate how much memory we have to allocate for this need room for a buffer and the noise data and the noise info per partial for synthesizing noise
 	memsize = (int)(*p->iptls) * (sizeof(ATS_DATA_LOC) + 2 * sizeof(double) + sizeof(RANDIATS));
@@ -1212,8 +1224,21 @@ void atssinnoiset(ATSSINNOI *p)
 	p->oscphase = (double *)(p->randinoise + (int)(*p->iptls));
 	p->nzbuf = (double *)(p->oscphase + (int)(*p->iptls));
 	
+	if (p->swapped == 1) {
+		p->maxFr = (int)bswap(&atsh->nfrms) - 1;
+		p->timefrmInc = bswap(&atsh->nfrms) / bswap(&atsh->dur);
+		p->npartials = (int)bswap(&atsh->npartials);
+		nzmemsize = (int)(p->npartials * bswap(&atsh->nfrms));
+		type = (int)bswap(&atsh->type);
+	} else {
+		p->maxFr = (int)atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		p->npartials = (int)atsh->npartials;
+		nzmemsize = (int)(p->npartials * atsh->nfrms);
+		type = (int)atsh->type;
+	}
+	
 	//see if we have to allocate memory for the nzdata
-	nzmemsize = (int)(atsh->npartials * atsh->nfrms);
 	if(nzmemsize != p->nzmemsize)
 	{
 		if(p->nzdata != NULL)
@@ -1221,43 +1246,42 @@ void atssinnoiset(ATSSINNOI *p)
 		p->nzdata = (double *)mmalloc(sizeof(double) * nzmemsize);
 	}
 	
-	p->maxFr = (int)atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
 	
 	// make sure partials are in range
-	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+	if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > p->npartials || (int)(*p->iptloffset) < 0)
 	{
-		sprintf(errmsg, "ATSSINNOI: Partial(s) out of range, max partial allowed is %i", (int)atsh->npartials);
+		sprintf(errmsg, "ATSSINNOI: Partial(s) out of range, max partial allowed is %i", p->npartials);
 		initerror(errmsg);
 		return;
 	}
 	//get a pointer to the beginning of the data
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 	// get increments for the partials
-	switch ( (int)(atsh->type))
+
+	switch (type)
 	{
 		case 1 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 					p->partialinc = 2 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 2 + 1);
+					p->frmInc = p->npartials * 2 + 1;
 					p->firstband = -1;
 					break;
 		
 		case 2 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 					p->partialinc = 3 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 3 + 1);
+					p->frmInc = p->npartials * 3 + 1;
 					p->firstband = -1;
 					break;
 		
 		case 3 :	p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
 					p->partialinc = 2 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 2 + 26);
-					p->firstband = 1 + 2 * (int)(atsh->npartials);
+					p->frmInc = p->npartials * 2 + 26;
+					p->firstband = 1 + 2 * p->npartials;
 					break;
 		
 		case 4 :	p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
 					p->partialinc = 3 * (int)(*p->iptlincr);
-					p->frmInc = (int)(atsh->npartials * 3 + 26);
-					p->firstband = 1 + 3 * (int)(atsh->npartials);
+					p->frmInc = p->npartials * 3 + 26;
+					p->firstband = 1 + 3 * p->npartials;
 					break;
 		
 		default:	sprintf(errmsg, "ATSSINNOI: Type not implemented");
@@ -1402,11 +1426,13 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 {
 	double   frac;           // the distance in time we are between frames
 	double * frm0, * frm1;
+	double frm0amp, frm0freq, frm1amp, frm1freq;
+	double nz0, nz1;
 	ATS_DATA_LOC * oscbuf;
 	double * nzbuf;
 	int     frame;
 	int     i;      // for the for loop
-	int	npartials = (int)p->atshead->npartials;
+	int	npartials = p->npartials;
 	
 	frame = (int)position;
 	frm0 = p->datastart + frame * p->frmInc;
@@ -1419,23 +1445,42 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 	{
 		if(p->firstband == - 1)	//there is no noise data
 		{
-			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
-			{
-				oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
-				oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
-				oscbuf++;
+			if(p->swapped == 1) {
+				for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+				{
+					oscbuf->amp = bswap(frm0 + 1 + i * (int)p->partialinc);	//amp
+					oscbuf->freq = bswap(frm0 + 2 + i * (int)p->partialinc);	//freq
+					oscbuf++;
+				}
+			} else {
+				for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+				{
+					oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
+					oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
+					oscbuf++;
+				}
 			}
 		}
 		else
 		{
-			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
-			{
-				oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
-				oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
-				//noise
-				*nzbuf = *(p->nzdata + frame * npartials + i);
-				nzbuf++;
-				oscbuf++;
+			if(p->swapped == 1) {
+				for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+				{
+					oscbuf->amp = bswap(frm0 + 1 + i * (int)p->partialinc);	//amp
+					oscbuf->freq = bswap(frm0 + 2 + i * (int)p->partialinc);	//freq
+					*nzbuf = bswap(p->nzdata + frame * npartials + i);
+					nzbuf++;
+					oscbuf++;
+				}
+			} else {
+				for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+				{
+					oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
+					oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
+					*nzbuf = *(p->nzdata + frame * npartials + i);
+					nzbuf++;
+					oscbuf++;
+				}
 			}
 		}
 		
@@ -1446,23 +1491,64 @@ void fetchSINNOIpartials(ATSSINNOI * p, float position)
 	
 	if(p->firstband == - 1)	//there is no noise data
 	{
-		for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
-		{
-			oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc) + frac * (*(frm1 + 1 + i * (int)p->partialinc) - *(frm0 + 1 + i * (int)p->partialinc));	//amp
-			oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc) + frac * (*(frm1 + 2 + i * (int)p->partialinc) - *(frm0 + 2 + i * (int)p->partialinc));	//freq
-			oscbuf++;
+		if (p->swapped == 1) {
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				frm0amp = bswap(frm0 + 1 + i * (int)p->partialinc);
+				frm1amp = bswap(frm1 + 1 + i * (int)p->partialinc);
+				frm0freq = bswap(frm0 + 2 + i * (int)p->partialinc);
+				frm1freq = bswap(frm1 + 2 + i * (int)p->partialinc);
+				oscbuf->amp = frm0amp + frac * (frm1amp - frm0amp);	//amp
+				oscbuf->freq = frm0freq + frac * (frm1freq - frm0freq);	//freq
+				oscbuf++;
+			}
+		} else {
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				frm0amp = *(frm0 + 1 + i * (int)p->partialinc);
+				frm1amp = *(frm1 + 1 + i * (int)p->partialinc);
+				frm0freq = *(frm0 + 2 + i * (int)p->partialinc);
+				frm1freq = *(frm1 + 2 + i * (int)p->partialinc);
+				oscbuf->amp = frm0amp + frac * (frm1amp - frm0amp);	//amp
+				oscbuf->freq = frm0freq + frac * (frm1freq - frm0freq);	//freq
+				oscbuf++;
+			}
 		}
 	}
 	else
 	{
-		for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
-		{
-			oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc) + frac * (*(frm1 + 1 + i * (int)p->partialinc) - *(frm0 + 1 + i * (int)p->partialinc));	//amp
-			oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc) + frac * (*(frm1 + 2 + i * (int)p->partialinc) - *(frm0 + 2 + i * (int)p->partialinc));	//freq
-			//noise
-			*nzbuf = *(p->nzdata + frame * npartials + i) + frac * (*(p->nzdata + (frame + 1) * npartials + i) - *(p->nzdata + frame * npartials + i));
-			nzbuf++;
-			oscbuf++;
+		if (p->swapped == 1) {
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				frm0amp = bswap(frm0 + 1 + i * (int)p->partialinc);
+				frm1amp = bswap(frm1 + 1 + i * (int)p->partialinc);
+				frm0freq = bswap(frm0 + 2 + i * (int)p->partialinc);
+				frm1freq = bswap(frm1 + 2 + i * (int)p->partialinc);
+				nz0 = bswap(p->nzdata + frame * npartials + i);
+				nz1 = bswap(p->nzdata + (frame + 1) * npartials + i);
+				oscbuf->amp = frm0amp + frac * (frm1amp - frm0amp);	//amp
+				oscbuf->freq = frm0freq + frac * (frm1freq - frm0freq);	//freq
+				//noise
+				*nzbuf = nz0 + frac * (nz1 - nz0);
+				nzbuf++;
+				oscbuf++;
+			}
+		} else {
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				frm0amp = *(frm0 + 1 + i * (int)p->partialinc);
+				frm1amp = *(frm1 + 1 + i * (int)p->partialinc);
+				frm0freq = *(frm0 + 2 + i * (int)p->partialinc);
+				frm1freq = *(frm1 + 2 + i * (int)p->partialinc);
+				nz0 = *(p->nzdata + frame * npartials + i);
+				nz1 = *(p->nzdata + (frame + 1) * npartials + i);
+				oscbuf->amp = frm0amp + frac * (frm1amp - frm0amp);	//amp
+				oscbuf->freq = frm0freq + frac * (frm1freq - frm0freq);	//freq
+				//noise
+				*nzbuf = nz0 + frac * (nz1 - nz0);
+				nzbuf++;
+				oscbuf++;
+			}
 		}
 	}
 	

@@ -188,6 +188,7 @@ typedef struct _atssinnoi
 	int firstband;
 	int     frmInc;         // amount to increment frame pointer to get to next frame
 	double  timefrmInc;
+	int npartials;
         
 	ATS_DATA_LOC * oscbuf;           // stores band information for passing data
         
