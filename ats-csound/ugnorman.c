@@ -422,8 +422,9 @@ void atsaddset(ATSADD *p){
 	
 	p->atsmemfile = ldmemfile(atsfilname);
 	// allocate space so we can store the data for later use
-	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
+	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0 || (int)*(p->iptls) > p->prevpartials)
 	{
+		p->prevpartials = (int)*(p->iptls);
 		// copy in the file name
 		if(p->filename != NULL)
 		{
@@ -641,128 +642,341 @@ void AtsAmpGate(                // adaption of PvAmpGate by Richard Karpen
 	}
 }
 
+/************************************************************/
+/*********  ATSADDNZ      ***********************************/
+/************************************************************/
 
-/*
- *
- * readdatafile
- * reads data out of atsfile "filename"
- */
-int readdatafile(const char * filename, ATSFILEDATA *p)
+// copied directly from atsh synth-funcs.c with names changed so as not to conflict with csound
+///////////////////////////////////////////////////////////////////
+//randi output random numbers in the range of 1,-1
+//getting a new number at frequency freq and interpolating
+//the intermediate values.
+void randiats_setup(float sr, float freq, RANDIATS *radat)
 {
-	FILE * fin;
-	double temp;
-	int i, j;	//index for loops
-	ATSSTRUCT * atshead = &(p->atshead);
-	fin = NULL;
+  long int first, second;
 
-	
-	if( (fin = fopen(filename,"rb")) == NULL){
-        	return 1;
-	}
-	
-        // read the header
-	fread(atshead,sizeof(ATSSTRUCT),1,fin);
+  first =random();
+  second=random();
 
-        //make sure this is an ats file
-        if(atshead->magic != 123){
-		sprintf(errmsg, "ATS file %s - The Magic Number is not correct, either this is not an ATS file or it byte endian-ness is wrong\n", filename);
-		myiniterror(errmsg);
-                return 1;
-	}
-        if((int)atshead->type > 4 || (int)atshead->type < 1){
-		sprintf(errmsg, "ATS file %s - %i type Ats files not supported yet\n", filename, (int)atshead->type);
-		myiniterror(errmsg);
-		return 1;
-        }
+  radat->size= (int) (sr / freq) - 1;
+  radat->a1  = first;
+  radat->a2  = second;
+  radat->cnt = 0;
 
+  return;
+}
+///////////////////////////////////////////////////////////////////
+float randiats(RANDIATS *radat)
+{
+  long int second; 
+  float output;
+ 
+  if(radat->cnt == radat->size) { //get a new random value
+    radat->a1  = radat->a2; 
+    second=random();
+    radat->a2  = second;
+    radat->cnt = 0;
+  }
 
-	//allocate memory for a new data table
-        p->atsdata = (ATS_DATA_LOC **)malloc( (int)atshead->nfrms * sizeof(ATS_DATA_LOC *) );
-	
-        for(i = 0; i < (int)atshead->nfrms; i++)
-        	p->atsdata[i] = (ATS_DATA_LOC *)malloc( (int)atshead->npartials * sizeof(ATS_DATA_LOC) );
+  output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
+  radat->cnt++;
+  return(1. - ((float)(output /(long int)RAND_MAX) * 2.));
+}
+///////////////////////////////////////////////////////////////////
+float randifats(RANDIATS *radat, float freq)
+{
+  long int second;
+  float output;
 
-	// store the data into a table
-        switch ( (int)atshead->type)
-        {
-		case 1 :
-                	for(i = 0; i < (int)atshead->nfrms; i++)
-                        {
-                        	//eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get a whole frame of partial data
-                                fread(&p->atsdata[i][0], sizeof(ATS_DATA_LOC),(int)atshead->npartials,fin);
-			}
-                        break;
-		case 2 :
-                	for(i = 0; i < (int)atshead->nfrms; i++)
-                        {
-                        	//eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get partial data
-                                for(j = 0; j < (int)atshead->npartials; j++)
-                               	{
-                               		fread(&p->atsdata[i][j], sizeof(ATS_DATA_LOC),1,fin);
-                                        //eat phase info
-                                        fread(&temp, sizeof(double),1,fin);
-                                }
-			}
-                        break;
-		case 3 :
-                	//allocate mem for the noise data
-                        p->atsdatanoise = (double **)malloc((int)atshead->nfrms * sizeof(double *));
-                        for(i = 0; i < (int)atshead->nfrms; i++)
-                        {
-                        	//allocate this row
-                                p->atsdatanoise[i] = (double *)malloc(sizeof(double) * 25);
-                                //eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                                //get a whole frame of partial data
-                                fread(&p->atsdata[i][0], sizeof(ATS_DATA_LOC),(int)atshead->npartials,fin);
-                                //get the noise
-                                fread(&p->atsdatanoise[i][0], sizeof(double),25,fin);
-			}
-                        break;
-		case 4 :
-               		//allocate mem for the noise data
-                        p->atsdatanoise = (double **)malloc((int)atshead->nfrms * sizeof(double *));
-                        for(i = 0; i < (int)atshead->nfrms; i++)
-                        {
-                        	//allocate noise for this row
-                                p->atsdatanoise[i] = (double *)malloc(sizeof(double) * 25);
-                                //eat time data
-                                fread(&temp,sizeof(double),1,fin);
-                               	//get partial data
-                                for(j = 0; j < (int)atshead->npartials; j++)
-                                {
-                                	fread(&p->atsdata[i][j], sizeof(ATS_DATA_LOC),1,fin);
-                                        //eat phase info
-                                        fread(&temp, sizeof(double),1,fin);
-				}
-                                //get the noise
-                                fread(&(p->atsdatanoise[i][0]), sizeof(double),25,fin);
-			}
-                     	break;
-	}
-                
-	//close the input file
-        fclose(fin);
-        return 0;
+  if(radat->cnt == radat->size) { //get a new random value
+    radat->a1  = radat->a2;
+    second=random();
+
+    radat->a2  = second;
+    radat->cnt = 0;
+    radat->size= (int) (esr / freq) - 1;
+  }
+
+  output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
+  radat->cnt++;
+
+  return(1. - ((float)(output /(long int)RAND_MAX) * 2.));
 }
 
-
-void mytest(ATSREADNZ *p)
+void FetchADDNZbands(
+        double	*input[],
+        double	*buf,
+        float	position
+        )
 {
-	FILE * fout;
-	if((fout=fopen("Atstest","w")) != NULL)
+        float   frac;           // the distance in time we are between frames
+        int     frame1, frame2;
+        int     i;      // for the for loop
+
+        frame1 = (int)position;
+        frac = position - frame1;
+	frame1 = frame1 * 25;	//the actual index of the array (a 1d array faking a 2d array)
+	frame2 = frame1 + 25;	//get to the next frame
+        for(i = 0; i < 25; i++)
+        {
+		buf[i] = *input[frame1 + i] + (double)frac * (*(input[frame2 + i]) - *(input[frame1 + i])); // calc energy
+		//fprintf(stderr,"buf %f\n", buf[i]);
+        }
+}
+
+void atsaddnzset(ATSADDNZ *p){
+	char atsfilname[MAXNAME];
+	ATSSTRUCT * atsh;
+       	FUNC *AmpGateFunc; 
+	int i, j, frmInc, firstband;
+	double * temppnt;
+	
+	/* copy in ats file name */
+        if (*p->ifileno == sstrcod){
+                strcpy(atsfilname, unquote(p->STRARG));
+        }
+        else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+                strcpy(atsfilname, strsets[(long)*p->ifileno]);
+        else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
+	
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+        {
+                sprintf(errmsg, "ATSADDNZ: Ats file %s not read (does it exist?)", atsfilname);
+                initerror(errmsg);
+                return;
+        }
+	
+	// allocate space so we can store the data for later use
+	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
 	{
-		fprintf(fout,"mytest");
-		fclose(fout);
+		// copy in the file name
+		if(p->filename != NULL)
+		{
+			mfree(p->filename);
+			p->filename = NULL;
+		}
+		p->filename = (char *)mmalloc(sizeof(char) * strlen(atsfilname));
+		strcpy(p->filename, atsfilname);
+		
+		//point the header pointer at the header data
+		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
+	        
+		//make sure that this is an ats file & byte endianness is correct
+		if (atsh->magic != 123)
+		{
+        	        sprintf(errmsg, "ATSADDNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+                	initerror(errmsg);
+                	return;
+        	}
+		
+		// make sure that this file contains noise
+		if(atsh->type != 4 && atsh->type != 3)
+		{
+			if (atsh->type < 5)
+				sprintf(errmsg, "ATSADDNZ: This file type contains no noise");
+			else
+				sprintf(errmsg, "ATSADDNZ: This file type has not been implemented in this code yet.");
+			initerror(errmsg);
+			return;
+		}
+
+		auxalloc((int)((atsh->nfrms) * 25 * (sizeof(double *))), &p->auxch);
+		
+		p->datap = (double **) (p->auxch.auxp);
+		//get past the last partial in the last frame of the data pointer;
+		
+		p->maxFr = atsh->nfrms - 1;
+		p->timefrmInc = atsh->nfrms / atsh->dur;
+		p->winsize = (float)atsh->winsz;
+	}
+	else
+	{
+		//point the header pointer at the header data
+		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	}
 		
+	// make sure partials are in range
+        if( (int)(*p->ibandoffset + *p->ibands * *p->ibandincr)  > 25 || (int)(*p->ibandoffset) < 0)
+        {
+                sprintf(errmsg, "ATSADDNZ: Band(s) out of range, max band allowed is #25");
+                initerror(errmsg);
+                return;
+        }
+
+	// point the data pointer to the correct partials
+	switch ( (int)(atsh->type))
+        {
+                case 3 :        firstband = 1 + 2 * (int)(atsh->npartials);
+                                frmInc = (int)(atsh->npartials * 2 + 26);
+                                break;
+                
+                case 4 :        firstband = 1 + 3 * (int)(atsh->npartials);
+                                frmInc = (int)(atsh->npartials * 3 + 26);
+                                break;
+                
+                default:        sprintf(errmsg, "Type either has no noise or is not implemented (only type 3 and 4 work now)");
+                                initerror(errmsg);
+                                return;
+        }
+	p->frmInc = frmInc;
+	temppnt = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
+	for(i = 0; i < (int)(atsh->nfrms); i++)
+	{
+		for(j = 0; j < 25; j++)
+		{
+			p->datap[j + i * 25] = (temppnt + firstband + j);
+		}
+		temppnt += frmInc;
+	}
+	
+	// save bandwidths for creating noise bands
+	p->nfreq[0] = 100;
+	p->nfreq[1] = 100;
+	p->nfreq[2] = 100;
+	p->nfreq[3] = 100;
+	p->nfreq[4] = 110;
+	p->nfreq[5] = 120;
+	p->nfreq[6] = 140;
+	p->nfreq[7] = 150;
+	p->nfreq[8] = 160;
+	p->nfreq[9] = 190;
+	p->nfreq[10] = 210;
+	p->nfreq[11] = 240;
+	p->nfreq[12] = 280;
+	p->nfreq[13] = 320;
+	p->nfreq[14] = 380;
+	p->nfreq[15] = 450;
+	p->nfreq[16] = 550;
+	p->nfreq[17] = 700;
+	p->nfreq[18] = 900;
+	p->nfreq[19] = 1100;
+	p->nfreq[20] = 1300;
+	p->nfreq[21] = 1800;
+	p->nfreq[22] = 2500;
+	p->nfreq[23] = 3500;
+	p->nfreq[24] = 4500;
+
+	// initialize frequencies to modulate noise by
+	p->phaseinc[0] = TWOPI * 50.0 / esr;
+	p->phaseinc[1] = TWOPI * 150.0/ esr;
+	p->phaseinc[2] = TWOPI * 250.0/ esr;
+	p->phaseinc[3] = TWOPI * 350.0/ esr;
+	p->phaseinc[4] = TWOPI * 455.0/ esr;
+	p->phaseinc[5] = TWOPI * 570.0/ esr;
+	p->phaseinc[6] = TWOPI * 700.0/ esr;
+	p->phaseinc[7] = TWOPI * 845.0/ esr;
+	p->phaseinc[8] = TWOPI * 1000.0/ esr;
+	p->phaseinc[9] = TWOPI * 1175.0/ esr;
+	p->phaseinc[10] = TWOPI * 1375.0/ esr;
+	p->phaseinc[11] = TWOPI * 1600.0/ esr;
+	p->phaseinc[12] = TWOPI * 1860.0/ esr;
+	p->phaseinc[13] = TWOPI * 2160.0/ esr;
+	p->phaseinc[14] = TWOPI * 2510.0/ esr;
+	p->phaseinc[15] = TWOPI * 2925.0/ esr;
+	p->phaseinc[16] = TWOPI * 3425.0/ esr;
+	p->phaseinc[17] = TWOPI * 4050.0/ esr;
+	p->phaseinc[18] = TWOPI * 4850.0/ esr;
+	p->phaseinc[19] = TWOPI * 5850.0/ esr;
+	p->phaseinc[20] = TWOPI * 7050.0/ esr;
+	p->phaseinc[21] = TWOPI * 8600.0/ esr;
+	p->phaseinc[22] = TWOPI * 10750.0/ esr;
+	p->phaseinc[23] = TWOPI * 13750.0/ esr;
+	p->phaseinc[24] = TWOPI * 17750.0/ esr;
+
+	// initialize band limited noise parameters
+	for(i = 0; i < 25; i++)
+	{
+		randiats_setup(esr, p->nfreq[i], &(p->randinoise[i]));
+	}	
+	
+	//flag set to reduce the amount of warnings sent out for time pointer out of range
+	p->prFlg = 1;	// true
+	p->oscphase = 0;
+	
+	return;
 }
 
+void atsaddnz(ATSADDNZ *p){
+	float frIndx;
+	float *ar, amp;
+	double *buf;
+	int phase;
+	float inc;	// a value to increment a phase index of the cosine by
+	int	i, nsmps;
+	int synthme;
+	int nsynthed;
 
+	if (p->auxch.auxp == NULL)
+	{
+		initerror("ATSADDNZ: not intialized");
+		return;
+	}
+
+	// make sure time pointer is within range
+	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
+        {
+		frIndx = 0;
+		if (p->prFlg)
+		{
+                	p->prFlg = 0;
+			sprintf(errmsg, "ATSADDNZ: only positive time pointer values are allowed, setting to zero\n");
+			myiniterror(errmsg);
+		}
+        }
+        else if (frIndx >= p->maxFr) // if we're trying to get frames past where we have data
+        {
+                frIndx = (float)p->maxFr - 1.0;
+                if (p->prFlg)
+                {
+                        p->prFlg = 0;   // set to false
+			sprintf(errmsg, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
+			myiniterror(errmsg);
+                }
+        }
+	else
+		p->prFlg = 1;
+	
+	buf = p->buf;
+	
+	FetchADDNZbands(p->datap, p->buf, frIndx);
+	
+	// set local pointer to output and initialize output to zero
+	ar = p->aoutput;
+
+	for (i = 0; i < ksmps; i++)
+		*ar++ = 0.0f;
+   	
+	synthme = (int)*p->ibandoffset;
+	nsynthed = 0;
+	for (i = 0; i < 25; i++)
+	{	
+		// do we even have to synthesize it?
+		if(i == synthme && nsynthed < (int)*p->ibands)
+		{
+			// synthesize cosine
+			amp = (float)sqrt((p->buf[i] / ((p->winsize) * (float)ATSA_NOISE_VARIANCE) ) );
+			phase = p->oscphase;
+			ar = p->aoutput;
+			nsmps = ksmps;
+			inc = p->phaseinc[i];
+			do
+			{
+				*ar += cos(inc * phase) * amp * randiats(&(p->randinoise[i]));
+				phase += 1;
+				ar++;
+			}
+			while(--nsmps);
+			// make sure that the phase doesn't over flow
+			/*
+			while (phase >= costabsz)
+				phase = phase - costabsz;
+			*/
+			nsynthed++;
+			synthme += (int)*p->ibandincr;
+		}	
+	}
+	p->oscphase = phase;
+}
 
 /* the below is to allow this to be a plugin */
 
@@ -770,7 +984,7 @@ GLOBALS *pcglob;
 #define S(x)       sizeof(x)
 
 static OENTRY localops[] = {
-  { "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL, (SUBR)mytest},
+  { "atsread", S(ATSREAD),  3, "kk", "kSi", atsreadset, atsread, NULL},
   { "atsreadnz", S(ATSREADNZ),  3, "k", "kSi", atsreadnzset, atsreadnz, NULL}
   //{ "atsadd",    S(ATSADD),	5,     "a", "kkSiiopo", atsaddset,      NULL,   atsadd}
 };

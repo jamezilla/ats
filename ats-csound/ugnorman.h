@@ -97,6 +97,7 @@ typedef struct _atsadd
         double	MaxAmp;         // maximum amplitude in anaylsis file
         char * filename;
 
+	int prevpartials;	//stores the partials of previous calls
 	ATS_DATA_LOC ** datap;
         double  *oscphase;      // oscillator phase
 	ATS_DATA_LOC * buf;
@@ -107,22 +108,24 @@ typedef struct _atsaddnz
 {       OPDS    h;
         float   *aoutput, *ktimpnt, *ifileno, *ibands; // audio output and k & i inputs
         float   *ibandoffset, *ibandincr; // optional arguments
-        MEMFIL  *mfp;   // a pointer into the ATS file
-        FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
+        
+	MEMFIL  *atsmemfile;   // a pointer into the ATS file
+        FUNC    *AmpGateFunc;     // pointer to table with wave to synthesize sound
         AUXCH   auxch;
-        double  *frPtr;         // pointer to the data (past the header)
-        double  maxFr, prFlg;
+        
+        double  maxFr;
+	int	prFlg;
         int     frmInc;         // amount to increment frame pointer to get to next frame
         double  timefrmInc;
         double  winsize;        // size of windows in analysis file, used to compute RMS amplitude from energy in noise band
-        int     firstband;      // location of first wanted band in the frame
-        int     bandinc;
-        double   * buf;           // stores band information for passing data
-        // maximum amplitude in anaylsis file
-        float   * phaseinc;       // to create an array of noise
-        RANDIATS * randinoise;	// a pointer to the interpolated random noise info
-        int	oscphase;       //the phase of all the oscilators
-	float   * nfreq;
+	char * filename;
+	double ** datap;
+	
+        double  buf[25];           // stores band information for passing data
+        double   phaseinc[25];       // to create an array of noise
+        unsigned int	oscphase;       //the phase of all the oscilators
+        RANDIATS randinoise[25];	// a pointer to the interpolated random noise info
+	double	nfreq[25];
 	ATSSTRUCT atshead;
 }       ATSADDNZ;
 
