@@ -1,6 +1,6 @@
 /* ATScsound Ugens, adapted by Alex Norman (2003) from the phase vocoder csound code by Richard Karpen
 *  If you find bugs contact me at alexnorman@users.sourceforge.net
-*  uses noise generations fucntions from atsh
+*	tab stop = 3
 *  the following needs to be put in entry.c
 
 #include "ugnorman.h"
@@ -29,11 +29,7 @@ void	atsinfo(void*);
 
 put ugnorman.c ugnorman.h and ugnorman.o in the correct place in your make file as well.
 
-function usage
-see:
-http://students.washington.edu/~anorman/atsadd.html
-and
-http://students.washington.edu/~anorman/atsread.html
+Some basic info:
 
 atsinfo:
 idata		atsinfo iatsfile, idataloc
