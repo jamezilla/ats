@@ -173,36 +173,51 @@ void residual_analysis(char *file, ATS_SOUND *sound)
  */
 void band_energy_to_res(ATS_SOUND *sound, int frame)
 {
-  int j, k, par, first_par, last_par=0;
-  double sum;
-  double edges[ATSA_CRITICAL_BANDS+1] = ATSA_CRITICAL_BAND_EDGES;  
-  par = 0;
-  /* find partials by band */
-  for(j=0 ; j<ATSA_CRITICAL_BANDS ; j++){
-    first_par = par;
-    sum = 0.0;
-    while( par < sound->partials &&
-	  (sound->band_energy[j][frame] > 0.0) && 
-	  (sound->frq[par][frame] >= edges[j]) && 
-	  (sound->frq[par][frame] < edges[j+1]))
-      {
-	sum += sound->amp[par][frame];
-	last_par = par;
-	par++;
-      }
-    if( sum > 0.0 ){
-      /* transfer band energy to partials */
-      for(k=first_par ; k<last_par+1; k++){
-	if(k >= sound->partials) {
-	  break;
-	}
-	sound->res[k][frame] = sound->amp[k][frame] * sound->band_energy[j][frame] / sum;
-	//	sound->band_energy[j][frame] = 0.0;
-      }
-    }
-  }
-}
+	int i, j;
+	double edges[] = ATSA_CRITICAL_BAND_EDGES;  
+	double bandsum[ATSA_CRITICAL_BANDS];
+	double partialfreq, partialamp;
+	double * partialbandamp;	/* amplitude of the band that the partial is in */
+	int * bandnum;	/* the band number that the partial is in */
 
+	partialbandamp = malloc(sizeof(double) * sound->partials);
+	bandnum = malloc(sizeof(int) * sound->partials);
+	if(partialbandamp == NULL || bandnum == NULL)
+	{
+		fprintf(stderr, "%s: malloc() returned NULL\n", __PRETTY_FUNCTION__);
+		return;
+	}
+		/* initialize the sum per band */
+		for(i = 0; i < ATSA_CRITICAL_BANDS; i++)
+			bandsum[i] = 0;
+			
+		/* find find which band each partial is in */
+		for(i = 0; i < sound->partials; i++)
+		{
+			partialfreq = sound->frq[i][frame];
+			partialamp = sound->amp[i][frame];
+			for(j = 0; j < 25; j++)
+			{
+				if( (partialfreq < edges[j+1]) && (partialfreq >= edges[j]) )
+				{
+					bandsum[j] += partialamp;
+					bandnum[i] = j;
+					partialbandamp[i] = sound->band_energy[j][frame];
+					break;
+				}
+			}
+		}
+		/* compute energy per partial */
+		for(i = 0; i < sound->partials; i++)
+		{
+			if(bandsum[bandnum[i]] > 0.0)
+				sound->res[i][frame] = sound->amp[i][frame] * partialbandamp[i] / bandsum[bandnum[i]];
+			else
+				sound->res[i][frame] = 0.0;
+		}
+	free(partialbandamp);
+	free(bandnum);
+}		
 
 /* res_to_band_energy
  * ==================
