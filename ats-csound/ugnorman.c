@@ -1185,30 +1185,54 @@ void atssinnoi(ATSSINNOI *p)
 	nzbuf = p->nzbuf;
 	
 	//do synthesis
-	for(i = 0; i < (int)*p->iptls; i++)
-	{
-			phase = p->oscphase[i];
-			ar = p->aoutput;
-			nsmps = ksmps;
-			amp = oscbuf[i].amp;
-			freq = (float)oscbuf[i].freq * *p->kfreq;
-			inc = TWOPI * freq / esr;
-			nzamp = *(p->nzbuf + i);			
-			nzfreq   = (freq < 500. ? 50. : freq * .05);
-			do
-			{
-				//calc sine wave
-				sinewave = cos(phase) * amp;
-				phase += inc;
-					
-				//calc noise
-				noise = sinewave * randifats(&(p->randinoise[i]), nzfreq);
-				//calc output
-				*ar += (float)sinewave * *p->ksinamp + (float)(noise * nzamp) * *p->knzamp;
-				ar++;
-			}
-			while(--nsmps);
-			p->oscphase[i] = phase;
+	if(p->firstband != -1)
+	{	for(i = 0; i < (int)*p->iptls; i++)
+		{
+				phase = p->oscphase[i];
+				ar = p->aoutput;
+				nsmps = ksmps;
+				amp = oscbuf[i].amp;
+				freq = (float)oscbuf[i].freq * *p->kfreq;
+				inc = TWOPI * freq / esr;
+				nzamp = *(p->nzbuf + i);			
+				nzfreq   = (freq < 500. ? 50. : freq * .05);
+				do
+				{
+					//calc sine wave
+					sinewave = cos(phase) * amp;
+					phase += inc;
+						
+					//calc noise
+					noise = sinewave * randifats(&(p->randinoise[i]), nzfreq);
+					//calc output
+					*ar += (float)sinewave * *p->ksinamp + (float)(noise * nzamp) * *p->knzamp;
+					ar++;
+				}
+				while(--nsmps);
+				p->oscphase[i] = phase;
+		}
+	}
+	else
+	{	for(i = 0; i < (int)*p->iptls; i++)
+		{
+				phase = p->oscphase[i];
+				ar = p->aoutput;
+				nsmps = ksmps;
+				amp = oscbuf[i].amp;
+				freq = (float)oscbuf[i].freq * *p->kfreq;
+				inc = TWOPI * freq / esr;
+				do
+				{
+					//calc sine wave
+					sinewave = cos(phase) * amp;
+					phase += inc;
+					//calc output
+					*ar += (float)sinewave * *p->ksinamp;
+					ar++;
+				}
+				while(--nsmps);
+				p->oscphase[i] = phase;
+		}
 	}
 }
 
