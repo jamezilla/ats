@@ -1,0 +1,136 @@
+#ifndef CONFIG_H_LOADED
+#define CONFIG_H_LOADED
+
+#undef const
+
+#undef CLOSEDIR_VOID
+#undef RETSIGTYPE
+
+/* Define to `int' or something if <sys/types.h> doesn't define.  */
+#undef mode_t
+#undef pid_t
+#undef size_t
+#undef off_t
+
+#undef WORDS_BIGENDIAN
+
+#undef HAVE_GETCWD
+#undef HAVE_STRFTIME
+#undef HAVE_STRERROR
+#undef HAVE_VPRINTF
+#undef HAVE_READLINK
+#undef HAVE_SETLOCALE
+#undef HAVE_SLEEP
+#undef HAVE_ACCESS
+#undef HAVE_OPENDIR
+#undef HAVE_SIGNAL
+#undef HAVE_FINITE
+#undef HAVE_ISNAN
+#undef HAVE_STRDUP
+#undef HAVE_FSTATFS
+#undef HAVE_CLOCK
+#undef HAVE_VSNPRINTF
+#undef HAVE_SNPRINTF
+
+#undef STDC_HEADERS
+#undef TM_IN_SYS_TIME
+#undef HAVE_SYS_MOUNT_H
+#undef HAVE_DIRENT_H
+#undef HAVE_NDIR_H
+#undef HAVE_SYS_DIR_H
+#undef HAVE_SYS_NDIR_H
+#undef HAVE_FCNTL_H
+#undef HAVE_LIMITS_H
+#undef HAVE_STRING_H
+#undef HAVE_UNISTD_H
+#undef HAVE_SYS_TIME_H
+#undef HAVE_SCHED_H
+#undef HAVE_DLFCN_H
+#undef HAVE_SOUNDCARD_H
+#undef HAVE_SYS_SOUNDCARD_H
+#undef HAVE_MACHINE_SOUNDCARD_H
+#undef HAVE_SYS_MIXER_H
+#undef USR_LIB_OSS
+#undef USR_LOCAL_LIB_OSS
+#undef OPT_OSS
+#undef VAR_LIB_OSS
+#undef HAVE_LIBC_H
+#undef HAVE_SYS_VFS_H
+#undef HAVE_SYS_STATFS_H
+#undef HAVE_FPU_CONTROL_H
+#undef HAVE_SETJMP_H
+#undef TIME_WITH_SYS_TIME
+#undef HAVE_GNU_LIBC_VERSION_H
+#undef HAVE_PWD_H
+#undef HAVE_LOCALE_H
+#undef HAVE_SYS_FPU_H
+#undef HAVE_SYS_PARAM_H
+#undef HAVE_ALSA_ASOUNDLIB_H
+#undef HAVE_BYTESWAP_H
+
+#define SIZEOF_INT 0
+#define SIZEOF_CHAR 0
+#define SIZEOF_LONG 0
+#define SIZEOF_SHORT 0
+#define SIZEOF_INT_P 0
+#define SIZEOF_FLOAT 0
+#define SIZEOF_VOID_P 0
+#undef SIZEOF_OFF_T
+
+#undef LINUX
+#undef SGI
+#undef ALPHA
+#undef HPUX
+#undef SUN
+#undef SOLARIS
+#undef SCO5
+#undef OPENBSD
+#undef WINDOZE
+#undef HAVE_OSS
+#undef HAVE_ALSA
+#undef HAVE_SAM_9407
+#undef MAC_OSX
+#undef ESD
+#undef BSDI
+
+#undef HAVE_GUILE
+#undef HAVE_RUBY
+#undef HAVE_EXTENSION_LANGUAGE
+#undef RUBY_SEARCH_PATH
+#undef SND_CONFIG_GET_ID_ARGS
+#undef Float
+#undef _FILE_OFFSET_BITS
+#undef _LARGE_FILES
+#undef HAVE_GSL
+#undef HAVE_GSL_DHT_NEW
+#undef GSL_VERSION
+#undef SNDLIB_USE_FLOATS
+#undef MUS_SAMPLE_BITS
+#undef ESD_VERSION
+#undef AUDIOFILE_VERSION
+#undef HAVE_GETTEXT
+#undef HAVE_READLINE
+#undef HAVE_APPLICABLE_SMOB
+#undef HAVE_SCM_REMEMBER_UPTO_HERE
+#undef HAVE_SCM_MAKE_REAL
+#undef HAVE_SCM_CREATE_HOOK
+#undef HAVE_SCM_STRPORT_TO_STRING
+#undef HAVE_SCM_OBJECT_TO_STRING
+#undef HAVE_SCM_NUM2LONG_LONG
+#undef HAVE_SCM_C_MAKE_VECTOR
+#undef HAVE_SCM_C_DEFINE
+#undef HAVE_SCM_C_DEFINE_GSUBR
+#undef HAVE_SCM_C_EVAL_STRING
+#undef HAVE_SCM_NUM2INT
+#undef HAVE_SCM_LIST_N
+#undef HAVE_SCM_STR2SYMBOL
+#undef HAVE_SCM_C_DEFINE_MODULE
+#undef HAVE_SCM_T_CATCH_BODY
+#undef HAVE_RB_NUM2LL
+#undef HAVE_RB_GC_DISABLE
+#undef WITH_MODULES
+#undef HAVE_KAUDIODEVICEPROPERTYTRANSPORTTYPE
+#undef HAVE_KLINEARPCMFORMATFLAGISNONINTERLEAVED
+
+#define USE_SND 0
+#endif

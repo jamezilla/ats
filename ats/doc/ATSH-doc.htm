@@ -1,0 +1,447 @@
+<html>
+
+<head>
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<meta NAME="GENERATOR" CONTENT="Microsoft FrontPage 3.0">
+<title>ATSH</title>
+<meta NAME="Template" CONTENT="C:\ARCHIVOS DE PROGRAMA\MICROSOFT OFFICE\OFFICE\html.dot">
+</head>
+
+<body TEXT="#000000" LINK="#0000ff" VLINK="#800080" BGCOLOR="#ffffff" alink="#FF0000">
+
+<p><!doctype html public "-//w3c//dtd html 4.0 transitional//en"></p>
+<font FACE="AvantGarde Bk BT" SIZE="7" COLOR="#800080"><b>
+
+<p ALIGN="CENTER">ATSH</b></font> </p>
+<font SIZE="5">
+
+<p ALIGN="CENTER">(Analysis-Transformation-Synthesis-Shell)</font> </p>
+<b>
+
+<p ALIGN="CENTER">Oscar Pablo Di Liscia</b> </p>
+
+<p ALIGN="CENTER"><a HREF="mailto:odiliscia@unq.edu.ar"><font FACE="Courier New,Courier">odiliscia@unq.edu.ar</font></a>
+</p>
+<b>
+
+<p ALIGN="CENTER">Juan Pampin</b> </p>
+
+<p ALIGN="CENTER"><a HREF="mailto:juan@ccrma.stanford.edu"><font
+FACE="Courier New,Courier">juan@ccrma.stanford.edu</font></a> <br>
+<a HREF="mailto:pampin@u.washington.edu"><font FACE="Courier New,Courier">pampin@u.washington.edu</font></a></p>
+
+<p ALIGN="CENTER"><strong>Pete Moss</strong></p>
+
+<p ALIGN="CENTER"><font face="Courier New"><a href="mailto:petemoss@petemoss.org">petemoss@petemoss.org</a></font></p>
+
+<p ALIGN="CENTER">&nbsp;</p>
+<font SIZE="4"><b>
+
+<p>About ATSH</b></font> </p>
+
+<p>ATSH is a program for analysis, transformation, and synthesis of digital sound by means
+of the <a HREF="http://www-ccrma.stanford.edu/~juan/ATS.html">ATS</a> system. </p>
+
+<p>ATSH was originally developed to be run under Linux, using the X windows system. The
+source code was written in C using GTK-GDK 1.2.0. It was compiled and tested using Linux
+Red Hat 7.1 </p>
+
+<p>We have recently released a version of ATSH for Windows (Microsoft). There is no
+difference between the Linux and Windows ATSH versions, except for that the Linux version
+seems to be faster than the Windows one drawing the screen. To present, the Windows
+version of ATSH was successfully tested under Windows98, and Windows NT 4 (Microsoft). </p>
+
+<p>It is possible also to compile and run ATSH under Macintosh Computers using the OS10
+Operating System. </p>
+
+<p>ATSH was developed as part of the <i><b>Desarrollo de Software para analisis y sintesis
+de sonido digital</b></i> (Digital Sound Analysis and Synthesis Software Development,
+2001-2002, O. Di Liscia, J. Pampin) research and development project with the support of: </p>
+
+<p>1- <a HREF="http://www.unq.edu.ar/">Universidad Nacional de Quilmes</a> (Buenos Aires,
+Argentina). </p>
+
+<p>2- <a HREF="http://www.washington.edu/dxarts/index.html">Center for Digital Arts and
+Experimental Media</a> (University of Washington, Seattle, USA). </p>
+<font SIZE="4"><b>
+
+<p>How to install and/or make ATSH</b></font> <font SIZE="4"><b>under Linux</b></font> </p>
+
+<p>Installation should be straight forward if&nbsp; updated versions of&nbsp; Linux&nbsp;
+and the Gnome, GTK, and GDK libraries are properly installed in the user's computer. GTK
+libraries can be obtained at <a HREF="http://www.gtk.org/">http://www.gtk.org</a> </p>
+<font COLOR="#0000ff"><b>
+
+<p>Please, make sure that you are using GTK 1.2.1. or earlier. There may exist significant
+changes that will not allow the program to run and compile using the last versions of GTK
+(such as 2.0.0.)</b></font> </p>
+
+<p>-Download atsh.tar.gz </p>
+
+<p>-Decompress it. </p>
+
+<p>-Read the README file (it contains important installation and copyright information). </p>
+
+<p>The ATSH distribution comes with an already compiled binary file. This file was
+compiled under Linux Red Hat 7.1 and tested also on most other Linux distributions (such
+as Mandrake, Debian, etc.) using the GTK-GDK 1.2.0 version. If it does not work on your
+system, then you should compile ATSH in your computer. To compile ATSH, type at the Linux
+prompt: </p>
+<i>
+
+<p>make clean</i> </p>
+
+<p>and then: </p>
+<i>
+
+<p>make</i> </p>
+
+<p><a HREF="mailto:odiliscia@unq.edu.ar">Let us know</a> if you have any problems
+installing ATSH under Linux. </p>
+<font SIZE="4"><b>
+
+<p>How to install and/or make ATSH</b></font> <font SIZE="4"><b>under Microsoft Windows</b></font>
+</p>
+
+<p>In order to run the Windows version of ATSH, you must first install in your system the
+GTK Libraries for Windows.&nbsp; The Windows version of ATSH was made possible due to the
+excellent work of <a HREF="mailto:%20ichattopadhyaya@hclinfinet.com">Ishan Chattopadhyaya</a>,
+who developed <u>WinG</u>, and packed all the libraries for <a
+HREF="http://wingtk.sourceforge.net/">WinGtk</a> on a way that allows a straight forward
+installation of them. </p>
+<font COLOR="#0000ff"><b>
+
+<p>Please, make sure that you are using GTK 1.2.1. or earlier. There may exist significant
+changes that will not allow the program to run and compile using the last versions of GTK
+(such as 2.0.0.)</b></font> </p>
+
+<p>Once WinGTK is properly installed in your system, just decompress the zip file which
+contains the ATSH binary file (<b>watsh.exe</b>). It should run without any problem. The
+source code for Windows is provided as well. It is almost the same than the Linux source
+code. In case you compile it and make any changes or improvements we kindly request you to
+keep us informed. </p>
+
+<p><a HREF="mailto:odiliscia@unq.edu.ar">Let us know</a> if you have any problems
+installing ATSH under Windows. </p>
+<font SIZE="4"><b>
+
+<p>General Overview</b></font> </p>
+
+<p>At present, ATSH is a sort of viewer/editor of the analysis files generated by the <a
+HREF="http://www-ccrma.stanford.edu/~juan/ATS.html">ATS</a> system (binary files usually
+carrying the *.ats extension).&nbsp; Generally speaking, ATS files hold a representation
+of a digital sound signal in terms of sinusoidal trajectories (called <i>partials</i>)
+with instantaneous frequency, amplitude, and phase changing along temporal frames. Each
+frame has a set of partials, each of which having (at least) amplitude and frequency
+values (phase information might be discarded from the analysis). Each frame might also
+contain noise information, modeled as time-varying energy in the 25 critical bands of the
+analysis residual (i.e. the residual is what's left after subtracting the tracked
+sinusoidal trajectories from the original sound. Please visit the <a
+HREF="http://www-ccrma.stanford.edu/~juan/ATS.html">ATS</a> web site for detailed
+information on the <i>sinusoids plus critical-band noise</i> model). All these features
+are automatically detected by ATSH reading the file's header. </p>
+
+<p><font SIZE="4"><b>The ATSH data display</b></font> </p>
+
+<p>To start working with ATSH, choose <i>File/Load ats file</i>, and select an ATS file. </p>
+
+<p>There are two kind of view:</p>
+
+<p><u>Deterministic Part View: </u>It can be seen that the frequency of each partial is
+represented on the vertical (Y) axis, Time (in frames) runs along the horizontal (X) axis,
+and amplitude is represented with a color value. The two horizontal scrollbars control the
+time (frame) view. The top one controls the from-view value, and the bottom one controls
+the size of the view. There are three vertical scrollbars as well. The two left-most ones
+control the frequency view&nbsp; (in a similar way the horizontal scrollbars control the
+time view), and the right-most scrollbar controls a contrast value for the amplitude
+display.&nbsp; Horizontal and vertical scrollbars can be used to select and zoom in/out
+zones of the spectral data. The contrast slider adjusts partials amplitude display: a
+value of 50 shows the <i>normal</i> contrast between loud and quiet partials, while a
+value of 100 overrides amplitude information (i.e. all partials are displayed black). A
+value of 0 shows only very loud partials. If the mouse pointer is on the image, the frame,
+time, and frequency values of its position are printed out on the right bottom corner of
+the window. </p>
+
+<p align="center">The following picture shows a snapshot of the main window of
+ATSH(Deterministic Part): </p>
+
+<p ALIGN="CENTER"><img SRC="main-screen.jpg" WIDTH="85%" HEIGHT="85%"
+ALT="main-screen.jpg (64052 bytes)"></p>
+
+<p><u>Residual Part View:</u> in order to view this, the analysis file loaded must contain
+Residual data. The energy value of each of the 25 Critical Bands (in Bark scale) is shown
+as a color value along frames. If the mouse pointer is on the image, the frame, time,
+frequency and energy values of its position are printed out on the right bottom corner of
+the window. </p>
+
+<p align="center">The following picture shows a snapshot of the main window of
+ATSH(Residual Part): </p>
+
+<p align="center"><img src="main-screen-res.jpg" width="812" height="428"
+alt="main-screen-res.jpg (42951 bytes)"></p>
+
+<p align="center">&nbsp;</p>
+
+<p>You may take a look at the file' s header data choosing <i>/view/file header</i>. </p>
+
+<p ALIGN="CENTER"><img SRC="header-view.jpg" WIDTH="336" HEIGHT="464"
+ALT="header-view.jpg (27102 bytes)"></p>
+<font SIZE="4"><b>
+
+<p>Analyzing</b></font> </p>
+
+<p>The ATS Analysis routines (by Juan Pampin) were originally developed using the LISP
+programming language and were ported to the C language by Pete Moss and Juan Pampin.</p>
+
+<p>In order to create a new ATS file, you must analyze a sound file using the <em>/file/New
+ATS File</em> menu. For a detailed explanation of the analysis parameters consult <a
+href="#Appendix I">Appendix I</a>.</p>
+
+<p align="center">Here follows a snapshot of the analysis menu:</p>
+
+<p align="center"><img src="analysis.jpg" width="679" height="483"
+alt="analysis.jpg (53701 bytes)"></p>
+
+<p><font SIZE="4"><b>Selecting data</b></font> </p>
+
+<p>To make any changes, the user must select some data. ATSH performs both, a horizontal
+(frame) and a vertical (partial) selection. There are at present four ways to select
+spectral data: </p>
+
+<p>1-Using some presets from the <i>Edit</i> menu. </p>
+
+<p>There are <i>Select All</i>, <i>Unselect All</i>, <i>Select Even</i>, <i>Select Odd</i>,
+and <i>Invert Selection</i> routines. </p>
+
+<p>2-Clicking with the mouse at the graphic screen. </p>
+
+<p>Block selection: When the<i><b> left button</b></i> is pressed, the position of the
+mouse pointer at the first click represents the first corner of a <i>rectangular</i>
+selection, and the position of the mouse at the second click the diagonally-opposed corner
+of it. </p>
+
+<p>Single selection: When the <i><b>right button</b></i> is pressed, the partial having
+the closer frequency at the location of the pointer is selected if it previously was
+selected, or vice-versa. If a block selection was previously done, and the pointer of the
+mouse is in the selection rectangle, the other selected partials remains selected.
+Otherwise, the selection is replaced by the new selected partial for all the extent of the
+view. </p>
+
+<p>The data selected will be displayed using red color. </p>
+
+<p>The following picture shows three snapshots of the main window of ATSH. The first one
+shows selected data, the second one is a zoom of the selection shown on the first. The
+third one shows a non-continuous selection (only the even partial are selected) </p>
+
+<p ALIGN="CENTER"><img SRC="main-screen-selection.jpg" WIDTH="650" HEIGHT="407"
+ALT="main-screen-selection.jpg (73529 bytes)"></p>
+
+<p ALIGN="CENTER"><img SRC="main-screen-selection-zoom.jpg" WIDTH="650" HEIGHT="407"
+ALT="main-screen-selection-zoom.jpg (82601 bytes)"></p>
+
+<p ALIGN="CENTER"><img SRC="main-screen-selection-discont.jpg" WIDTH="650" HEIGHT="407"
+ALT="main-screen-selection-discont.jpg (74304 bytes)"></p>
+
+<p>3-Using the <i>List View </i>window (menu <i>View</i>). </p>
+
+<p>In the view menu all the data can be seen under the form of a numerical list. The
+amplitude, frequency and phase (if any) values of each frame are represented at each page
+of the list. A vertical selection/deselection can be performed shift-clicking /
+ctrl-clicking on the list (note that you may also perform a non-contiguous selection of
+partials as well). The horizontal selection may be done using the <i>NOW=TO</i> and <i>NOW=FROM</i>
+buttons. </p>
+
+<p align="center">The following snapshot shows the <i>List view</i> Window. </p>
+
+<p ALIGN="CENTER"><img SRC="list-view.jpg" WIDTH="459" HEIGHT="513"
+ALT="list-view.jpg (62676 bytes)"></p>
+
+<p>4-Using the<em> smart selection</em> menu. This menu allows the user to select partials
+over the lenght of the current view using both amplitude evaluation and/or a fix step of
+partial order. As an example: setting <strong>from</strong> = 1, <strong>to</strong> =10, <strong>jump
+by</strong> =2 and <strong>Amp. Threshold</strong> <strong>=</strong>-36 will select
+partials 1, 3, 5, 7 and 9 only if their amplitude (Peak or RMS) is above -36dB.</p>
+
+<p align="center">Here follows a snapshot of the smart selection window:<br>
+<br>
+<img src="smart_sel.jpg" width="210" height="252" alt="smart_sel.jpg (27994 bytes)"></p>
+<font SIZE="4"><b>
+
+<p>Editing the selected data</b></font> </p>
+
+<p>At present there is only two ways to change the selected data: the <i>Edit/Amplitude</i>
+menu, and the <i>Edit/Frequency </i>menu. This allows the user to handle an amplitude
+envelope that will be applied to the amplitude or to the frequency values of the partials
+over the selected time region. The frequency and amplitude values of the partials selected
+may be may be either scaled (multiplied by the envelope), or offset (have the envelope
+values added to them). </p>
+
+<p>If the resulting frequency values are greater than the maximal frequency value present
+in the file, they will be truncated to this value. Also, if the frequency values are
+changed, the phase information (if any) is suppressed. </p>
+
+<p>There is an &quot;unlimited&quot; <i>Undo</i> choice for the editions. This is done
+writing and reading the backup file: <b>/tmp/atsh_undo.dat</b>. The PID number is added to
+the backup filename in order to allow multiple instances of ATSH working simultaneously as
+well. Beware of editing this file during an ATSH session. If you do so, you may cause the
+program to crash, and the backup data will be unrecoverable. </p>
+
+<p>Two screenshot of the <i>Edit Frequency</i> Windows are shown below. It can be seen
+that the functions may be either linear or spline shaped. </p>
+
+<p ALIGN="CENTER"><img SRC="edit-linear.jpg" WIDTH="588" HEIGHT="292"
+ALT="edit-linear.jpg (25989 bytes)"></p>
+
+<p ALIGN="CENTER"><img SRC="edit-spline.jpg" WIDTH="588" HEIGHT="292"
+ALT="edit-spline.jpg (26141 bytes)"></p>
+
+<p><br>
+<br>
+<font SIZE="4"><b>Synthesizing</b></font> </p>
+
+<p align="center">What follows is a screenshot of the <i>Synthesis/Parameters</i> menu. </p>
+
+<p ALIGN="CENTER"><img src="synthesis-main.jpg" width="232" height="276"
+alt="synthesis-main.jpg (15417 bytes)"></p>
+
+<p>In order to synthesize data, an output soundfile name must be entered. At the <em>Set
+Output File</em> menu the output sound file name can be set as well as it format (WAV,
+AIFF or SND). The ATSH file I/O functions were done using the<em> Sndlib</em> C language
+Library (by Bill Schosttaedt, CCRMA, Stanford University). </p>
+
+<p>The user may choose to synthesize the deterministic part, the residual part(if any), or
+both.</p>
+
+<p>Several features concerning synthesis may be set on the <i>Synthesis/Parameters</i>
+menu. The user may scale the overall amplitude and frequency of the original data using
+scalars. Note also that synthesis may use all the data, or just a selection (if any). At
+present, ATSH's deterministic synthesis engine is implemented as an array of linear
+interpolating table-lookup oscillators. The residual part is sinthesized by injecting
+interpolated-noise modulation to each partial according to the energy of the residual
+found in each Critical Band at the corresponding analysis frame. </p>
+
+<p>It is possible also to use a time function which allows the user to stretch or to
+expand the&nbsp; file dinamically as well as read it forward or backwards. The duration of
+the output file is represented on the X (horizontal) axis while the temporal location of
+the data of the analysis to be used in the synthesis is represented on the Y (vertical)
+axis. </p>
+
+<p>The following snapshot shows the time function. The&nbsp; slope of the line at each
+segment will produce stretching (pronounced slope second segment of the image),&nbsp;
+expansion (non pronounced slope, third segment of the image) or an invariance in time
+(&quot;normal&quot; slope, first segment of the image). </p>
+
+<p ALIGN="CENTER"><img SRC="synthesis-time.jpg" WIDTH="514" HEIGHT="485"
+ALT="synthesis-time.jpg (29399 bytes)"></p>
+
+<p><br>
+<strong><a name="Appendix I">Appendix I: </a>ATS(Juan Pampin) Analysis Technique
+Parameters Explanation. More information on: </strong><a
+href="http://www-ccrma.stanford.edu/~juan/ATS.html">http://www-ccrma.stanford.edu/~juan/ATS.html</a></p>
+
+<p>Analysis parameters must be carefully tuned for the Analysis Algorithm (ATSA) to
+properly capture the nature of the signal to be analyzed. As there are a significant
+number of them, ATSH offers the possibility of Saving/Loading them in a Binary File
+carrying the extension &quot;*.apf&quot;. The extension is not mandatory, but recommended.
+A brief explanation of each Analysis Parameters follows:<br>
+<br>
+<strong>1-Start</strong> (secs.): the starting time of the analysis in seconds. <br>
+<br>
+<strong>2-Duration </strong>(secs.): the duration time of the analysis in seconds. A zero
+means the whole duration of the input sound file. <br>
+<br>
+<strong>3-Lowest Frequency</strong> (Hz.): this parameter will partially determine the
+size of the Analysis Window to be used. To compute the size of the Analysis Window, the
+period of the Lowest Frequency in samples (SR / LF) is multiplied by the number of cycles
+of it the user wants to fit in the Analysis Window (see parameter 6). This value is
+rounded to the next power of two to determine the size of the FFT for the analysis. The
+remaining samples are zero-padded. If the signal is a single, harmonic sound, then the
+value of the Lowest Frequency should be its fundamental frequency or a sub-harmonic of it.
+If it is not harmonic, then its lowest significant frequency component may be a good
+starting value. <br>
+<br>
+<strong>4-Highest Frequency </strong>(Hz.): highest frequency to be taken into account for
+Peak Detection. Once it is determined that no relevant information is found beyond a
+certain frequency, the analysis may be faster and more accurate setting the Highest
+Frequency parameter to that value.<br>
+<br>
+<strong>5-Frequency Deviation </strong>(Ratio): frequency deviation allowed for each peak
+in the Peak Continuation Algorithm, as a ratio of the frequency involved. For instance,
+considering a peak at 440 Hz and a Deviation of .1 will produce that the Peak Continuation
+Algorithm will only try to find candidates for its continuation between 396 and 484 Hz
+(10% above and below the frequency of the peak). A small value is likely to produce more
+trajectories whilst a large value will reduce them, but at the cost of rendering
+information difficult to be further processed.<br>
+<br>
+<strong>6-Number of Cycles of Lowest Frequency to fit in Analysis Window</strong>: this
+will also partially determine the size of the Fourier Analysis Window to be used. See
+Parameter 3. For single harmonic signals, it is supposed to be more than one (typically
+4).<br>
+<br>
+<strong>7-Hop Size </strong>(Ratio): size of the gap between one Analysis Window and the
+next expressed as a ratio of the Window Size. For instance, a Hop Size value of .25 will
+produce an Analysis Window of 2048 samples to &quot;jump&quot; by 512 samples (Windows
+will overlap for a 75% of their size). This parameter will also determine the size of the
+analysis frames obtained. Signals that change their spectra very fast (such as Speech
+sounds) may need a high frame rate in order to properly track their changes.<br>
+<br>
+<strong>8-Amplitude Threshold </strong>(dB): the highest amplitude value to be taken into
+account for Peak Detection.<br>
+<br>
+<strong>9-Window Type</strong>: the shape of the smoothing function to be used for the
+Fourier Analysis. There are four choices available at present: Blackman, Blackman-Harris,
+Von Hann, and Hanning. Precise specifications about them are easily found on D.S.P.
+bibliography.<br>
+<br>
+<strong>10-Track Length</strong> (Frames): The Peak Continuation Algorithm will
+&quot;look-back&quot; by Length frames in order to do its job better, preventing frequency
+trajectories from curving too much and loosing stability. However, a large value for this
+parameter will slow down the analysis significantly.<br>
+<br>
+<strong>11-Minimal Segment Length</strong> (Frames): once the analysis is done, the
+spectral data can be further &quot;cleaned&quot; up during post-processing. Trajectories
+shorter than this value are suppressed if their average SMR is below Minimal Segment SMR
+(see parameters 16 and 14). This might help to avoid non-relevant sudden changes while
+keeping a high frame rate, reducing also the number of intermittent sinusoids during
+synthesis.<br>
+<br>
+<strong>12-Minimal Gap Length</strong> (Frames): as parameter 11, this one is also used to
+clean up the data during post-processing. In this case, gaps (zero amplitude values, i.e.
+theoretical &quot;silence&quot;) longer than Length frames are filled up with
+amplitude/frequency values obtained by linear interpolation of the adjacent active frames.
+This parameter prevents sudden interruptions of stable trajectories while keeping a high
+frame rate.<br>
+<br>
+<strong>13-SMR Threshold </strong>(dB SPL): also a post-processing parameter, the SMR
+Threshold is used to eliminate partials with low averages.<br>
+<br>
+<strong>14-Minimal Segment SMR</strong> (dB SPL): this parameter is used in combination
+with parameter 11. Short segments with SMR average below this value will be removed during
+post-processing.<br>
+<br>
+<strong>15-Last Peak Contribution</strong> (0 to 1): as explained in Parameter 10, the
+Peak Continuation Algorithm &quot;looks-back&quot; several number of frames to do its job
+better. This parameter will help to weight the contribution of the first precedent peak
+over the others. A zero value means that all precedent peaks (to the size of Parameter 10)
+are equally taken in account.<br>
+<br>
+<strong>16-SMR Contribution</strong> (0 to 1): In addition to the proximity in frequency
+of the peaks, the ATS Peak Continuation Algorithm may use psycho-acoustic information (the
+Signal-to-Mask-Ratio, or SMR) to improve the perceptual results. This parameter indicates
+how much the SMR information is used during tracking. For instance, a value of .5 makes
+the Peak Continuation Algorithm to use a 50% of SMR information and a 50% of Frequency
+Proximity information to decide which is the best candidate to continue a sinusoidal
+track.<br>
+<br>
+<br>
+<strong><br>
+</strong><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</p>
+</body>
+</html>

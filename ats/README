@@ -1,0 +1,46 @@
+About ATSA:
+The atsa libray implements the analysis part of Juan Pampin's ATS system.
+For information about ATS visit: http://www-ccrma.stanford.edu/~juan/ATS.html
+For ATSH documentation see doc/atsh-doc.html
+
+Compilation:
+To compile atsa or atsh do the standard
+./configure ; make ; make install
+This will configure the system and create the sndlib library, the atsa library,
+and the atsa and atsh binaries.
+
+
+ATS Copyright:
+The atsa library and atsh ware developed as part of the "Desarrollo de Software
+para analisis y sintesis de sonido digital (Digital Sound Analysis and 
+Synthesis Software Development)" research and development project with 
+the support of: Universidad Nacional de Quilmes, Buenos Aires, Argentina
+(http://www.unq.edu.ar), and the Center for Digital Arts and Experimental 
+Media, University of Washington, Seattle, USA 
+(http://www.washington.edu/dxarts). 
+
+Except where otherwise noted, ATSA and ATSH is Copyright 2002-2004 Oscar Pablo
+Di Liscia, Pete Moss and Juan Pampin.
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose.  No
+written agreement, license, or royalty fee is required.  Modifications
+to this software may be copyrighted by their authors and need not
+follow the licensing terms described here.
+
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
+IS PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE
+NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+MODIFICATIONS.
+
+
+
+

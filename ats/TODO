@@ -1,0 +1,29 @@
+
+Synthesis:
+
+1-Add DC Blocker to the residual
+2-Substractive Synthesis
+3-Rethink Time envelope (possibly have a time transformation function)
+4-Amplitude of residual bands with curves. (we will do it "on the fly" in the Synthesis, can't do it now because I do no have sound output to test the results)
+
+
+Editing:
+
+2-Track deleting
+3-Region deleting
+4-Add dismiss button to list view.
+5-SMR/Amplitude display.
+6-Smart selection using frequency with harmonic factor and SMR threshold.
+
+Analysis: make info printed to stdout into a form with progress bar
+
+- label the zoom bars and contrast bar or separate the two zoom bars out of the contrast one. Take out the number on the latter.
+- move the frame and frequency info from bottom right corner to bottom centered, or maybe to status bar (if one exists)
+
+View menu
+ Replace Sinusoidal and Noise by a call to a Configuration View Window
+
+- add Help/Documentation menu item that launches the html documentation
+
+
+
