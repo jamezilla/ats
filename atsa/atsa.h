@@ -473,8 +473,7 @@ void res_to_band_energy(ATS_SOUND *sound, int frame);
  * ==========
  * initializes a new sound allocating memory
  */
-void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials);
-
+void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials, int use_noise);
 
 /* free_sound
  * ==========

@@ -82,7 +82,7 @@ void residual_analysis(char *file, ATS_SOUND *sound)
 {
   int fil, file_sampling_rate, sflen, hop, M, N, frames, *band_limits;
   int smp=0, M_2, st_pt, filptr, i, frame_n, k;
-  double norm=1.0, threshold, fft_mag, **band_arr, *band_energy;
+  double norm=1.0, threshold, fft_mag, **band_arr=NULL, *band_energy;
   double time_domain_energy=0.0, freq_domain_energy=0.0, sum=0.0;
   double edges[ATSA_CRITICAL_BANDS+1] = ATSA_CRITICAL_BAND_EDGES;
   ATS_FFT fft_struct;
@@ -108,11 +108,13 @@ void residual_analysis(char *file, ATS_SOUND *sound)
   fft_mag = (double)file_sampling_rate / (double)N;
   band_limits = (int *)malloc(sizeof(int)*(ATSA_CRITICAL_BANDS+1));
   residual_get_bands(fft_mag, edges, band_limits, ATSA_CRITICAL_BANDS+1);
-  band_arr = (double **)malloc(ATSA_CRITICAL_BANDS*sizeof(double *));
-  for(i =0 ; i<ATSA_CRITICAL_BANDS ; i++){
-    band_arr[i] = (double *)malloc(frames*sizeof(double));
-  }
+  // band_arr = (double **)malloc(ATSA_CRITICAL_BANDS*sizeof(double *));
+  band_arr = sound->band_energy;
   band_energy = (double *)malloc(ATSA_CRITICAL_BANDS*sizeof(double));
+  // for(i =0 ; i<ATSA_CRITICAL_BANDS ; i++){
+//     band_arr[i] = (double *)malloc(frames*sizeof(double));
+//   }
+
   M_2 = floor( ((double)M - 1) * 0.5 );
   st_pt = N - M_2;
   filptr = M_2 * -1;

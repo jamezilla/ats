@@ -268,7 +268,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
       ana_frames[frame_n].n_peaks = 0;
       ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
     }
- }
+  }
   /* free up some memory */
   free(fft_struct.fdr);
   free(fft_struct.fdi);
@@ -277,7 +277,9 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* init sound */
   fprintf(stderr, "Initializing sound...\n");
   sound = (ATS_SOUND *)malloc(sizeof(ATS_SOUND));
-  init_sound(sound, anargs->srate, (int)(anargs->hop_size * anargs->win_size), anargs->win_size, anargs->frames, anargs->duration, n_partials);
+  init_sound(sound, anargs->srate, (int)(anargs->hop_size * anargs->win_size), 
+             anargs->win_size, anargs->frames, anargs->duration, n_partials,
+             ((anargs->type == 3 || anargs->type == 4) ? 1 : 0));
   /* store values from frames into the arrays */
   for(k=0; k<n_partials; k++) {
     for(frame=0; frame<sound->frames; frame++) {
