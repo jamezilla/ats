@@ -242,7 +242,7 @@ void atsreadset(ATSREAD *p){
 				swapped_warning = 1;
 			}
 		} else {
-			sprintf(errmsg, "ATSINFO: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
 			initerror(errmsg);
 			return;
 		}
@@ -336,23 +336,28 @@ float FetchNzBand(ATSREADNZ *p, float	position)
 	float	frac;		// the distance in time we are between frames
 	int	frame;		// the time of the first frame
 	double * frm1, * frm2;
+	double frm1val, frm2val;
 	
 	frame = (int)position;
 	frm1 = p->datastart + p->frmInc * frame + p->nzbandloc;
-	
+	frm1val = (p->swapped == 1) ? bswap(frm1) : *frm1;
+
 	// if we're using the data from the last frame we shouldn't try to interpolate
 	if(frame == p->maxFr)
-		return (float)*frm1;
+		return (float)frm1val;
 	
 	frm2 = frm1 + p->frmInc;
 	frac = position - frame;
+	frm2val = (p->swapped == 1) ? bswap(frm2) : *frm2;
 	
-	return (float)(*frm1 + frac * (*frm2 - *frm1));	// calc energy
+	return (float)(frm1val + frac * (frm2val - frm1val));	// calc energy
 }
 
 void atsreadnzset(ATSREADNZ *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
+	int n_partials;
+	int type;
 	
 	/* copy in ats file name */
 	if (*p->ifileno == sstrcod){
@@ -374,14 +379,26 @@ void atsreadnzset(ATSREADNZ *p){
 	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	        
 	//make sure that this is an ats file
-	if (atsh->magic != 123)
-	{
-		sprintf(errmsg, "ATSREADNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-		initerror(errmsg);
-		return;
+	if (atsh->magic != 123) {
+		if(123 == (int)(bswap(&atsh->magic))){
+			p->swapped = 1;	//true
+			if(!swapped_warning){
+				fprintf(stderr,"\nATSREADNZ: %s is byte-swapped\n", atsfilname);
+				fprintf(stderr,"\tno future byte-swapping warnings will be given, byte-swapped files will not result in different audio, but they may slow down processing.\n\n");
+				swapped_warning = 1;
+			}
+		} else {
+			sprintf(errmsg, "ATSREADNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+			initerror(errmsg);
+			return;
+		}
 	}
-	p->maxFr = (int)atsh->nfrms - 1;
-	p->timefrmInc = atsh->nfrms / atsh->dur;
+
+	//byte swap if nessisary
+	p->maxFr = (p->swapped == 1) ? (int)bswap(&atsh->nfrms) - 1 : (int)atsh->nfrms - 1;
+	p->timefrmInc = (p->swapped == 1) ? bswap(&atsh->nfrms) / bswap(&atsh->dur) : atsh->nfrms / atsh->dur;
+	n_partials = (p->swapped == 1) ? (int)bswap(&atsh->npartials) : (int)atsh->npartials;
+	
 	// point the data pointer to the correct partial
 	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
 		
@@ -393,14 +410,15 @@ void atsreadnzset(ATSREADNZ *p){
 		return;
 	}
 
-	switch ( (int)(atsh->type))
+	type = (p->swapped == 1) ? (int)bswap(&atsh->type) : (int)atsh->type;
+	switch (type)
 	{
-		case 3 :	p->nzbandloc =  (int)(2 * atsh->npartials + *p->inzbin);        //get past the partial data to the noise
-					p->frmInc = (int)(atsh->npartials * 2 + 26);
+		case 3 :	p->nzbandloc =  (int)(2 * n_partials + *p->inzbin);        //get past the partial data to the noise
+					p->frmInc = n_partials * 2 + 26;
 					break;
 		
-		case 4 :	p->nzbandloc = (int)(3 * atsh->npartials + *p->inzbin);
-					p->frmInc = (int)(atsh->npartials * 3 + 26);
+		case 4 :	p->nzbandloc = (int)(3 * n_partials + *p->inzbin);
+					p->frmInc = n_partials * 3 + 26;
 					break;
 		default:	sprintf(errmsg, "ATSREADNZ: Type either not implemented or doesn't contain noise");
 					initerror(errmsg);
