@@ -4,24 +4,10 @@
  */
 
 #include "atsa.h"
-#include <fftw3.h>
 
 /* private function prototypes */
 int compute_frames(ANARGS *anargs);
 
-/* int compute_frames(ANARGS *anargs)
- * computes number of analysis frames from the user's parameters 
- * returns the number of frames
- * anargs: pointer to analysis parameters
- */
-int compute_frames(ANARGS *anargs)
-{
-  int n_frames = (int)floor((float)anargs->total_samps / (float)anargs->hop_smp);
-  while((n_frames++ * anargs->hop_smp - anargs->hop_smp + anargs->first_smp) < (anargs->first_smp + anargs->total_samps)) {
-    //    n_frames++;
-  }
-  return(n_frames);
-}
 
 /* ATS_SOUND *tracker (ANARGS *anargs, char *soundfile)
  * partial tracking function 
@@ -37,15 +23,15 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   float *window, norm, sfdur, f_tmp;
   /* declare structures and buffers */
   ATS_SOUND *sound = NULL;
-  ATS_FFT fft_struct;
   ATS_PEAK *peaks, *tracks = NULL, cpy_peak;
   ATS_FRAME *ana_frames = NULL, *unmatched_peaks = NULL;
   mus_sample_t **bufs;
-
-  /* fftw stuff */
+  ATS_FFT fft;
+#ifdef FFTW
   fftw_plan plan;
-  fftw_complex *fftw_in;
   FILE *fftw_wisdom_file;
+#endif
+
   /* open input file
      we get srate and total_samps in file in anargs */
   if ((fd = mus_sound_open_input(soundfile))== -1) {
@@ -172,11 +158,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* continue computing parameters */
   /* fft size */
   anargs->fft_size = ppp2(2*anargs->win_size);
-  /* make our fft-struct */
-  fft_struct.size = anargs->fft_size;
-  fft_struct.rate = anargs->srate;
-  fft_struct.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
-  fft_struct.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
+
   /* allocate memory for sound, we read the whole sound in memory */
   bufs = (mus_sample_t **)malloc(sizeof(mus_sample_t**));
   bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
@@ -203,31 +185,44 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* read sound into memory */
   mus_sound_read(fd, 0, sflen-1, 1, bufs);     
 
-  /* fftw stuff */
-  fftw_in = fftw_malloc(sizeof(fftw_complex) * anargs->fft_size);
-  //  fftw_out = fftw_malloc(sizeof(fftw_complex) * anargs->fft_size);
+  /* make our fft-struct */
+  fft.size = anargs->fft_size;
+  fft.rate = anargs->srate;
+#ifdef FFTW
+  fft.data = fftw_malloc(sizeof(fftw_complex) * fft.size);
   fftw_wisdom_file = fopen("fftw-wisdom", "r");
   if(fftw_wisdom_file == NULL) {
+    fprintf(stderr, "Optimizing FFTW and saving in file fftw-wisdom...\n");
     fftw_wisdom_file = fopen("fftw-wisdom", "w");
-    plan = fftw_plan_dft_1d(fft_struct.size, fftw_in, fftw_in, FFTW_FORWARD, FFTW_PATIENT);
+    plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
     fftw_export_wisdom_to_file(fftw_wisdom_file);
     fclose(fftw_wisdom_file);
   } else {
     fftw_import_wisdom_from_file(fftw_wisdom_file);
-    plan = fftw_plan_dft_1d(fft_struct.size, fftw_in, fftw_in, FFTW_FORWARD, FFTW_PATIENT);
+    plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
     fclose(fftw_wisdom_file);
   }
-  
+#else
+  fft.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
+  fft.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
+#endif
+
   /* main loop */
   for (frame_n=0; frame_n<anargs->frames; frame_n++) {
     /* clear fft arrays */
-    //for(k=0; k<anargs->fft_size; k++) fft_struct.fdr[k] = fft_struct.fdi[k] = 0.0f;
-    for(k=0; k<anargs->fft_size; k++) fftw_in[k][0] = fftw_in[k][1] = 0.0f;
+#ifdef FFTW
+    for(k=0; k<fft.size; k++) fft.data[k][0] = fft.data[k][1] = 0.0f;
+#else
+    for(k=0; k<fft.size; k++) fft.fdr[k] = fft.fdi[k] = 0.0f;
+#endif
     /* multiply by window */
     for (k=0; k<anargs->win_size; k++) {
       if ((filptr >= 0) && (filptr < sflen)) 
-        //fft_struct.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
-        fftw_in[(k+first_point)%anargs->fft_size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#ifdef FFTW
+        fft.data[(k+first_point)%fft.size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#else
+        fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#endif
       filptr++;
     }
     /* we keep sample numbers of window midpoints in win_samps array */
@@ -235,15 +230,14 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
     /* move file pointer back */
     filptr = filptr - anargs->win_size + anargs->hop_smp;
     /* take the fft */
-    //    fft(fft_struct.fdr, fft_struct.fdi, fft_struct.size, 1);
+#ifdef FFTW
     fftw_execute(plan);
-    for(k=0; k<fft_struct.size; k++) {
-      fft_struct.fdr[k] = fftw_in[k][0];
-      fft_struct.fdi[k] = fftw_in[k][1];
-    }
+#else
+    fft_slow(fft.fdr, fft.fdi, fft.size, 1);
+#endif
     /* peak detection */
     peaks_size = 0;
-    peaks = peak_detection(&fft_struct, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
+    peaks = peak_detection(&fft, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
     /* peak tracking */
     if (peaks != NULL) {
       /* evaluate peaks SMR (masking curves) */
@@ -295,14 +289,15 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
     }
   }
   /* free up some memory */
-  free(fft_struct.fdr);
-  free(fft_struct.fdi);
   free(window);
   free(tracks);
-  /* fftw stuff */
+#ifdef FFTW
   fftw_destroy_plan(plan);
-  fftw_free(fftw_in);
-
+  fftw_free(fft.data);
+#else
+  free(fft.fdr);
+  free(fft.fdi);
+#endif
   /* init sound */
   fprintf(stderr, "Initializing sound...\n");
   sound = (ATS_SOUND *)malloc(sizeof(ATS_SOUND));
@@ -340,4 +335,16 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   if( anargs->type == 3 || anargs->type == 4 )
     residual_analysis(ATSA_RES_FILE, sound);
   return(sound);
+}
+
+/* int compute_frames(ANARGS *anargs)
+ * computes number of analysis frames from the user's parameters 
+ * returns the number of frames
+ * anargs: pointer to analysis parameters
+ */
+int compute_frames(ANARGS *anargs)
+{
+  int n_frames = (int)floor((float)anargs->total_samps / (float)anargs->hop_smp);
+  while((n_frames++ * anargs->hop_smp - anargs->hop_smp + anargs->first_smp) < (anargs->first_smp + anargs->total_samps));
+  return(n_frames);
 }

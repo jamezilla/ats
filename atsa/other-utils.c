@@ -5,8 +5,10 @@
 
 #include "atsa.h"
 
+#ifndef FFTW
 /* private function prototypes */
 void fft_bit_reversal(double* rl, double* im, int n);
+#endif
 
 /* make_window
  * ===========
@@ -105,7 +107,8 @@ int peak_smr_dec(void const *a, void const *b)
   return(1000.0 * (((ATS_PEAK *)b)->smr - ((ATS_PEAK *)a)->smr));
 }
 
-/* fft
+#ifndef FFTW
+/* fft_slow
  * ===
  * standard fft based on simplfft by Joerg Arndt.
  * rl: pointer to real part data 
@@ -113,7 +116,7 @@ int peak_smr_dec(void const *a, void const *b)
  * n: size of data
  * is: 1=forward trasnform -1=backward transform
  */
-void fft(double *rl, double *im, int n, int is)
+void fft_slow(double *rl, double *im, int n, int is)
 {
   int m, j, mh, ldm, lg, i, i2, j2, imh;
   double ur, ui, u, vr, vi, angle, c, s;
@@ -178,3 +181,4 @@ void fft_bit_reversal(double* rl, double* im, int n)
     j += m;
   }
 }
+#endif

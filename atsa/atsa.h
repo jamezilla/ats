@@ -3,6 +3,10 @@
  * Oscar Pablo Di Liscia / Pete Moss / Juan Pampin 
  */
 
+#ifdef FFTW
+#include <fftw3.h>
+#endif
+
 /* sndlib stuff starts here */
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
@@ -26,14 +30,12 @@
 /* sndlib stuff ends here */
 
 /*  window types */
-
 #define  BLACKMAN   0
 #define  BLACKMAN_H 1
 #define  HAMMING    2
 #define  VONHANN    3
 
-/* analysis parameters */
-
+/********** ANALYSIS PARAMETERS ***********/
 /* start time */
 #define  ATSA_START 0.0
 /* duration */
@@ -143,12 +145,20 @@ typedef struct {
 /* ATS_FFT
  * fft data
  */
+#if defined(FFTW)
+typedef struct {
+  int size;
+  int rate;
+  fftw_complex *data;
+} ATS_FFT;
+#else
 typedef struct {
   int size;
   int rate;
   double *fdr;
   double *fdi;
 } ATS_FFT;
+#endif
 
 /* ATS_PEAK
  * ========
@@ -317,7 +327,7 @@ int peak_amp_inc(void const *a, void const *b);
  */
 int peak_smr_dec(void const *a, void const *b);
 
-
+#ifndef FFTW
 /* fft
  * ===
  * standard fft based on simplfft by Joerg Arndt.
@@ -326,7 +336,8 @@ int peak_smr_dec(void const *a, void const *b);
  * n: size of data
  * is: 1=forward trasnform -1=backward transform
  */
-void fft(double *rl, double *im, int n, int is);
+void fft_slow(double *rl, double *im, int n, int is);
+#endif
 
 /* peak-detection.c */
 
