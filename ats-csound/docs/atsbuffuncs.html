@@ -145,12 +145,12 @@ given by <strong>atsbufread</strong></p>
 
 <h3>Examples</h3>
 1.
-<pre>  ktime line 0, p3, 2.4
-  ktime2 line 0, p3, .5
-  kline expseg 0.001, .9, 1, p3-.9, 1
-  kline2 expseg .001, p3, 1
-  atsbufread  ktime2, 1, "crt.ATS", 20
-  aout atscross ktime, 1, "cl.ATS", 1, kline, .001* (1 - kline2), 42</pre>
+<pre>  ktime <strong>line</strong> 0, p3, 2.4
+  ktime2 <strong>line</strong> 0, p3, .5
+  kline <strong>expseg</strong> 0.001, .9, 1, p3-.9, 1
+  kline2 <strong>expseg</strong> .001, p3, 1
+  <strong>atsbufread</strong>  ktime2, 1, "crt.ATS", 20
+  aout <strong>atscross</strong> ktime, 1, "cl.ATS", 1, kline, .001* (1 - kline2), 42</pre>
 <p>
 	This example performs cross synthesis using two ATS files, crt.ATS and
 	cl.ATS.  The result of this will be a sound that starts out with the shape
@@ -163,10 +163,10 @@ given by <strong>atsbufread</strong></p>
 </p>
 
 2.
-<pre>  ktime  line  0, p3, 2.4
-  atsbufread  ktime, 1, "cl.ATS", 42
-  kamp  atsinterpread  p4
-  aosc  oscili  kamp, p4, 1
+<pre>  ktime  <strong>line</strong>  0, p3, 2.4
+  <strong>atsbufread</strong>  ktime, 1, "cl.ATS", 42
+  kamp  <strong>atsinterpread</strong> p4
+  aosc  <strong>oscili</strong>  kamp, p4, 1
   </pre>
 <p>
 	This example shows how to use atsinterpread.  Here a frequency is given by
@@ -182,11 +182,11 @@ given by <strong>atsbufread</strong></p>
 </p>
 
 3.
-<pre>  ktime line 0, p3, 2.4
-  atsbufread  ktime, 1, "crt.ATS", 20
-  kfreq1, kamp1 atspartialtap 1
-  kfreq2, kamp2 atspartialtap 10
-  kfreq3, kamp3 atspartialtap 20</pre>
+<pre>  ktime <strong>line</strong> 0, p3, 2.4
+  <strong>atsbufread</strong>  ktime, 1, "crt.ATS", 20
+  kfreq1, kamp1 <strong>atspartialtap</strong> 1
+  kfreq2, kamp2 <strong>atspartialtap</strong> 10
+  kfreq3, kamp3 <strong>atspartialtap</strong> 20</pre>
 <p>
 	This example here uses an atspartialtap, and an atsbufread to read partials
 	1, 10 and 20 from crt.ATS.  These amplitudes and frequencies could be used to
