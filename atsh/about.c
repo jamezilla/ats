@@ -32,17 +32,7 @@ void about(void)
  
   //////////////////////////////////////////////////////////////
  
-  label1 = gtk_label_new ("\n \n  ATSH (Analysis-Transformation-Synthesis-Shell)  \n
-  V.2.0, 22/08/2003 \n \n
-  Oscar Pablo Di Liscia - odiliscia@unq.edu.ar \n
-  Juan Pampin - pampin@u.washington.edu \n 
-  Pete Moss - petemoss@u.washington.edu \n
-  This Program is partially supported by: \n
-  Universidad Nacional de Quilmes (Argentina) \n
-  http://www.unq.edu.ar/cme \n
-  Center for Digital Arts and Experimental Media (University of Washington, Seattle, USA) \n
-  http://www.dxarts.washington.edu/ \n \n
-  ");
+  label1 = gtk_label_new ("\n \n  ATSH (Analysis-Transformation-Synthesis-Shell)  \n  V.2.0, 22/08/2003 \n \n  Oscar Pablo Di Liscia - odiliscia@unq.edu.ar \n  Juan Pampin - pampin@u.washington.edu \n   Pete Moss - petemoss@u.washington.edu \n  This Program is partially supported by: \n  Universidad Nacional de Quilmes (Argentina) \n  http://www.unq.edu.ar/cme \n  Center for Digital Arts and Experimental Media (University of Washington, Seattle, USA) \n  http://www.dxarts.washington.edu/ \n \n  ");
 
   gtk_widget_ref (label1);
   gtk_object_set_data_full (GTK_OBJECT (window1), "label1", label1,
