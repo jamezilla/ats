@@ -25,9 +25,9 @@ Signal Generators: STFT Resynthesis (Vocoding)
   <strong>atsbufread</strong> just as pvcross and pvinterp are on pvbufread.
   <strong>atsbufread</strong> reads data from and ATS data file and stores it in
   an internal data table of frequency, amplitude pairs.  The data stored by an
-  <strong>atsbufread</strong> can only be acessed by other unit generators, and
-  therfore, due to the architecture of Csound, an <strong>atsbufread</strong>
-  must come before (but not nessisarilly directly) any dependent unit generator.
+  <strong>atsbufread</strong> can only be accessed by other unit generators, and
+  therefore, due to the architecture of Csound, an <strong>atsbufread</strong>
+  must come before (but not necessarily directly) any dependent unit generator.
   Besides the fact that <strong>atsbufread</strong> doesn't output any data
   directly, it works almost exactly as <a
   href="atssynth.html"><strong>atsadd</strong></a>.  The ugen uses a time
@@ -45,13 +45,13 @@ Signal Generators: STFT Resynthesis (Vocoding)
   <em>kfmod</em>, <em>ipartials</em>, <em>ipartialoffset</em> and
   <em>ipartialincr</em> just like <a href="atssynth.html">
   <strong>atsadd</strong> </a>.  <strong>atscross</strong> synthesizes a
-  sinewave for each partial selected by the user and uses the frequency of that
-  partial (after scaleing in frequency by <em>kfmod</em>) to index the table
+  sine-wave for each partial selected by the user and uses the frequency of that
+  partial (after scaling in frequency by <em>kfmod</em>) to index the table
   created by <strong>atsbufread</strong>.  Interpolation is used to get
-  inbetween values.  <strong>atscross</strong> uses the sum of the amplitude
+  in-between values.  <strong>atscross</strong> uses the sum of the amplitude
   data from its ATS file (scaled by <em>kmylev</em>) and the amplitude data
   gained from an <strong>atsbufread</strong> (scaled by <em>kbuflev</em>) to
-  scale the ampiltude of each partial it synthesizes.  Setting <em>kmylev</em>
+  scale the amplitude of each partial it synthesizes.  Setting <em>kmylev</em>
   to one and <em>kbuflev</em> to zero will make <strong>atscross</strong> act
   exactly like <strong>atsadd</strong>.  Setting <em>kmylev</em> to zero and
   <em>kbuflev</em> to one will produce a sound that has all the partials
@@ -68,7 +68,7 @@ Signal Generators: STFT Resynthesis (Vocoding)
   This frequency is used to index the data of an <strong>atsbufread</strong>.
   The return value is an amplitude gained from the <strong>atsbufread</strong>
   after interpolation.  <strong>atsinterpread</strong> allows a user to
-  determine the frequency envelople of any <strong>atsbufread</strong>.  This
+  determine the frequency envelope of any <strong>atsbufread</strong>.  This
   data could be useful for an number of reasons, one might be performing cross
   synthesis of data from an ATS file and non ATS data.
 
@@ -88,7 +88,7 @@ Signal Generators: STFT Resynthesis (Vocoding)
 
 <h3>Initialization</h3>
 
-<p><em>ktimepnt</em> &#8211; a time pointer for reading through the ats
+<p><em>ktimepnt</em> &#8211; a time pointer for reading through the ATS
 file</p>
 
 <p><em>kfmod</em> &#8211; an input for performing pitch transposition or
@@ -97,7 +97,7 @@ change is desired then use a 1 for this value</p>
 
 <p><em>iatsfile</em> &#8211; integer or character-string denoting a
 control-file derived from ATS analysis of an audio signal. An integer denotes
-the suffix of a file <em>ats.m</em>; a character-string (in double quotes)
+the suffix of a file <em>ATS.m</em>; a character-string (in double quotes)
 gives a filename, optionally a full pathname. If not full-path, the file is
 sought first in the current directory, then in the one given by the environment
 variable <strong>SADIR</strong> (if defined).  </p>
@@ -107,7 +107,7 @@ wave for atsadd and a cosine for atsaddnz (see examples below for more
 info)</p>
 
 <p><em>ipartials / ibands</em> &#8211; number of partials or noise bands that
-will be used in the resynthesis (the noise has a maximum of 25 bands)</p>
+will be used in the re-synthesis (the noise has a maximum of 25 bands)</p>
 
 <p><em>ipartialoffset / ibandoffset</em> (optional) &#8211; is the first
 partial or noise band used (defaults to 0).  </p>
@@ -119,13 +119,13 @@ re-synthesis (defaults to 1).  </p>
 
 <p><em>kmylev</em> scales the atscross component of the frequency spectrum
 applied to the partials from the ATS file indicated by the
-<strong>atscross</strong> opcode.  The frequency spectrum infromation comes
+<strong>atscross</strong> opcode.  The frequency spectrum information comes
 from the <strong>atscross</strong> ATS file.  A value of 1 (and 0 for kbuflev) gives the same results as
 atsadd.</p>
 
-<p><em>kbuflev</em> scales the atsbufread componenet of the frequency spectrum
+<p><em>kbuflev</em> scales the atsbufread component of the frequency spectrum
 applied to the partials from the ATS file indicated by the
-<strong>atscross</strong> opcode.  The frequency spectrum infromation comes
+<strong>atscross</strong> opcode.  The frequency spectrum information comes
 from the <strong>atsbufread</strong> ATS file.  A value of 1 (and 0 for kmylev)
 results in partials that have frequency information from the ATS file given by
 the <strong>atscross</strong>, but amplitudes imposed by data from the ATS file
@@ -144,6 +144,55 @@ given by <strong>atsbufread</strong></p>
 <strong>pvoc</strong>.  </p>
 
 <h3>Examples</h3>
+1.
+<pre>  ktime line 0, p3, 2.4
+  ktime2 line 0, p3, .5
+  kline expseg 0.001, .9, 1, p3-.9, 1
+  kline2 expseg .001, p3, 1
+  atsbufread  ktime2, 1, "crt.ATS", 20
+  aout atscross ktime, 1, "cl.ATS", 1, kline, .001* (1 - kline2), 42</pre>
+<p>
+	This example performs cross synthesis using two ATS files, crt.ATS and
+	cl.ATS.  The result of this will be a sound that starts out with the shape
+	(in frequency) of crt.ATS, and ends with the shape of cl.ATS.  All the
+	sine-wave frequencies come from cl.ATS.  The <em>kbuflev</em> value is scaled
+	because the energy produced by applying crt.ats's frequency spectrum to
+	cl.ats's partials is very large.  Notice also that the time pointers of the
+	atsbufread (crt.ATS) and atscross (cl.ATS) need not have the same value, this
+	way you can read through the two ATS files at different rates.
+</p>
+
+2.
+<pre>  ktime  line  0, p3, 2.4
+  atsbufread  ktime, 1, "cl.ATS", 42
+  kamp  atsinterpread  p4
+  aosc  oscili  kamp, p4, 1
+  </pre>
+<p>
+	This example shows how to use atsinterpread.  Here a frequency is given by
+	the score (p4) and this frequency is given to an atsinterpread (with a
+	corresponding atsbufread).  The atsinterpread uses this frequency to output a
+	corresponding amplitude value, based on the atsfile given by the atsbufread
+	(cl.ATS in this case).  We then use that amplitude to scale a sine-wave that
+	is synthesized with the same frequency (p4).  You could extend this to
+	include multiple sine-waves.  This way you could synthesize any reasonable
+	frequency (within the low and high frequencies of the indicated ATS file),
+	and maintain the shape (in frequency) of the indicated atsfile (given by the
+	atsbufread).
+</p>
+
+3.
+<pre>  ktime line 0, p3, 2.4
+  atsbufread  ktime, 1, "crt.ATS", 20
+  kfreq1, kamp1 atspartialtap 1
+  kfreq2, kamp2 atspartialtap 10
+  kfreq3, kamp3 atspartialtap 20</pre>
+<p>
+	This example here uses an atspartialtap, and an atsbufread to read partials
+	1, 10 and 20 from crt.ATS.  These amplitudes and frequencies could be used to
+	re-synthesize those partials, or something all together different.
+</p>
+
 
 <h3>Author </h3>
 <p>Alex Norman (an edited version of Richard Karpen's pvadd documentation)<br>
