@@ -66,20 +66,25 @@ ar      atscrossnz      ktimepnt, iatsfile, ifn, kmyamp, kbufamp, ibands[, iband
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #define ATSA_NOISE_VARIANCE 0.04
 
+#define ATSA_CRITICAL_BAND_EDGES {0.0, 100.0, 200.0, 300.0, 400.0, 510.0,\
+                                      630.0, 770.0, 920.0, 1080.0, 1270.0,\
+                                    1480.0, 1720.0, 2000.0, 2320.0, 2700.0,\
+                                     3150.0, 3700.0, 4400.0, 5300.0, 6400.0,\
+                                    7700.0, 9500.0, 12000.0, 15500.0, 20000.0}
 
-//extern	float	esr;	//the sampleing rate (i hope)
 //extern	int	ksmps;
 //extern	char	errmsg[];
 //extern  int     odebug;
+//extern	float esr;	//the sampleing rate (i hope)
 
 //static	int	pdebug = 0;
 
 // static variables used for atsbufread and atsbufreadnz
 static	ATSBUFREAD	*atsbufreadaddr;
-static	ATSBUFREADNZ	*atsbufreadaddrnz;
 
 int readdatafile(const char *, ATSFILEDATA *);
 
@@ -392,12 +397,12 @@ void atsaddset(ATSADD *p){
 	//make sure that this is an ats file
 	if (atsh->magic != 123)
 	{
-                sprintf(errmsg, "ATSREAD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+                sprintf(errmsg, "ATSADD: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
                	initerror(errmsg);
                	return;
         }
 	//calculate how much memory we have to allocate for this
-	memsize = (int)(atsh->nfrms) * (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
+	memsize = (int)(*p->iptls) * sizeof(ATS_DATA_LOC) + (int)(*p->iptls) * sizeof(double);
 	// allocate space if we need it
 	if(p->auxch.auxp == NULL || memsize > p->memsize)
 	{
@@ -868,6 +873,7 @@ void atsaddnz(ATSADDNZ *p){
    	
 	synthme = (int)*p->ibandoffset;
 	nsynthed = 0;
+	phase = p->oscphase;
 	
 	for (i = 0; i < 25; i++)
 	{	
@@ -899,14 +905,325 @@ void atsaddnz(ATSADDNZ *p){
 	p->oscphase = phase;
 }
 
+void band_energy_to_res(ATSSINNOI *p)
+{
+  int i, j, k, par, first_par, last_par=0;
+  double sum;
+  double edges[26] = ATSA_CRITICAL_BAND_EDGES;
+  double * partial;
+  double * band;
+  double * curframe = p->datastart;
+  
+  partial = (double *)(curframe + 1);
+  band = (double *)(p->firstband + curframe);
+  par = 0;
+  
+  for(i = 0; i < p->atshead->nfrms; i++)
+  {
+  /* find partials by band */
+  	for(j=0 ; j<25 ; j++)
+  	{
+  		first_par = par;
+ 	   	sum = 0.0;
+ 	   	while( par < p->atshead->npartials &&
+ 	         	(*band > 0.0) &&
+ 	         	(*(partial + 1) >= edges[j]) &&
+ 	         	(*(partial + 1) < edges[j+1]))
+ 	     	{
+ 	       		sum += *partial;	//amplitude
+ 	       		last_par = par;
+        		par++;
+			if(par < p->atshead->npartials)
+				partial += p->partialinc;
+      		}
+    		if( sum > 0.0 )
+		{
+      			/* transfer band energy to partials */
+      			for(k=first_par ; k<last_par+1; k++)
+			{
+        			if(k >= p->atshead->npartials)
+          				break;
+        			*(p->nzdata + i * (int)p->atshead->npartials + k) = *(curframe + 1 + k * p->partialinc) * *band / sum;
+      			}
+    		}
+		//go to next noise band
+		if(j < 24)
+			band++;
+  	}
+	if(i < (p->atshead->nfrms - 1))
+	{
+		curframe += p->frmInc;
+		partial = (double *)(curframe + 1);
+		band = (double *)(p->firstband + curframe);
+	}
+   }
+}
+
+void fetchSINNOIpartials(ATSSINNOI *, float);
+
 void atssinnoiset(ATSSINNOI *p)
 {
+	char atsfilname[MAXNAME];
+	ATSSTRUCT * atsh;
+	int memsize, nzmemsize;
+	
+	/* copy in ats file name */
+        if (*p->ifileno == sstrcod){
+                strcpy(atsfilname, unquote(p->STRARG));
+        }
+        else if ((long)*p->ifileno < strsmax && strsets != NULL && strsets[(long)*p->ifileno])
+                strcpy(atsfilname, strsets[(long)*p->ifileno]);
+        else sprintf(atsfilname,"ats.%d", (int)*p->ifileno); /* else ats.filnum   */
+	
+	// load memfile
+	if ( (p->atsmemfile = ldmemfile(atsfilname)) == NULL)
+        {
+                sprintf(errmsg, "ATSSINNOI: Ats file %s not read (does it exist?)", atsfilname);
+                initerror(errmsg);
+                return;
+        }
+	//point the header pointer at the header data
+	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
+	p->atshead = atsh;
+	//make sure that this is an ats file
+	if (atsh->magic != 123)
+	{
+                sprintf(errmsg, "ATSSINNOI: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+               	initerror(errmsg);
+               	return;
+        }
+	//calculate how much memory we have to allocate for this need room for a buffer and the noise data and the noise info per partial for synthesizing noise
+	memsize = (int)(*p->iptls) * (sizeof(ATS_DATA_LOC) + sizeof(double) + sizeof(RANDIATS));
+	// allocate space if we need it
+	if(p->auxch.auxp == NULL || memsize > p->memsize)
+	{
+		// need room for a buffer and an array of oscillator phase increments
+		auxalloc(memsize, &p->auxch);
+		p->memsize = memsize;
+	}
+	
+	// set up the buffer, phase, etc.
+	p->oscbuf = (ATS_DATA_LOC *)(p->auxch.auxp);
+	p->randinoise = (RANDIATS *)(p->oscbuf + (int)(*p->iptls));
+	p->nzbuf = (double *)(p->randinoise + (int)(*p->iptls));
+	
+	//see if we have to allocate memory for the nzdata
+	nzmemsize = (int)(atsh->npartials * atsh->nfrms);
+	if(nzmemsize != p->nzmemsize)
+	{
+		if(p->nzdata != NULL)
+			mfree(p->nzdata);
+		p->nzdata = (double *)mmalloc(sizeof(double) * (int)(atsh->npartials));
+	}
+	
+	p->maxFr = (int)atsh->nfrms - 1;
+	p->timefrmInc = atsh->nfrms / atsh->dur;
+	
+	// make sure partials are in range
+        if( (int)(*p->iptloffset + *p->iptls * *p->iptlincr)  > (int)(atsh->npartials) || (int)(*p->iptloffset) < 0)
+        {
+                sprintf(errmsg, "ATSSINNOI: Partial(s) out of range, max partial allowed is %i", (int)atsh->npartials);
+                initerror(errmsg);
+                return;
+        }
+	//get a pointer to the beginning of the data
+	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
+	// get increments for the partials
+	switch ( (int)(atsh->type))
+        {
+                case 1 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+                                p->partialinc = 2 * (int)(*p->iptlincr);
+                                p->frmInc = (int)(atsh->npartials * 2 + 1);
+				p->firstband = -1;
+                                break;
+
+                case 2 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+                                p->partialinc = 3 * (int)(*p->iptlincr);
+                                p->frmInc = (int)(atsh->npartials * 3 + 1);
+				p->firstband = -1;
+                                break;
+
+                case 3 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
+                                p->partialinc = 2 * (int)(*p->iptlincr);
+                                p->frmInc = (int)(atsh->npartials * 2 + 26);
+                	        p->firstband = 1 + 2 * (int)(atsh->npartials);
+                                break;
+
+                case 4 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
+                                p->partialinc = 3 * (int)(*p->iptlincr);
+                                p->frmInc = (int)(atsh->npartials * 3 + 26);
+               		        p->firstband = 1 + 3 * (int)(atsh->npartials);
+                                break;
+
+                default:        sprintf(errmsg, "ATSSINNOI: Type not implemented");
+                                initerror(errmsg);
+                                return;
+        }
+	// convert noise per band to noise per partial
+	// make sure we don't do this if we have done it already.
+	if((p->firstband != -1) && ((p->filename == NULL) || (strcmp(atsfilname, p->filename) != 0) || (p->nzmemsize != nzmemsize) ))
+	{
+		if(p->filename != NULL)
+			mfree(p->filename);
+		p->filename = (char *)mmalloc(sizeof(char) * strlen(atsfilname));
+		strcpy(p->filename, atsfilname);
+		//fprintf(stderr,"\n band to energy res calculation %s \n", p->filename);
+		//calculate the band energys
+		band_energy_to_res(p);
+	}
+	//save the memory size of the noise
+	p->nzmemsize = nzmemsize;
+	
+	p->oscphase = 0;
+	//flag set to reduce the amount of warnings sent out for time pointer out of range
+	p->prFlg = 1;	// true
+
+	return;
 }
 
 void atssinnoi(ATSSINNOI *p)
 {
+	float frIndx;
+	int nsmps;
+	float * ar;
+	double noise;
+	double inc;
+	int i;
+	unsigned int phase;
+	double * nzbuf;
+	double amp;
+	double sinewave;
+	float freq;
+	
+	ATS_DATA_LOC * oscbuf;
+	
+	// make sure time pointer is within range
+	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
+        {
+		frIndx = 0;
+		if (p->prFlg)
+		{
+                	p->prFlg = 0;
+			fprintf(stderr, "ATSSINNOI: only positive time pointer values are allowed, setting to zero\n");
+		}
+        }
+        else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
+        {
+                frIndx = (float)p->maxFr;
+                if (p->prFlg)
+                {
+                        p->prFlg = 0;   // set to false
+			fprintf(stderr, "ATSSINNOI: time pointer out of range, truncating to last frame\n");
+                }
+        }
+	else
+		p->prFlg = 1;
+		
+	fetchSINNOIpartials(p, frIndx);
+	
+	// set local pointer to output and initialize output to zero
+	ar = p->aoutput;
+
+	for (i = 0; i < ksmps; i++)
+		*ar++ = 0.0f;
+	
+	oscbuf = p->oscbuf;
+	nzbuf = p->nzbuf;
+	
+	//do synthesis
+	for(i = 0; i < (int)*p->iptls; i++)
+	{
+			phase = p->oscphase;
+			ar = p->aoutput;
+			nsmps = ksmps;
+			amp = oscbuf[i].amp;
+			freq = (float)oscbuf[i].freq * *p->kfreq;
+			inc = TWOPI * freq / esr;
+			do
+			{
+				sinewave = sin(inc * phase) * amp;
+				noise = sinewave * randifats(&(p->randinoise[i]), freq );
+				
+				*ar += (float)sinewave * *p->ksinamp + (float)noise * *p->knzamp;
+				
+				phase += 1;
+				ar++;
+			}
+			while(--nsmps);
+	}
+	p->oscphase = phase;
 }
 
+void fetchSINNOIpartials(ATSSINNOI * p, float position)
+{
+        double   frac;           // the distance in time we are between frames
+	double * frm0, * frm1;
+	ATS_DATA_LOC * oscbuf;
+	double * nzbuf;
+        int     frame;
+        int     i;      // for the for loop
+	
+        frame = (int)position;
+	frm0 = p->datastart + frame * p->frmInc;
+	
+	oscbuf = p->oscbuf;
+	nzbuf = p->nzbuf;
+	
+	// if we're using the data from the last frame we shouldn't try to interpolate
+	if(frame == p->maxFr)
+	{
+		if(p->firstband == - 1)	//there is no noise data
+		{
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
+				oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
+				oscbuf++;
+			}
+		}
+		else
+		{
+			for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+			{
+				oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc);	//amp
+				oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc);	//freq
+				//noise
+				*nzbuf = *(p->nzdata + frame * (int)p->atshead->npartials + i);
+				nzbuf++;
+				oscbuf++;
+			}
+		}
+		
+		return;
+	}
+	frm1 = frm0 + p->frmInc;
+        frac = (double)(position - frame);
+	
+	if(p->firstband == - 1)	//there is no noise data
+	{
+		for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+		{
+			oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc) + frac * (*(frm1 + 1 + i * (int)p->partialinc) - *(frm0 + 1 + i * (int)p->partialinc));	//amp
+			oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc) + frac * (*(frm1 + 2 + i * (int)p->partialinc) - *(frm0 + 2 + i * (int)p->partialinc));	//freq
+			oscbuf++;
+		}
+	}
+	else
+	{
+		for(i = (int)*p->iptloffset; i < (int)*p->iptls; i += (int)*p->iptlincr)
+		{
+			oscbuf->amp = *(frm0 + 1 + i * (int)p->partialinc) + frac * (*(frm1 + 1 + i * (int)p->partialinc) - *(frm0 + 1 + i * (int)p->partialinc));	//amp
+			oscbuf->freq = *(frm0 + 2 + i * (int)p->partialinc) + frac * (*(frm1 + 2 + i * (int)p->partialinc) - *(frm0 + 2 + i * (int)p->partialinc));	//freq
+			//noise
+			*nzbuf = *(p->nzdata + frame * (int)p->atshead->npartials + i) + frac * (*(p->nzdata + (frame + 1) * (int)p->atshead->npartials + i) - *(p->nzdata + frame * (int)p->atshead->npartials + i));
+			nzbuf++;
+			oscbuf++;
+		}
+	}
+	
+	return;
+
+}
 /* the below is to allow this to be a plugin */
 
 GLOBALS *pcglob;

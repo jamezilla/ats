@@ -161,71 +161,34 @@ typedef struct _atscross
 
 }       ATSCROSS;       //modified from atsadd
 
-typedef struct _atsbufreadnz
-{
-        OPDS    h;
-        float   *ktimpnt, *ifileno, *ibands; // required inputs
-        float   *ibandoffset, *ibandincr; // optional arguments
-        MEMFIL  *mfp;
-        double  maxFr, frSiz, prFlg;
-        /* base Frame (in frameData0) and maximum frame on file, ptr to fr, size */
-        AUXCH   auxch;
-        float   *table; //store noise for later use
-        int     frmInc;         // amount to increment frame pointer to get to next frame
-        int     firstband;   // location of first wanted partial in the frame
-        int     bandinc;     // amount to increment pointer by to get at the next partial in a frame
-        int     mems;           // memory size of aux channel
-        double  timefrmInc;
-        float   MaxAmp;         // maximum amplitude in anaylsis file
-        double  *frPtr;         // pointer to the data (past the header)
-	ATSSTRUCT atshead;
-} ATSBUFREADNZ;
-
-typedef struct _atscrossnz
-{       OPDS    h;
-        float   *aoutput, *ktimpnt, *ifileno, *ifn, *kmyamp, *katsbufamp, *ibands; // audio output and k & i inputs
-        float   *ibandoffset, *ibandincr; // optional arguments
-        ATSBUFREADNZ *atsbufreadnz;
-        MEMFIL  *mfp;   // a pointer into the ATS file
-        FUNC    *ftp;     // pointer to table with wave to synthesize sound
-        AUXCH   auxch;
-        double  *frPtr;         // pointer to the data (past the header)
-        double  maxFr, prFlg;
-        int     frmInc;         // amount to increment frame pointer to get to next frame
-        double  timefrmInc;
-        double  winsize;        // size of windows in analysis file, used to compute RMS amplitude from energy in noise band
-        int     firstband;      // location of first wanted band in the frame
-        int     bandinc;
-        float   *buf;           // stores band information for passing data
-        float   MaxAmp;
-        // maximum amplitude in anaylsis file
-        float   *cosfreq;       // to create an array of noise
-        int     *rand;
-        long    *nphs;
-        float   *num1, *num2, *dfdmax;
-        float   *nfreq;
-        float   *oscphase;      // for creating noise
-	ATSSTRUCT atshead;
-}       ATSCROSSNZ;                     
-
 typedef struct _atssinnoi
 {       OPDS    h;
-        float   *aoutput, *xtimpnt, *xsinlev, *xnzlev, *xfmod, *ifileno, *ifn, *iptls; // audio output and k & i inputs
-        float   *iptloffset, *iptlincr; // optional arguments
+        float   *aoutput, *ktimpnt, *ksinamp, *knzamp, *kfreq, *ifileno, *iptls; // audio output and k & i inputs
+        float   *iptloffset, *iptlincr, *igatefun; // optional arguments
         
-	FUNC    *ftp, *AmpGateFunc;     // pointer to table with wave to synthesize sound
+	MEMFIL  *atsmemfile;   // a pointer into the ATS file
         AUXCH   auxch;
-        MEMFIL * atsmemfile;
         
 	double  maxFr;
-	int	prFlg;	//a flag used to indicate if we've steped out of the time range of the data, so we don't print too many warnings
+	int	prFlg;
+        int	memsize;
+	int	nzmemsize;
+	//double  winsize;        // size of windows in analysis file, used to compute RMS amplitude from energy in noise band
+	
+	double * datastart;
+	double * nzdata;
+	
+	int firstpartial;
+	int partialinc;
+	int firstband;
+        int     frmInc;         // amount to increment frame pointer to get to next frame
         double  timefrmInc;
-        double	MaxAmp;         // maximum amplitude in anaylsis file
-        char * filename;
-
-	int prevpartials;	//stores the partials of previous calls
-	ATS_DATA_LOC ** datap;
-        double  *oscphase;      // oscillator phase
-	ATS_DATA_LOC * buf;
-
+        
+	ATS_DATA_LOC * oscbuf;           // stores band information for passing data
+        
+	double  * nzbuf;           // stores band information for passing data
+        unsigned int	oscphase;       //the phase of all the oscilators
+        RANDIATS * randinoise;	// a pointer to the interpolated random noise info
+	ATSSTRUCT * atshead;
+	char * filename;
 }       ATSSINNOI;
