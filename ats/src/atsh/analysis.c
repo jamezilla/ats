@@ -389,16 +389,8 @@ GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidge
 //////////////////////////////////////////////////////
 void create_ana_dlg (void)
 {
-  GtkWidget *window1;
-  GtkWidget *table1;
-////////////////////
-  GtkWidget *the_label, *the_butt;
-///////////////////
-  GtkWidget *hseparator1;
-//////////////////
-  GtkWidget *optionmenu1_menu, *optionmenu2_menu;
-  GtkWidget *menuitem;
-//////////////////
+  GtkWidget *window1, *table1, *the_label, *the_butt, *hseparator1, *optionmenu1_menu, *optionmenu2_menu, *menuitem;
+
   entrys=(GtkWidget**)malloc(15*sizeof(GtkWidget*));
 
   window1 = gtk_window_new (GTK_WINDOW_TOPLEVEL);

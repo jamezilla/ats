@@ -371,7 +371,6 @@ GtkWidget *create_men_snd(char *label, int ID, GtkWidget *parent);
 void byte_swap_header(ATS_HEADER *hed, int flag);
 double byte_swap(double *in);
 void setres(char *pointer);
-void setaud(char *pointer);
 void setin(char *pointer);
 void setout(char *pointer);
 void atsin(char *pointer);

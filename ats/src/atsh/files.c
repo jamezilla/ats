@@ -6,13 +6,12 @@
 #include "atsh.h"
 
 GtkWidget *filew;
-char      *filt;
 GtkWidget *outlabel;
 GtkWidget *slabel;
-extern GtkWidget     *isfile_label;
- GtkWidget     *osfile_label;
-extern GtkWidget     *afile_label;
-extern GtkWidget     *rfile_label;
+extern GtkWidget *isfile_label;
+ GtkWidget *osfile_label;
+extern GtkWidget *afile_label;
+extern GtkWidget *rfile_label;
 extern char in_title[];
 extern char out_title[];
 extern char out_ats_title[];
@@ -56,15 +55,13 @@ GtkWidget *create_men_snd(char *label, int ID, GtkWidget *parent)
 ///////////////////////////////////////////////////////////
 double byte_swap(double *in)
 {
-  int size;
   double k;
   unsigned char *sw_in, *sw_out;
   double *out;
   
-  size = sizeof(double);
-  sw_out = (unsigned char*)malloc(size);
+  sw_out = (unsigned char*)malloc(sizeof(double)*sizeof(unsigned char));
       
-  k     = (double)in[0];
+  k = (double)in[0];
   sw_in = (unsigned char *)&k;
    
   sw_out[0] = sw_in[7];
@@ -76,7 +73,7 @@ double byte_swap(double *in)
   sw_out[6] = sw_in[1];
   sw_out[7] = sw_in[0];
  
-  out  =(double*)sw_out;
+  out = (double*)sw_out;
 
   return(*out);
 }
@@ -109,45 +106,26 @@ void byte_swap_header(ATS_HEADER *hed, int flag)
   hed->dur= byte_swap(&aux); 
   aux=hed->typ;
   hed->typ= byte_swap(&aux); 
-
-  return;
 }
 ///////////////////////////////////////////////////////////
 void choose_output(GtkWidget *widget, gpointer data)
 {
+  char str[32];
 
-  int menu=0;
-  char *str;
+  outype=GPOINTER_TO_INT(data);
 
-  str=(char*)malloc(32*sizeof(char));  
-  *str=0; 
- 
-  menu=GPOINTER_TO_INT(data);   
-  outype=menu;
-
-  if(outype==WAV16 || outype==WAV32 ) {
-    strcat(str,"*.wav");
-  }
-  if(outype==AIF16 || outype==AIF32 ) {
-    strcat(str,"*.aif");
-  }
-  if(outype==SND16 || outype==SND32 ) {
-    strcat(str,"*.snd");
-  }
+  if(outype==WAV16 || outype==WAV32 ) strcpy(str,"*.wav");
+  if(outype==AIF16 || outype==AIF32 ) strcpy(str,"*.aif");
+  if(outype==SND16 || outype==SND32 ) strcpy(str,"*.snd");
 
   gtk_file_selection_complete(GTK_FILE_SELECTION(filew),str);
-
-  //g_print("\n out=%d ", outype);
-
-  free(str);
-  return;
 }
 
 ///////////////////////////////////////////////////////////
 
-int   my_filelength(FILE *fpt)
+int my_filelength(FILE *fpt)
 {
-  int   size=0;
+  int size=0;
   fseek(fpt,0,SEEK_END);
   size=(int)ftell(fpt);
   fseek(fpt,0,SEEK_SET);
@@ -156,30 +134,26 @@ int   my_filelength(FILE *fpt)
 ///////////////////////////////////////////////////////////
 void set_filter(GtkWidget *widget, gpointer data)
 {
-  
-  if(tbflag==TRUE) {
+  if(tbflag) {
     gtk_file_selection_complete(GTK_FILE_SELECTION(filew),(gchar*)data);
     tbflag=FALSE;
-  }
-  else {
+  } else {
     gtk_file_selection_complete(GTK_FILE_SELECTION(filew),"*.*");
     tbflag=TRUE;
   }
-  
-  return;
 }
 ///////////////////////////////////////////////////////////
 /*
  * --- Filename, remember it.
  */
-static   char        *title = NULL; 
+char *title = NULL; 
 
-char *GetExistingFile ()
-{
-  gtk_label_set_text(GTK_LABEL(slabel),title);
-  return (title);
+// char *GetExistingFile (void)
+// {
+//   gtk_label_set_text(GTK_LABEL(slabel),title);
+//   return (title);
     
-}
+// }
     
 /*
  * FileOk
@@ -192,16 +166,16 @@ void FileOk (GtkWidget *w, gpointer data)
 {
   char *sTempFile;
   typFileSelectionData *localdata;
-  GtkWidget *filew;
+  //  GtkWidget *filew;
  
   localdata = (typFileSelectionData *) data;
-  filew = localdata->filesel;
+  //  filew = localdata->filesel;
 
   /* --- Which file? --- */
-  sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (filew));
+  sTempFile = gtk_file_selection_get_filename (GTK_FILE_SELECTION (localdata->filesel));
 
   /* --- Free old memory --- */
-  if (title) g_free (title);
+  if (title != NULL) g_free(title);
 
   /* --- Duplicate the string --- */
   title = g_strdup (sTempFile); 
@@ -224,7 +198,7 @@ void FileOk (GtkWidget *w, gpointer data)
   }
 
   /* --- Close the dialog --- */
-  gtk_widget_destroy (filew);
+  gtk_widget_destroy (localdata->filesel);
 }
 
 /*
@@ -238,7 +212,7 @@ void destroy (GtkWidget *widget, gpointer *data)
     
   /* --- Remove the focus. --- */
   gtk_grab_remove (widget);
-  g_free(filt);
+  //  g_free(filt);
   g_free (data);
 }
 
@@ -254,7 +228,9 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
   typFileSelectionData *data;
   GtkWidget *filterbutton;
   GtkWidget *optionmenu1,  *optionmenu1_menu, *menuitem;
-  filew=NULL;
+  char *filt, str[40];
+
+  //  filew=NULL;
     
   tbflag=TRUE;
 
@@ -273,27 +249,29 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 		      (GtkSignalFunc) destroy, data);
 
   /////////////////////////////////////////////////////////////////
-    *filt=0;
-    strcat(filt, "show only ");
-    strcat(filt, filter);
-    strcat(filt, " files / show all");
+    //    *filt=0;
+    strcpy(str, "show only ");
+    strcat(str, filter);
+    strcat(str, " files / show all");
    
     if (strcmp(filter,"*.ats")==0) {
-      filterbutton= gtk_button_new_with_label (filt);
-      *filt=0;
+      filterbutton= gtk_button_new_with_label (str);
+      //      *filt=0;
       filt = g_strdup (filter); 
       gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
       gtk_widget_show(filterbutton);
       gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt);
+      g_free(filt);
     }
 
     if (strcmp(filter,"*.apf")==0) {
-      filterbutton= gtk_button_new_with_label (filt);
-      *filt=0;
+      filterbutton= gtk_button_new_with_label (str);
+      //      *filt=0;
       filt = g_strdup (filter); 
       gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
       gtk_widget_show(filterbutton);
       gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt);
+      g_free(filt);
     }
 
     if (strcmp(filter,"*.wav")==0 || strcmp(filter,"*.aif")==0 || strcmp(filter,"*.snd")==0 ) {
@@ -319,12 +297,13 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 	gtk_widget_set_usize (optionmenu1, 100, 25);
       }
       else {  //residual output soundfile can only be WAV
-	filterbutton= gtk_button_new_with_label (filt);
-	*filt=0;
+	filterbutton= gtk_button_new_with_label (str);
+        //	*filt=0;
 	filt = g_strdup (filter); 
 	gtk_box_pack_start (GTK_BOX(GTK_FILE_SELECTION(filew)->action_area), filterbutton, TRUE, TRUE, 0);
 	gtk_widget_show(filterbutton);
 	gtk_signal_connect (GTK_OBJECT (filterbutton), "clicked",GTK_SIGNAL_FUNC(set_filter),(char *)filt); 
+        g_free(filt);
       }
     }
     ////////////////////////////////////////////////////////////
@@ -351,97 +330,53 @@ void GetFilename (char *sTitle, void (*callback) (char *),char *selected, char *
 /////////////////////////////////////////////////////////////////////////////
 void filesel(GtkWidget *widget,char *what)
 {
-  
-  filt=(char*)malloc(64 * sizeof(char));
-  
-  if(strcmp(what,"atsin")==0){
+  if(strcmp(what,"atsin")==0)
     GetFilename("Select ATS file",atsin,ats_title,"*.ats",ATS_INSEL);  
-  }  
   
-  if(strcmp(what,"atsave")==0){
+  if(strcmp(what,"atsave")==0)
     GetFilename("Save ATS file",atsout,ats_title,"*.ats",ATS_INSEL);  
-  }
-  
 
-  if(strcmp(what,"insel")==0){    
+  if(strcmp(what,"insel")==0)
     GetFilename("Select Input Soundfile for analysis",setin,in_title,"*",SND_INSEL);
-  }
   
   if(strcmp(what,"outsel")==0){
-    if(outype==WAV16 || outype==WAV32 ) {
+    if(outype==WAV16 || outype==WAV32 )
       GetFilename("Select Output Soundfile",setout,out_title,"*.wav",SND_OUTSEL);  
-    }
-    if(outype==AIF16 || outype==AIF32 ) {
+    if(outype==AIF16 || outype==AIF32 )
       GetFilename("Select Output Soundfile",setout,out_title,"*.aif",SND_OUTSEL);  
-    }
-    if(outype==SND16 || outype==SND32) {
+    if(outype==SND16 || outype==SND32) 
       GetFilename("Select Output Soundfile",setout,out_title,"*.snd",SND_OUTSEL);  
-    }
-
   }
  
-  if(strcmp(what,"atsoutsel")==0){    
+  if(strcmp(what,"atsoutsel")==0)
     GetFilename("Select output ats file",setout_ats,out_ats_title,"*.ats",ATS_OUTSEL);  
-  }
-
-  if(strcmp(what,"getap")==0){    
+  if(strcmp(what,"getap")==0) 
     GetFilename("Load Analysis Parameters file",getap,apf_title,"*.apf",APF_INSEL);  
-  }
-  if(strcmp(what,"savap")==0){    
+  if(strcmp(what,"savap")==0)    
     GetFilename("Save Analysis Parameters file",savap,apf_title,"*.apf",APF_OUTSEL);  
-  } 
-  
-  if(strcmp(what,"res_sel")==0){    
+  if(strcmp(what,"res_sel")==0)
     GetFilename("Select Residual Output Soundfile",setres,res_title,"*.wav",RES_OUTSEL);  
-  } 
-
-  return;
 }
 /////////////////////////////////////////////////////////////////////////////
 void setres(char *pointer)
 {
-  *res_title=0;
-
-  strcat(res_title,pointer);
-
-  return;
-}
-/////////////////////////////////////////////////////////////////////////////
-void setaud(char *pointer)
-{
-
-  return;
+  strcpy(res_title,pointer);
 }
 /////////////////////////////////////////////////////////////////////////////
 void setin(char *pointer)
 {
-  *in_title=0;
-
-  strcat(in_title,pointer);
-  //g_print ("%s\n", pointer);
-
-  return;
+  strcpy(in_title,pointer);
 }
 /////////////////////////////////////////////////////////////////////////////
 void setout(char *pointer)
 {
-  *out_title=0;
-
-  strcat(out_title,pointer);
-  //g_print ("%s\n", pointer);
-
-  return;
+  strcpy(out_title,pointer);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 void setout_ats(char *pointer)
 {
-  *out_ats_title=0;
-
-  strcat(out_ats_title,pointer);
-  //g_print ("%s\n", pointer);
-
-  return;
+  strcpy(out_ats_title,pointer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,11 +391,7 @@ void atsin(char *pointer)
   need_byte_swap=FALSE;  
   *info=0;
 
-  //if(filew){gtk_widget_hide(GTK_WIDGET(filew));}
-
-  if((pundo=fopen(undo_file,"wb"))!=0) {
-    fclose(pundo);    
-  }
+  if((pundo=fopen(undo_file,"wb"))!=0) fclose(pundo);    
   else {
     Popup("WARNING: Could not delete the UNDO backup file, UNDO disabled");
     undo=FALSE;
@@ -628,22 +559,15 @@ void atsin(char *pointer)
     vertex1=vertex2=FALSE;
  
 
-    if (FILE_HAS_PHASE) {
-      sparams.upha=TRUE;
-    }
-    else{
-      sparams.upha=FALSE;
-    }
+    if (FILE_HAS_PHASE) sparams.upha=TRUE;
+    else sparams.upha=FALSE;
  
     //Default initialization of synthesis data...
     sparams.sr  = 44100.; 
     sparams.amp = 1.;
-    if(FILE_HAS_NOISE) {
-      sparams.ramp = 1.;
-    }
-    else {
-      sparams.ramp = 0.;
-    }
+    if(FILE_HAS_NOISE) sparams.ramp = 1.;
+    else sparams.ramp = 0.;
+
     sparams.freq = 1.;
     sparams.max_stretch= 1.;
     sparams.beg = 0.;
@@ -652,11 +576,11 @@ void atsin(char *pointer)
 
     //initialization of smart selection data
 
-    sdata->from=  1;
+    sdata->from = 1;
     sdata->to=(int)atshed.par; 
-    sdata->step=  1;
-    sdata->tres=  -96.;
-    sdata->met =  FALSE;
+    sdata->step = 1;
+    sdata->tres = -96.;
+    sdata->met = FALSE;
 
     floaded=TRUE;
     init_scalers(TRUE); 
@@ -670,17 +594,11 @@ void atsin(char *pointer)
     gtk_adjustment_set_value(GTK_ADJUSTMENT(valadj), valexp * 100.);  
  
 
-    if(tWedit == NULL) {
-      tWedit=create_edit_curve(TIM_EDIT, timenv);
-    }
-    else {
-      set_time_env(timenv, TRUE);
-    }
+    if(tWedit == NULL) tWedit=create_edit_curve(TIM_EDIT, timenv);
+    else set_time_env(timenv, TRUE);
     show_file_name(pointer);
     fclose(atsfin);
     draw_pixm(); 
- 
-    return;
 }
 /////////////////////////////////////////////////////////////////////////////
 void atsout(char *pointer)
@@ -688,8 +606,8 @@ void atsout(char *pointer)
   int i,x, length;
   double aux;
 
-  *ats_title=0;
-  strcat(ats_title,pointer);
+  //  *ats_title=0;
+  strcpy(ats_title,pointer);
   //g_print ("%s\n", pointer);
 
   if((atsfin=fopen(ats_title,"wb"))==0) {
@@ -729,21 +647,18 @@ void atsout(char *pointer)
   length=my_filelength(atsfin); 
   //g_print ("%d bytes written OK \n", length);
   fclose(atsfin);
-
-
-  return;
 }
 ////////////////////////////////////////////////////////////////////////////
 void getap(char *pointer)
 {
   FILE *in;
 
-  *apf_title=0;
-  strcat(apf_title,pointer);    
+  //  *apf_title=0;
+  strcpy(apf_title,pointer);    
 
   if((in=fopen(apf_title,"rb"))==0) {
-    *info=0; 
-    strcat(info, "Could not open ");
+    //    *info=0; 
+    strcpy(info, "Could not open ");
     strcat(info, apf_title);
     Popup(info);
     *apf_title=0;
@@ -751,8 +666,8 @@ void getap(char *pointer)
   }
   
   if(fread(&anargs,1,sizeof(ANARGS),in)==0) {
-    *info=0; 
-    strcat(info, "Error: Could not read ");
+    //    *info=0; 
+    strcpy(info, "Error: Could not read ");
     strcat(info, apf_title);
     Popup(info);
     *apf_title=0;
@@ -762,19 +677,18 @@ void getap(char *pointer)
   update_aparameters();
 
   fclose(in);
-  return;
 }
 ////////////////////////////////////////////////////////////////////////////
 void savap(char *pointer)
 {
   FILE *out;
 
-  *apf_title=0;
-  strcat(apf_title,pointer);    
+  //  *apf_title=0;
+  strcpy(apf_title,pointer);    
   
   if((out=fopen(apf_title,"wb"))==0) {
-    *info=0; 
-    strcat(info, "Error: Could not open ");
+    //    *info=0; 
+    strcpy(info, "Error: Could not open ");
     strcat(info, apf_title);
     Popup(info);
     *apf_title=0;
@@ -782,8 +696,8 @@ void savap(char *pointer)
   }
 
   if(fwrite(&anargs,1,sizeof(ANARGS),out)==0) {
-    *info=0; 
-    strcat(info, "Error: Could not write on ");
+    //    *info=0; 
+    strcpy(info, "Error: Could not write on ");
     strcat(info, apf_title);
     Popup(info);
     *apf_title=0;
@@ -791,5 +705,4 @@ void savap(char *pointer)
     return;
   }
   fclose(out);
-  return;
 }
