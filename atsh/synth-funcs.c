@@ -7,6 +7,16 @@ Oscar Pablo Di Liscia / Juan Pampin
 #include "my_curve.h"
 
 #define ENG_RMS(val, ws) sqrt((double)val/(ws * (float)ATSA_NOISE_VARIANCE))
+#define SYNTH_RES  1
+#define SYNTH_DET  2
+#define SYNTH_BOTH 3
+
+typedef struct { //the data for the randi UG
+  int   size; //size of the frame in samples this should be sr/freq.
+  float a1;   //first amplitude value
+  float a2;   //next  amplitude value
+  int   cnt;  //sample position counter
+} RANDI;
 
 void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
 float ioscilator(float amp,float frec,int op,float *oscpt);
@@ -25,105 +35,84 @@ extern float *sine_table;
 extern char *out_tittle;
 extern char *ats_tittle;
 
-///////////////////////////////////////////////////////////////////
+
 //randi output random numbers in the range of 1,-1
 //getting a new number at frequency freq and interpolating
 //the intermediate values.
 void randi_setup(float sr, float freq, RANDI *radat)
 {
-  long int first, second;
-
-  first =random();
-  second=random();
-
   radat->size= (int) (sr / freq) - 1;
-  radat->a1  = first;
-  radat->a2  = second;
+  radat->a1  = (float)random();
+  radat->a2  = (float)random();
   radat->cnt = 0;
-
-  return;
 }
-///////////////////////////////////////////////////////////////////
+
 float randi(RANDI *radat)
 {
-  long int second;
-  float output;
+  //float output;
 
   if(radat->cnt == radat->size) { //get a new random value
     radat->a1  = radat->a2; 
-    second=random();
-    radat->a2  = second;
+    radat->a2  = (float)random();
     radat->cnt = 0;
   }
 
-  output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
+  //output=(float) (((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
   radat->cnt++;
-  return(1. - ((float)(output /(long int)RAND_MAX) * 2.));
+  return(1. - ((((((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1) /RAND_MAX) * 2.));
 }
-///////////////////////////////////////////////////////////////////
+
 float randif(RANDI *radat, float freq)
 {
-  long int second;
-  float output;
+  //float output;
 
   if(radat->cnt == radat->size) { //get a new random value
     radat->a1  = radat->a2; 
-    second=random();
-
-    radat->a2  = second;
+    radat->a2  = (float)random();
     radat->cnt = 0;
     radat->size= (int) (sparams->sr / freq) - 1;
   }
 
-  output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
+  //output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
   radat->cnt++;
-  
-  return(1. - ((float)(output /(long int)RAND_MAX) * 2.));
+  return(1. - ((((((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1) /RAND_MAX) * 2.));
+  //return(1. - ((float)(output /(long int)RAND_MAX) * 2.));
 }
-///////////////////////////////////////////////////////////////////
+
 void make_sine_table() 
 {
-int i;
-float theta=0.;
-float incr = TWOPI / (float)TABLE_LENGTH;
+  int i;
+  float theta=0.;
+  float incr = TWOPI / (float)TABLE_LENGTH;
 
-sine_table= (float *) malloc(TABLE_LENGTH * sizeof(float));
+  sine_table= (float *) malloc(TABLE_LENGTH * sizeof(float));
 
- for(i=0; i < TABLE_LENGTH; i++) {
+  for(i=0; i < TABLE_LENGTH; i++) {
     sine_table[i] = sin(theta);
     theta +=incr;
+  }
+}
 
-}
-return;
-}
-////////////////////////////////////////////////////////////////////
 float ioscilator(float amp,float frec,int op, float *oscpt)
 {
+  float output;
+  float incr = frec * tl_sr; 
+  int   v2=0;
 
-float output;
-float incr = frec * tl_sr; 
-int   v2=0;
-
-//LINEAR INTERPOLATION
-v2=(int)(oscpt[op] + 1.);
-while ( v2 >= TABLE_LENGTH ) {
-   v2 -=TABLE_LENGTH;
+  //LINEAR INTERPOLATION
+  v2=(int)(oscpt[op] + 1.);
+  while (v2 >= TABLE_LENGTH) v2 -=TABLE_LENGTH;
+  output=amp *  (sine_table[(int)oscpt[op]] + 	
+                 ((sine_table[(int)v2] - sine_table[(int)oscpt[op]]) * ( oscpt[op] - (int)oscpt[op] )));
+  
+  oscpt[op]  += incr;
+  
+  while ( oscpt[op] >= (float)TABLE_LENGTH ) oscpt[op] -=(float)TABLE_LENGTH;
+  while ( oscpt[op] < 0. ) oscpt[op] +=(float)TABLE_LENGTH;
+  
+  return(output);
 }
-output=amp *  (sine_table[(int)oscpt[op]] + 	
-      ((sine_table[(int)v2] - sine_table[(int)oscpt[op]]) * ( oscpt[op] - (int)oscpt[op] )));
 
-oscpt[op]  += incr;
-
- while ( oscpt[op] >= (float)TABLE_LENGTH ) {
-   oscpt[op] -=(float)TABLE_LENGTH;
- }
- while ( oscpt[op] < 0. ) {
-   oscpt[op] +=(float)TABLE_LENGTH;
- }
-
-return(output);
-}
-////////////////////////////////////////////////////////////////////
 //Synthesizes a Buffer using phase interpolation
 void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps)
 {
@@ -144,90 +133,68 @@ void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float 
   scale = TWOPI / ((float)TABLE_LENGTH - 1.);/*must take it out from here...*/
 
   for(k = 0; k < (int)frame_samps; k++) { 
- 
     phase = INTERP_PHASE(p1,f1,alpha,beta,time);
     new_phase = (phase >= TWOPI  ? phase - TWOPI : phase);
     index=(int)((new_phase / TWOPI)*(float)TABLE_LENGTH - 1.);
-    while ( index >= TABLE_LENGTH ) {
-      index -=TABLE_LENGTH;
-    }
-     while ( index < 0 ) {
-      index +=TABLE_LENGTH;
-    }
+    while ( index >= TABLE_LENGTH ) index -=TABLE_LENGTH;
+    while ( index < 0 ) index +=TABLE_LENGTH;
     out = sine_table[index] * amp;
-
-    /////////////////////////////////////////////////////////
     time +=t_inc;
     amp  +=a_inc;
     frbuf[k] +=out; //buffer adds each partial at each pass
-
   }
-
-  return;
 }
-////////////////////////////////////////////////////////////////////
+
 //Synthesizes a Buffer NOT using phase interpolation
 void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt)
 {
-int k;
-float  a_inc, f_inc, amp, frec;
-float out=0.;
+  int k;
+  float  a_inc, f_inc, amp, frec;
+  float out=0.;
 
-amp  =  a1;
-frec =  f1;
-a_inc= (a2 - a1) / frame_samps;
-f_inc= (f2 - f1) / frame_samps;
-
-if(a1==0. && a2==0.) return; //no synthesis if no amplitude
-
-//we should do this conditional on the main loop... 
- if (sparams->allorsel == FALSE) {
-
-   for(k = 0; k < (int)frame_samps; k++) { 
- 
-     out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
-     amp  +=a_inc;
-     frec +=f_inc;
-     frbuf[k] +=out; //buffer adds each partial at each pass
-
-   }
-   return;
- }
- else {
-   if(selected[op] == TRUE) { 
-     for(k = 0; k < (int)frame_samps; k++) { 
-       out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
-       amp  +=a_inc;
-       frec +=f_inc;
-       frbuf[k] +=out; //buffer adds each partial at each pass
-
-     }
-   }
- }
-
-return;
+  if(a1!=0. || a2!=0.) {  //no synthesis if no amplitude
+    amp  =  a1;
+    frec =  f1;
+    a_inc= (a2 - a1) / frame_samps;
+    f_inc= (f2 - f1) / frame_samps;
+  
+    //we should do this conditional on the main loop... 
+    if (sparams->allorsel == FALSE)
+      for(k = 0; k < (int)frame_samps; k++) { 
+        out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
+        amp  +=a_inc;
+        frec +=f_inc;
+        frbuf[k] +=out; //buffer adds each partial at each pass
+      }
+    else 
+      if(selected[op] == TRUE)
+        for(k = 0; k < (int)frame_samps; k++) { 
+          out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
+          amp  +=a_inc;
+          frec +=f_inc;
+          frbuf[k] +=out; //buffer adds each partial at each pass
+        }
+  }
 }
-////////////////////////////////////////////////////////////////////
+
 void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata)
 {
-  int k;
+  int k, samps=(int)frame_samps;
   float  a_inc, amp;
   float out=0.;
   
-  amp  =  a1;
-  a_inc= (a2 - a1) / frame_samps;
-  
-  if(a1==0. && a2==0.) return; //no synthesis if no amplitude
-  
-  for(k = 0; k < (int)frame_samps; k++) { 
-    out  = ioscilator(amp,freq,op,oscpt);  
-    amp  += a_inc;
-    frbuf[k] += out * sparams->ramp * randi(rdata); 
+  if(a1!=0. || a2!=0.) { //no synthesis if no amplitude
+    amp  =  a1;
+    a_inc= (a2 - a1) / frame_samps;
+    
+    for(k=0; k<samps; k++) { 
+      out  = ioscilator(amp,freq,op,oscpt);  
+      amp  += a_inc;
+      frbuf[k] += out * sparams->ramp * randi(rdata); 
+    }
   }
- 
-  return;  
 }
-////////////////////////////////////////////////////////////////////
+
 void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata)
 {
   int k;
@@ -236,57 +203,50 @@ void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op
   float  out=0., rsig;
   float  rf1, rf2, rf_inc, rfreq;
   
-  rf1   =(f1< 500.? 50. : f1 * .05);
-  rf2   =(f2< 500.? 50. : f2 * .05);
-  rf_inc=(rf2 - rf1) / frame_samps;
-  rfreq = rf1;
-  amp   =  a1;
-  frec  =  f1;
-  res   =  r1;
-  a_inc = (a2 - a1) / frame_samps;
-  f_inc = (f2 - f1) / frame_samps;
-  r_inc = (r2 - r1) / frame_samps;
-   
-
-  if(a1==0. && a2==0.) return; //no synthesis if no amplitude
+  if(a1!=0. || a2!=0.) { //no synthesis if no amplitude
+    rf1   =(f1< 500.? 50. : f1 * .05);
+    rf2   =(f2< 500.? 50. : f2 * .05);
+    rf_inc=(rf2 - rf1) / frame_samps;
+    rfreq = rf1;
+    amp   =  a1;
+    frec  =  f1;
+    res   =  r1;
+    a_inc = (a2 - a1) / frame_samps;
+    f_inc = (f2 - f1) / frame_samps;
+    r_inc = (r2 - r1) / frame_samps;
   
-  //we should do this conditional on the main loop... 
-  if (sparams->allorsel == FALSE) {
-    
-    for(k = 0; k < (int)frame_samps; k++) { 
-      out = ioscilator(1.0,frec,op,oscpt);  
-      rsig = res*randif(rdata,rfreq);
-      frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 
-      amp   +=  a_inc;
-      frec  +=  f_inc;
-      res   +=  r_inc;
-      rfreq += rf_inc;
-    }
-    return;
-  }
-  else {
-    if(selected[op] == TRUE) { 
+    //we should do this conditional on the main loop... 
+    if (sparams->allorsel == FALSE)
       for(k = 0; k < (int)frame_samps; k++) { 
-	out =ioscilator(1.0,frec,op,oscpt);  
-	rsig = res*randif(rdata,rfreq);
-	frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 	
-	amp   +=  a_inc;
-	frec  +=  f_inc;
-	res   +=  r_inc;
-	rfreq += rf_inc;
+        out = ioscilator(1.0,frec,op,oscpt);  
+        rsig = res*randif(rdata,rfreq);
+        frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 
+        amp   +=  a_inc;
+        frec  +=  f_inc;
+        res   +=  r_inc;
+        rfreq += rf_inc;
       }
+    else {
+      if(selected[op] == TRUE) 
+        for(k = 0; k < (int)frame_samps; k++) { 
+          out =ioscilator(1.0,frec,op,oscpt);  
+          rsig = res*randif(rdata,rfreq);
+          frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 	
+          amp   +=  a_inc;
+          frec  +=  f_inc;
+          res   +=  r_inc;
+          rfreq += rf_inc;
+        }
     }
   }
-  
-  return;
 }
-////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////
 /////////THIS IS THE MAIN SYNTHESIS LOOP////////////////////////////
 ////////////////////////////////////////////////////////////////////
 void do_synthesis()
 {
-  int i,x,z,j,maxlen, todo, curr, next, sflag;
+  int i,x,z,j,maxlen, todo, curr, next, sflag=0;
   float dt=0., rfreq;
   float frame_samps, bw=.1;
   int   ptout;
@@ -324,28 +284,18 @@ void do_synthesis()
   set_output_type(&format, &header);
 
   if((ptout=mus_sound_open_output(out_tittle,(int)sparams->sr,1,format,header,"created by ATSH"))==-1) {
-    Popup("ERROR: could open Output Soundfile for writing");  
+    Popup("ERROR: could not open Output Soundfile for writing");  
     return;
   }
+
   //do residual data transfer
-  if (FILE_HAS_NOISE) {
-    for(i=0; i<(int)atshed->fra; ++i) {
-      band_energy_to_res(ats_sound, i);
-    }
-  }
+  if (FILE_HAS_NOISE)
+    for(i=0; i<(int)atshed->fra; ++i) band_energy_to_res(ats_sound, i);
+
   //NOW CHECK WHAT TO DO...
-  if(sparams->ramp == 0.) { //deterministic synthesis only
-    sflag=SYNTH_DET;
-  }
-  else {
-    if(sparams->amp == 0.) { //residual synthesis only
-      sflag=SYNTH_RES;
-    }
-    else { //residual and deterministic synthesis
-      sflag=SYNTH_BOTH;
-    }
-  }
-  
+  if(sparams->amp > 0.) sflag |= SYNTH_DET;  //deterministic synthesis only
+  if(sparams->ramp > 0.) sflag |= SYNTH_RES; //residual synthesis only
+
   tl_sr = (float)TABLE_LENGTH / sparams->sr; //needed for ioscilator...
   nbp   = get_nbp(timenv->curve);
   tdata = (TIME_DATA*)malloc(nbp * sizeof(TIME_DATA));
@@ -378,11 +328,8 @@ void do_synthesis()
     
     //locate the frame for the beggining and end of segments
     if(i == 0){
-      if(dify < 0.)
-	bframe= locate_frame((int)atshed->fra-1,cyval, dify);
-      else {
-	bframe= locate_frame(0,cyval, dify);
-      }	
+      if(dify < 0.) bframe= locate_frame((int)atshed->fra-1,cyval, dify);
+      else bframe= locate_frame(0,cyval, dify);
     }
     eframe= locate_frame(bframe, nyval, dify);
     //collect the data to be used
@@ -409,20 +356,16 @@ void do_synthesis()
   //ALLOCATE AND CLEAN AUDIO BUFFERS
   maxlen= (int)ceil(maxtim * sparams->sr * sparams->max_stretch); 
   frbuf = (float *) malloc(maxlen * sizeof(float));
-  for(z = 0; z < maxlen; ++z) {
-    frbuf[z]=0.;
-  }
+  for(z = 0; z < maxlen; ++z) frbuf[z]=0.;
   obuf[0] = (mus_sample_t *)calloc(maxlen, sizeof(mus_sample_t));
 
   switch(sflag) { //see which memory resources do we need and allocate them
-  case SYNTH_DET: {
+  case SYNTH_DET: 
     dospt = (float *) malloc( (int)atshed->par * sizeof(float));
-    for(z=0; z<(int)atshed->par; ++z) {
-      dospt[z]=0.;
-    }
+    for(z=0; z<(int)atshed->par; ++z) dospt[z]=0.;
     break;
-  }
-  case SYNTH_RES: {
+    
+  case SYNTH_RES: 
     rospt = (float *) malloc((int)ATSA_CRITICAL_BANDS * sizeof(float)); 
     rarray= (RANDI *) malloc((int)ATSA_CRITICAL_BANDS * sizeof(RANDI));
     for(z=0; z<(int)ATSA_CRITICAL_BANDS; ++z) {
@@ -431,18 +374,17 @@ void do_synthesis()
       rospt[z]=0.;
     }
     break;
-  }
-  case SYNTH_BOTH: {
+
+  case SYNTH_BOTH: 
     dospt = (float *) malloc( (int)atshed->par * sizeof(float));
     rarray= (RANDI *) malloc( (int)atshed->par * sizeof(RANDI));
     for(z=0; z<(int)atshed->par; ++z) {
-      rfreq=(ats_sound->frq[z][tdata[0].from] < 500.? 50. : 
-	     ats_sound->frq[z][tdata[0].from] * bw);
+      rfreq=(ats_sound->frq[z][tdata[0].from] < 500.? 50. : ats_sound->frq[z][tdata[0].from] * bw);
       randi_setup(sparams->sr,rfreq,&rarray[z]);
       dospt[z]=0.;
     }
     break;  
-  }
+
   }
   //NOW DO IT...
   written=0;
@@ -519,20 +461,17 @@ void do_synthesis()
   free(frbuf);
   
   switch (sflag) {
-  case SYNTH_DET:{
+  case SYNTH_DET:
     free(dospt);
     break;
-  }
-  case SYNTH_RES: {
+  case SYNTH_RES: 
     free(rospt);
     free(rarray);
     break;
-  }
-  case SYNTH_BOTH: {
+  case SYNTH_BOTH: 
     free(dospt);
     free(rarray);
     break;
-  }  
   }
   
   mus_sound_close_output(ptout,written * mus_data_format_to_bytes_per_sample(format));
@@ -546,12 +485,8 @@ void do_synthesis()
   free(obuf[0]);
   free(tdata);
   EndProgress();
-  return;
 }
 
-////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////
 int locate_frame(int from_frame, float time, float dif)
 {
 //Assuming that the duration of each frame may be different, we
@@ -560,12 +495,9 @@ int locate_frame(int from_frame, float time, float dif)
   int i=from_frame, frame=0;
   
   //These two cases are obvious
-  if(time <= ats_sound->time[0][1]){
-    return(0);
-  }
-  if(time >= ats_sound->time[0][(int)atshed->fra-1]){
-    return((int)atshed->fra-1);
-  }
+  if(time <= ats_sound->time[0][1]) return(0);
+  if(time >= ats_sound->time[0][(int)atshed->fra-1]) return((int)atshed->fra-1);
+
   //not obvious cases...
   do{
     if(dif >= 0.) {
@@ -574,8 +506,7 @@ int locate_frame(int from_frame, float time, float dif)
 	break;
       }
       ++i;
-    }
-    if(dif < 0.) {
+    } else {
       if(ats_sound->time[0][i] <= time) {
 	frame=i;
 	break;
@@ -590,10 +521,9 @@ int locate_frame(int from_frame, float time, float dif)
 
   return(frame);
 }
-///////////////////////////////////////////////////////////////	      
+
 void set_output_type(int *format, int *header)
 {
-
   switch(outype) {
   case WAV16:
     *format=MUS_LSHORT;
@@ -618,8 +548,6 @@ void set_output_type(int *format, int *header)
    *format=MUS_BFLOAT;
    *header=MUS_NEXT; 
    break; 
-}
-
-  return;
+  }
 }
 

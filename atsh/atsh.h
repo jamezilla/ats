@@ -94,9 +94,9 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define VIEWING_RES   view_type==RES_VIEW
 #define VIEWING_DET   view_type==SON_VIEW || view_type==SEL_ONLY
 
-#define SYNTH_RES  1
-#define SYNTH_DET  2
-#define SYNTH_BOTH 3
+// #define SYNTH_RES  1
+// #define SYNTH_DET  2
+// #define SYNTH_BOTH 3
 
 //MACROS
 /*
@@ -210,12 +210,12 @@ typedef struct { //the data for the smart selection menu
 
 } SMSEL_DATA;
 
-typedef struct { //the data for the randi UG
-  int   size; //size of the frame in samples this should be sr/freq.
-  float a1;   //first amplitude value
-  float a2;   //next  amplitude value
-  int   cnt;  //sample position counter
-} RANDI;
+// typedef struct { //the data for the randi UG
+//   int   size; //size of the frame in samples this should be sr/freq.
+//   float a1;   //first amplitude value
+//   float a2;   //next  amplitude value
+//   int   cnt;  //sample position counter
+// } RANDI;
 
 //GLOBAL VARIABLES
 
