@@ -213,11 +213,11 @@ void create_sel_dlg (void)
   gtk_table_set_row_spacings (GTK_TABLE (table1), 5);
 
 /////////LABELS/////////////////////////////////////////////////
-  lfrom=create_label("From Partial #",     0,1,0,1, window1 ,table1, "1");
-  lto  =create_label("To   Partial #",     0,1,1,2, window1 ,table1, "2");
-  lstep=create_label("Jump by       ",     0,1,2,3, window1 ,table1, "3");
-  ltres=create_label("Amp. Treshold(dB)",  0,1,3,4, window1 ,table1, "4");
-  lmet =create_label("Amp. Evaluation" ,   0,1,4,5, window1 ,table1, "5");
+  lfrom=create_label("From Partial #",     0,1,0,1, window1 ,table1);
+  lto  =create_label("To   Partial #",     0,1,1,2, window1 ,table1);
+  lstep=create_label("Jump by       ",     0,1,2,3, window1 ,table1);
+  ltres=create_label("Amp. Treshold(dB)",  0,1,3,4, window1 ,table1);
+  lmet =create_label("Amp. Evaluation" ,   0,1,4,5, window1 ,table1);
 
 ///////////////BUTTONS////////////////////   
   

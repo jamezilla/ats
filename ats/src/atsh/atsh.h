@@ -402,9 +402,9 @@ GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which);
 void do_analysis (GtkWidget *widget, gpointer data);
 void cancel_dialog (GtkWidget *widget, gpointer data);
 GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, 
-			GtkWidget *window ,GtkWidget *table, char *ID);
+			GtkWidget *window ,GtkWidget *table);
 GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID, float value, char *strbuf, int isint, int width);
-GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID);
+//GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID);
 void create_ana_dlg (void);
 void get_ap(GtkWidget *widget, gpointer *data);
 void sav_ap(GtkWidget *widget, gpointer *data);

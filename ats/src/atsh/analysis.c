@@ -154,56 +154,23 @@ GtkWidget *create_itemen(char *label, int ID, GtkWidget *parent, int which)
 void set_aparam(GtkWidget *widget, gpointer data)
 {
   gchar *str = gtk_editable_get_chars(GTK_EDITABLE(widget),0,12);
-
   switch(GPOINTER_TO_INT(data)) {
-
-  case 1:
-    anargs.start=atof(str);
-    break;
-  case 2:  
-    anargs.duration=atof(str);
-    break;
-  case 3:  
-    anargs.lowest_freq= atof(str);
-    break;
-  case 4:
-    anargs.highest_freq=atof(str);
-    break;
-  case 5:  
-    anargs.freq_dev=atof(str);
-    break;
-  case 6:
-    anargs.win_cycles=atof(str);
-    break;
-  case 7:
-    anargs.hop_size=atof(str);
-    break;
-  case 8:
-    anargs.lowest_mag=atof(str);
-    break;
-  case 10:
-    anargs.track_len=atoi(str);
-    break;
-  case 11:
-    anargs.min_seg_len=atoi(str);
-    break;
-  case 12:
-    anargs.min_gap_len=atoi(str);
-    break;  
-  case 13:
-    anargs.SMR_thres=atof(str);
-    break;
-  case 14:
-    anargs.min_seg_SMR=atof(str);
-    break;
-  case 15:
-    anargs.last_peak_cont=atof(str);
-    break;
-  case 16:
-    anargs.SMR_cont=atof(str);
-    break;
+  case 1: anargs.start=atof(str); break;
+  case 2: anargs.duration=atof(str); break;
+  case 3: anargs.lowest_freq= atof(str); break;
+  case 4: anargs.highest_freq=atof(str); break;
+  case 5: anargs.freq_dev=atof(str); break;
+  case 6: anargs.win_cycles=atof(str); break;
+  case 7: anargs.hop_size=atof(str); break;
+  case 8: anargs.lowest_mag=atof(str); break;
+  case 10: anargs.track_len=atoi(str); break;
+  case 11: anargs.min_seg_len=atoi(str); break;
+  case 12: anargs.min_gap_len=atoi(str); break;  
+  case 13: anargs.SMR_thres=atof(str); break;
+  case 14: anargs.min_seg_SMR=atof(str); break;
+  case 15: anargs.last_peak_cont=atof(str); break;
+  case 16: anargs.SMR_cont=atof(str); break;
   }
-
   g_free(str);
 }
 ///////////////////////////////////////////////////////
@@ -293,52 +260,25 @@ void do_analysis (GtkWidget *widget, gpointer data)
 
 }
 //////////////////////////////////////////////////////
-GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID)
+GtkWidget *create_label(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table)
 {
-  GtkWidget *label;
-  char str[32] = "label";
-  //  str=(char*)malloc(32*sizeof(char));
-  
-  //  *str=0;
-  //strcat(str, "label");
-  strcat(str, ID);
-  
-  label = gtk_label_new (NULL);
-  gtk_widget_ref (label);
-  gtk_object_set_data_full (GTK_OBJECT (window), str, label,
-                            (GtkDestroyNotify) gtk_widget_unref); 
- //gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_LEFT);
+  GtkWidget *label = gtk_label_new (winfo);
   gtk_label_set_line_wrap(GTK_LABEL (label),TRUE);
-  gtk_label_set_text(GTK_LABEL (label),winfo);
-  gtk_widget_show (label);
   gtk_table_attach (GTK_TABLE (table), label, p1, p2, p3, p4,
                     (GtkAttachOptions) (0),
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
- 
-  //  free(str);
+  gtk_widget_show (label);
   return(label);
 }
 //////////////////////////////////////////////////////
-GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table, char *ID)
+GtkWidget *create_button(char *winfo, int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidget *table)
 {
-  GtkWidget *button;
-  char str[32] = "button";
-  //  str=(char*)malloc(32*sizeof(char));
-  
-  //  *str=0;
-  //  strcat(str, "button");
-  strcat(str, ID);
-  
-  button = gtk_button_new_with_label (winfo);
-  gtk_widget_ref (button);
-  gtk_object_set_data_full (GTK_OBJECT (window), str, button,
-                            (GtkDestroyNotify) gtk_widget_unref);
-  gtk_widget_show (button);
+  GtkWidget *button = gtk_button_new_with_label (winfo);
   gtk_table_attach (GTK_TABLE (table), button, p1, p2, p3, p4,
                     (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 0, 0);
   gtk_widget_set_usize (button, 130, 32);
-  //free(str);
+  gtk_widget_show (button);
   return(button);
 }
 //////////////////////////////////////////////////////
@@ -348,16 +288,12 @@ GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidge
   char str[32] = "entry";
   int flag;
 
-  //  str=(char*)malloc(32*sizeof(char));
-  
-  //  *str=0;
-  //  strcat(str, "entry");
   strcat(str, ID);
 
   entry = gtk_entry_new ();
-  gtk_widget_ref (entry);
-  gtk_object_set_data_full (GTK_OBJECT (window), str, entry,
-                            (GtkDestroyNotify) gtk_widget_unref);
+//   gtk_widget_ref (entry);
+//   gtk_object_set_data_full (GTK_OBJECT (window), str, entry,
+//                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_editable_set_editable(GTK_EDITABLE(entry), TRUE);
   gtk_widget_set_usize (entry, width, 22);
   gtk_widget_show (entry);
@@ -366,13 +302,10 @@ GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidge
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   if(!strbuf) {  //is a number
     
-    *str=0;
-    if(isint==0) { //is a float
-      sprintf(str, "%9.4f",value);
-    }
-    else { //is int
-      sprintf(str, "%d",(int)value);
-    }
+    if(isint) sprintf(str, "%d",(int)value); //is int
+    else sprintf(str, "%9.4f",value); //is a float
+
+
     gtk_entry_set_editable (GTK_ENTRY (entry),TRUE);
     gtk_entry_set_text(GTK_ENTRY (entry), str);
     flag=atoi(ID);
@@ -383,138 +316,137 @@ GtkWidget *create_entry(int p1,int p2,int p3,int p4, GtkWidget *window ,GtkWidge
     gtk_entry_set_text(GTK_ENTRY (entry), strbuf);
   }  
   
-  //  free(str);
   return(entry);
 }
 //////////////////////////////////////////////////////
 void create_ana_dlg (void)
 {
-  GtkWidget *window1, *table1, *the_label, *the_butt, *hseparator1, *optionmenu1_menu, *optionmenu2_menu, *menuitem;
+  GtkWidget *window, *table, *the_label, *the_butt, *hseparator1, *optionmenu1_menu, *optionmenu2_menu, *menuitem;
 
   entrys=(GtkWidget**)malloc(15*sizeof(GtkWidget*));
 
-  window1 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_object_set_data (GTK_OBJECT (window1), "window1", window1);
-  gtk_container_set_border_width (GTK_CONTAINER (window1), 10);
-  gtk_window_set_title (GTK_WINDOW (window1),("Analysis Parameters "));
-  gtk_window_set_position (GTK_WINDOW (window1), GTK_WIN_POS_CENTER);
-  gtk_window_set_default_size (GTK_WINDOW (window1), 180, 180);
-  gtk_window_set_policy (GTK_WINDOW (window1), FALSE, FALSE, TRUE);
-  gtk_signal_connect (GTK_OBJECT (window1), "destroy",
-			GTK_SIGNAL_FUNC (destroy_smartsel),window1);
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_object_set_data (GTK_OBJECT (window), "window", window);
+  gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+  gtk_window_set_title (GTK_WINDOW (window),("Analysis Parameters "));
+  gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
+  gtk_window_set_default_size (GTK_WINDOW (window), 180, 180);
+  gtk_window_set_policy (GTK_WINDOW (window), FALSE, FALSE, TRUE);
+  gtk_signal_connect (GTK_OBJECT (window), "destroy",
+			GTK_SIGNAL_FUNC (destroy_smartsel),window);
 
-  table1 = gtk_table_new (16, 4, FALSE);
-  gtk_widget_ref (table1);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "table1", table1,
+  table = gtk_table_new (16, 4, FALSE);
+  gtk_widget_ref (table);
+  gtk_object_set_data_full (GTK_OBJECT (window), "table", table,
                             (GtkDestroyNotify) gtk_widget_unref);
-  gtk_widget_show (table1);
-  gtk_container_add (GTK_CONTAINER (window1), table1);
-  gtk_table_set_row_spacings (GTK_TABLE (table1), 2);
+  gtk_widget_show (table);
+  gtk_container_add (GTK_CONTAINER (window), table);
+  gtk_table_set_row_spacings (GTK_TABLE (table), 2);
 
 /////////LABELS////////////////////////////////////
-  the_label=create_label("Start(secs.)",              0,1,0,1,window1,table1,"1");
-  the_label=create_label("Duration(secs.)",           0,1,1,2,window1,table1,"2");
-  the_label=create_label("Lowest Freq.(Hz.)",         0,1,2,3,window1,table1,"3");
-  the_label=create_label("Highest Freq.(Hz.)",        0,1,3,4,window1,table1,"4");
-  the_label=create_label("Frequency Deviation(Ratio)",0,1,4,5,window1,table1,"5");
+  the_label=create_label("Start(secs.)",              0,1,0,1,window,table);
+  the_label=create_label("Duration(secs.)",           0,1,1,2,window,table);
+  the_label=create_label("Lowest Freq.(Hz.)",         0,1,2,3,window,table);
+  the_label=create_label("Highest Freq.(Hz.)",        0,1,3,4,window,table);
+  the_label=create_label("Frequency Deviation(Ratio)",0,1,4,5,window,table);
   the_label=create_label("Number of Cycles of Lowest Frequency\nto fit in Analysis Window",         
-		                                      0,1,5,6,window1,table1,"6");
+		                                      0,1,5,6,window,table);
   the_label=create_label("Hop size(ratio of Window size)",
-		                                      0,1,6,7,window1,table1,"7"); 
-  the_label=create_label("Amplitude threshold (dB)",  0,1,7,8,window1,table1,"8");
+		                                      0,1,6,7,window,table); 
+  the_label=create_label("Amplitude threshold (dB)",  0,1,7,8,window,table);
  
-  the_label=create_label("Window Type",               0,1,8,9,window1,table1,"9");
+  the_label=create_label("Window Type",               0,1,8,9,window,table);
   
 
-  the_label=create_label("Track length(frames)",     2,3,0,1,window1,table1,"10"); /*int*/
-  the_label=create_label("Min. Seg. length(frames)", 2,3,1,2,window1,table1,"11"); /*int*/
-  the_label=create_label("Min. Gap length(frames)",  2,3,2,3,window1,table1,"12"); /*int*/
-  the_label=create_label("SMR threshold(dB SPL)",    2,3,3,4,window1,table1,"13"); 
-  the_label=create_label("Min. Seg. SMR(dB SPL)",    2,3,4,5,window1,table1,"14");
-  the_label=create_label("Last peak contribution",   2,3,5,6,window1,table1,"15");
-  the_label=create_label("SMR contribution",         2,3,6,7,window1,table1,"16");
-  the_label=create_label("ATS output file type",     2,3,7,8,window1,table1,"17");
+  the_label=create_label("Track length(frames)",     2,3,0,1,window,table); /*int*/
+  the_label=create_label("Min. Seg. length(frames)", 2,3,1,2,window,table); /*int*/
+  the_label=create_label("Min. Gap length(frames)",  2,3,2,3,window,table); /*int*/
+  the_label=create_label("SMR threshold(dB SPL)",    2,3,3,4,window,table); 
+  the_label=create_label("Min. Seg. SMR(dB SPL)",    2,3,4,5,window,table);
+  the_label=create_label("Last peak contribution",   2,3,5,6,window,table);
+  the_label=create_label("SMR contribution",         2,3,6,7,window,table);
+  the_label=create_label("ATS output file type",     2,3,7,8,window,table);
  
   ////////////////////////////////////////////////////////////////////////////////
 
-  isfile_label=create_entry (1,4,12,13,window1,table1,"18",0.0,in_title,0,405);
-  afile_label=create_entry (1,4,13,14,window1,table1,"19",0.0,out_ats_title,0,405);
-  rfile_label=create_entry (1,4,14,15,window1,table1,"20",0.0,res_title,0,405);
+  isfile_label=create_entry (1,4,12,13,window,table,"18",0.0,in_title,0,405);
+  afile_label=create_entry (1,4,13,14,window,table,"19",0.0,out_ats_title,0,405);
+  rfile_label=create_entry (1,4,14,15,window,table,"20",0.0,res_title,0,405);
 
-  //statlab=create_label("READY",0,1,10,11,window1,table1,"18");
+  //statlab=create_label("READY",0,1,10,11,window,table);
 /////////ENTRYS////////////////////////////////////
 
-  entrys[0] =create_entry (1,2,0,1,window1,table1,"1",anargs.start,NULL,0,90);
-  entrys[1] =create_entry (1,2,1,2,window1,table1,"2",anargs.duration,NULL,0,90);
-  entrys[2] =create_entry (1,2,2,3,window1,table1,"3",anargs.lowest_freq,NULL,0,90);
-  entrys[3] =create_entry (1,2,3,4,window1,table1,"4",anargs.highest_freq,NULL,0,90);
-  entrys[4] =create_entry (1,2,4,5,window1,table1,"5",anargs.freq_dev,NULL,0,90);
-  entrys[5] =create_entry(1,2,5,6,window1,table1, "6" ,anargs.win_cycles,NULL,0,90);
-  entrys[6] =create_entry(1,2,6,7,window1,table1, "7" ,anargs.hop_size,NULL,0,90); 
-  entrys[7] =create_entry (1,2,7,8,window1,table1,"8",anargs.lowest_mag,NULL,0,90);
+  entrys[0] =create_entry (1,2,0,1,window,table,"1",anargs.start,NULL,0,90);
+  entrys[1] =create_entry (1,2,1,2,window,table,"2",anargs.duration,NULL,0,90);
+  entrys[2] =create_entry (1,2,2,3,window,table,"3",anargs.lowest_freq,NULL,0,90);
+  entrys[3] =create_entry (1,2,3,4,window,table,"4",anargs.highest_freq,NULL,0,90);
+  entrys[4] =create_entry (1,2,4,5,window,table,"5",anargs.freq_dev,NULL,0,90);
+  entrys[5] =create_entry(1,2,5,6,window,table, "6" ,anargs.win_cycles,NULL,0,90);
+  entrys[6] =create_entry(1,2,6,7,window,table, "7" ,anargs.hop_size,NULL,0,90); 
+  entrys[7] =create_entry (1,2,7,8,window,table,"8",anargs.lowest_mag,NULL,0,90);
 
-  entrys[8] =create_entry(3,4,0,1,window1,table1,"10" ,anargs.track_len,NULL,1,90); /*int*/
-  entrys[9] =create_entry(3,4,1,2,window1,table1,"11",anargs.min_seg_len,NULL,1,90); /*int*/
-  entrys[10]=create_entry(3,4,2,3,window1,table1,"12",anargs.min_gap_len,NULL,1,90); /*int*/
-  entrys[11]=create_entry(3,4,3,4,window1,table1,"13",anargs.SMR_thres,NULL,0,90); 
-  entrys[12]=create_entry(3,4,4,5,window1,table1,"14",anargs.min_seg_SMR,NULL,0,90);
-  entrys[13]=create_entry(3,4,5,6,window1,table1,"15",anargs.last_peak_cont,NULL,0,90);
-  entrys[14]=create_entry(3,4,6,7,window1,table1,"16",anargs.SMR_cont,NULL,0,90);
+  entrys[8] =create_entry(3,4,0,1,window,table,"10" ,anargs.track_len,NULL,1,90); /*int*/
+  entrys[9] =create_entry(3,4,1,2,window,table,"11",anargs.min_seg_len,NULL,1,90); /*int*/
+  entrys[10]=create_entry(3,4,2,3,window,table,"12",anargs.min_gap_len,NULL,1,90); /*int*/
+  entrys[11]=create_entry(3,4,3,4,window,table,"13",anargs.SMR_thres,NULL,0,90); 
+  entrys[12]=create_entry(3,4,4,5,window,table,"14",anargs.min_seg_SMR,NULL,0,90);
+  entrys[13]=create_entry(3,4,5,6,window,table,"15",anargs.last_peak_cont,NULL,0,90);
+  entrys[14]=create_entry(3,4,6,7,window,table,"16",anargs.SMR_cont,NULL,0,90);
 
 
 /////////SEPARATORS//////////////////////////////// 
   hseparator1 = gtk_hseparator_new ();
   gtk_widget_ref (hseparator1);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "hseparator1", hseparator1,
+  gtk_object_set_data_full (GTK_OBJECT (window), "hseparator1", hseparator1,
                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hseparator1);
-  gtk_table_attach (GTK_TABLE (table1), hseparator1, 0, 4, 9, 10,
+  gtk_table_attach (GTK_TABLE (table), hseparator1, 0, 4, 9, 10,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 5);
   hseparator1 = gtk_hseparator_new ();
   gtk_widget_ref (hseparator1);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "hseparator1", hseparator1,
+  gtk_object_set_data_full (GTK_OBJECT (window), "hseparator1", hseparator1,
                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hseparator1);
-  gtk_table_attach (GTK_TABLE (table1), hseparator1, 0, 4, 11, 12,
+  gtk_table_attach (GTK_TABLE (table), hseparator1, 0, 4, 11, 12,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 5);
 /////////BUTTONS/////////////////////////////////// 
-  the_butt=create_button("Set input Soundfile",0,1,12,13,window1,table1,"1");
+  the_butt=create_button("Set input Soundfile",0,1,12,13,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt),"clicked",GTK_SIGNAL_FUNC (select_in_soundfile),entrys);
-  the_butt=create_button("Load Parameters"    ,1,2,10,11,window1,table1,"2");
+  the_butt=create_button("Load Parameters"    ,1,2,10,11,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt),"clicked",GTK_SIGNAL_FUNC (get_ap),entrys);
-  the_butt=create_button("Save Parameters"    ,2,3,10,11,window1,table1,"3");
+  the_butt=create_button("Save Parameters"    ,2,3,10,11,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt),"clicked",GTK_SIGNAL_FUNC (sav_ap),entrys);
-  the_butt=create_button("Set output ATS file",0,1,13,14,window1,table1,"4");
+  the_butt=create_button("Set output ATS file",0,1,13,14,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt),"clicked",GTK_SIGNAL_FUNC (select_out_atsfile),entrys);
-  the_butt=create_button("Set Default Values" ,3,4, 10, 11,window1,table1,"5");
+  the_butt=create_button("Set Default Values" ,3,4, 10, 11,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt),"clicked",GTK_SIGNAL_FUNC (set_defaults),entrys);
-  the_butt=create_button("Do Analysis"        ,1,2,16,17,window1,table1,"6");
-   gtk_signal_connect (GTK_OBJECT (the_butt) , "clicked",GTK_SIGNAL_FUNC (do_analysis),window1);
-  the_butt=create_button("Forget It"          ,2,3,16,17,window1,table1,"7");
-   gtk_signal_connect (GTK_OBJECT (the_butt) , "clicked",GTK_SIGNAL_FUNC (cancel_dialog),window1);
-  the_butt=create_button("Set Residual Output",0,1,14,15,window1,table1,"8");
+  the_butt=create_button("Do Analysis"        ,1,2,16,17,window,table);
+   gtk_signal_connect (GTK_OBJECT (the_butt) , "clicked",GTK_SIGNAL_FUNC (do_analysis),window);
+  the_butt=create_button("Forget It"          ,2,3,16,17,window,table);
+   gtk_signal_connect (GTK_OBJECT (the_butt) , "clicked",GTK_SIGNAL_FUNC (cancel_dialog),window);
+  the_butt=create_button("Set Residual Output",0,1,14,15,window,table);
    gtk_signal_connect (GTK_OBJECT (the_butt) , "clicked",GTK_SIGNAL_FUNC (filesel),"res_sel");
 ///////////////////////////////////////////////////////
   hseparator1 = gtk_hseparator_new ();
   gtk_widget_ref (hseparator1);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "hseparator1", hseparator1,
+  gtk_object_set_data_full (GTK_OBJECT (window), "hseparator1", hseparator1,
                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (hseparator1);
-  gtk_table_attach (GTK_TABLE (table1), hseparator1, 0, 4, 15, 16,
+  gtk_table_attach (GTK_TABLE (table), hseparator1, 0, 4, 15, 16,
                     (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 5); 
 
-  gtk_grab_add (window1);
-  gtk_widget_show (window1);
+  gtk_grab_add (window);
+  gtk_widget_show (window);
 ////////WINDOW TYPE OPTION MENU///////////////////////////////////////
   optionmenu1 = gtk_option_menu_new ();
   gtk_widget_ref (optionmenu1);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "optionmenu1", optionmenu1,
+  gtk_object_set_data_full (GTK_OBJECT (window), "optionmenu1", optionmenu1,
                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (optionmenu1);
-  gtk_table_attach (GTK_TABLE (table1), optionmenu1, 1, 2, 8, 9,
+  gtk_table_attach (GTK_TABLE (table), optionmenu1, 1, 2, 8, 9,
                     (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 5, 0);
   
@@ -531,10 +463,10 @@ void create_ana_dlg (void)
 ////////ATS FILE TYPE OPTION MENU///////////////////////////////////////
   optionmenu2 = gtk_option_menu_new ();
   gtk_widget_ref (optionmenu2);
-  gtk_object_set_data_full (GTK_OBJECT (window1), "optionmenu2", optionmenu2,
+  gtk_object_set_data_full (GTK_OBJECT (window), "optionmenu2", optionmenu2,
                             (GtkDestroyNotify) gtk_widget_unref);
   gtk_widget_show (optionmenu2);
-  gtk_table_attach (GTK_TABLE (table1), optionmenu2, 3, 4, 7, 8,
+  gtk_table_attach (GTK_TABLE (table), optionmenu2, 3, 4, 7, 8,
                     (GtkAttachOptions) (0),
                     (GtkAttachOptions) (0), 5, 0);
   
