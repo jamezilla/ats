@@ -16,6 +16,11 @@ or to allow byte swapping (using big endian files on little endian machines,
 and visa versa): 
 gcc -DBYTESWAP -shared -o atsread.pd_linux atsread.c
 
+for Mac OS X (with "m_pd.h" from the PD source in the same directory):
+cc -DBYTESWAP -bundle -flat_namespace -undefined suppress -o atsread.pd_darwin atscread.c
+
+(byte swapping should allow Mac users to use the cl.ats and crt.ats files that come with atsread)
+
 Then put the atsread.pd_linux file into your path somewhere (most likely your
 "externals" directory) and put the help-*.pd, cl.ats and crt.ats in your help
 directory (which should also be in your pd path hopefully).
