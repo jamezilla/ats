@@ -427,22 +427,22 @@ void atsaddset(ATSADD *p){
 	switch ( (int)(atsh->type))
         {
                 case 1 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
-                                p->partialinc = 2;
+                                p->partialinc = 2 * (int)(*p->iptlincr);
                                 p->frmInc = (int)(atsh->npartials * 2 + 1);
                                 break;
 
                 case 2 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
-                                p->partialinc = 3;
+                                p->partialinc = 3 * (int)(*p->iptlincr);
                                 p->frmInc = (int)(atsh->npartials * 3 + 1);
                                 break;
 
                 case 3 :        p->firstpartial = (int)(1 + 2 * (*p->iptloffset));
-                                p->partialinc = 2;
+                                p->partialinc = 2 * (int)(*p->iptlincr);
                                 p->frmInc = (int)(atsh->npartials * 2 + 26);
                                 break;
 
                 case 4 :        p->firstpartial = (int)(1 + 3 * (*p->iptloffset));
-                                p->partialinc = 3;
+                                p->partialinc = 3 * (int)(*p->iptlincr);
                                 p->frmInc = (int)(atsh->npartials * 3 + 26);
                                 break;
 
@@ -492,8 +492,7 @@ void atsadd(ATSADD *p){
 		if (p->prFlg)
 		{
                 	p->prFlg = 0;
-			sprintf(errmsg, "ATSADD: only positive time pointer values are allowed, setting to zero\n");
-			initerror(errmsg);
+			fprintf(stderr, "ATSADD: only positive time pointer values are allowed, setting to zero\n");
 		}
         }
         else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
@@ -502,8 +501,7 @@ void atsadd(ATSADD *p){
                 if (p->prFlg)
                 {
                         p->prFlg = 0;   // set to false
-			sprintf(errmsg, "ATSADD: time pointer out of range, truncating to last frame\n");
-			initerror(errmsg);
+			fprintf(stderr, "ATSADD: time pointer out of range, truncating to last frame\n");
                 }
         }
 	else
@@ -659,30 +657,40 @@ float randifats(RANDIATS *radat, float freq)
 }
 
 void FetchADDNZbands(
-        double	*input[],
+        ATSADDNZ *p,
         double	*buf,
         float	position
         )
 {
-        float   frac;           // the distance in time we are between frames
-        int     frame1, frame2;
+        double   frac;           // the distance in time we are between frames
+	double * frm0, * frm1;
+        int     frame;
         int     i;      // for the for loop
+	int     firstband = p->firstband;
+	
+        frame = (int)position;
+	frm0 = p->datastart + frame * p->frmInc;
+	
+	// if we're using the data from the last frame we shouldn't try to interpolate
+	if(frame == p->maxFr)
+	{
+		for(i = 0; i < 25; i++)
+			buf[i] = frm0[firstband + i]; // output value 
+		return;
+	}
+	
+	frm1 = frm0 + p->frmInc;
+        frac = (double)(position - frame);
 
-        frame1 = (int)position;
-        frac = position - frame1;
-	frame1 = frame1 * 25;	//the actual index of the array (a 1d array faking a 2d array)
-	frame2 = frame1 + 25;	//get to the next frame
         for(i = 0; i < 25; i++)
-        {
-		buf[i] = *input[frame1 + i] + (double)frac * (*(input[frame2 + i]) - *(input[frame1 + i])); // calc energy
-        }
+		buf[i] = frm0[firstband + i] + frac * (frm1[firstband + i] - frm0[firstband + i]); // calc energy
+	return;
 }
 
 void atsaddnzset(ATSADDNZ *p){
 	char atsfilname[MAXNAME];
 	ATSSTRUCT * atsh;
-	int i, j, frmInc, firstband;
-	double * temppnt;
+	int i;
 	
 	/* copy in ats file name */
         if (*p->ifileno == sstrcod){
@@ -698,60 +706,37 @@ void atsaddnzset(ATSADDNZ *p){
                 initerror(errmsg);
                 return;
         }
+	//point the header pointer at the header data
+	atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
 	
-	// allocate space so we can store the data for later use
-	if(p->auxch.auxp == NULL || strcmp(p->filename, atsfilname) != 0)
+	//make sure that this is an ats file & byte endianness is correct
+	if (atsh->magic != 123)
 	{
-		// copy in the file name
-		if(p->filename != NULL)
-		{
-			mfree(p->filename);
-			p->filename = NULL;
-		}
-		p->filename = (char *)mmalloc(sizeof(char) * strlen(atsfilname));
-		strcpy(p->filename, atsfilname);
-		
-		//point the header pointer at the header data
-		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
-	        
-		//make sure that this is an ats file & byte endianness is correct
-		if (atsh->magic != 123)
-		{
-        	        sprintf(errmsg, "ATSADDNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
-                	initerror(errmsg);
-                	return;
-        	}
-		
-		// make sure that this file contains noise
-		if(atsh->type != 4 && atsh->type != 3)
-		{
-			if (atsh->type < 5)
-				sprintf(errmsg, "ATSADDNZ: This file type contains no noise");
-			else
-				sprintf(errmsg, "ATSADDNZ: This file type has not been implemented in this code yet.");
-			initerror(errmsg);
-			return;
-		}
+                sprintf(errmsg, "ATSADDNZ: either %s is not an ATS file or the byte endianness is wrong", atsfilname);
+               	initerror(errmsg);
+               	return;
+        }
+	// make sure that this file contains noise
+	if(atsh->type != 4 && atsh->type != 3)
+	{
+		if (atsh->type < 5)
+			sprintf(errmsg, "ATSADDNZ: This file type contains no noise");
+		else
+			sprintf(errmsg, "ATSADDNZ: This file type has not been implemented in this code yet.");
+		initerror(errmsg);
+		return;
+	}
 
-		auxalloc((int)((atsh->nfrms) * 25 * (sizeof(double *))), &p->auxch);
-		
-		p->datap = (double **) (p->auxch.auxp);
-		//get past the last partial in the last frame of the data pointer;
-		
-		p->maxFr = atsh->nfrms - 1;
-		p->timefrmInc = atsh->nfrms / atsh->dur;
-		p->winsize = (float)atsh->winsz;
-	}
-	else
-	{
-		//point the header pointer at the header data
-		atsh = (ATSSTRUCT *)p->atsmemfile->beginp;
-	}
+	// point the data pointer to the correct partial
+	p->datastart = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
+	p->maxFr = atsh->nfrms - 1;
+	p->timefrmInc = atsh->nfrms / atsh->dur;
+	p->winsize = (float)atsh->winsz;
 		
 	// make sure partials are in range
         if( (int)(*p->ibandoffset + *p->ibands * *p->ibandincr)  > 25 || (int)(*p->ibandoffset) < 0)
         {
-                sprintf(errmsg, "ATSADDNZ: Band(s) out of range, max band allowed is #25");
+                sprintf(errmsg, "ATSADDNZ: Band(s) out of range, max band allowed is 25");
                 initerror(errmsg);
                 return;
         }
@@ -759,28 +744,18 @@ void atsaddnzset(ATSADDNZ *p){
 	// point the data pointer to the correct partials
 	switch ( (int)(atsh->type))
         {
-                case 3 :        firstband = 1 + 2 * (int)(atsh->npartials);
-                                frmInc = (int)(atsh->npartials * 2 + 26);
+                case 3 :        p->firstband = 1 + 2 * (int)(atsh->npartials);
+                                p->frmInc = (int)(atsh->npartials * 2 + 26);
                                 break;
                 
-                case 4 :        firstband = 1 + 3 * (int)(atsh->npartials);
-                                frmInc = (int)(atsh->npartials * 3 + 26);
+                case 4 :        p->firstband = 1 + 3 * (int)(atsh->npartials);
+                                p->frmInc = (int)(atsh->npartials * 3 + 26);
                                 break;
                 
-                default:        sprintf(errmsg, "Type either has no noise or is not implemented (only type 3 and 4 work now)");
+                default:        sprintf(errmsg, "ATSADDNZ: Type either has no noise or is not implemented (only type 3 and 4 work now)");
                                 initerror(errmsg);
                                 return;
         }
-	p->frmInc = frmInc;
-	temppnt = (double *)(p->atsmemfile->beginp + sizeof(ATSSTRUCT));
-	for(i = 0; i < (int)(atsh->nfrms); i++)
-	{
-		for(j = 0; j < 25; j++)
-		{
-			p->datap[j + i * 25] = (temppnt + firstband + j);
-		}
-		temppnt += frmInc;
-	}
 	
 	// save bandwidths for creating noise bands
 	p->nfreq[0] = 100;
@@ -859,12 +834,6 @@ void atsaddnz(ATSADDNZ *p){
 	int synthme;
 	int nsynthed;
 
-	if (p->auxch.auxp == NULL)
-	{
-		initerror("ATSADDNZ: not intialized");
-		return;
-	}
-
 	// make sure time pointer is within range
 	if ( (frIndx = *(p->ktimpnt) * p->timefrmInc) < 0 )
         {
@@ -872,18 +841,16 @@ void atsaddnz(ATSADDNZ *p){
 		if (p->prFlg)
 		{
                 	p->prFlg = 0;
-			sprintf(errmsg, "ATSADDNZ: only positive time pointer values are allowed, setting to zero\n");
-			initerror(errmsg);
+			fprintf(stderr, "ATSADDNZ: only positive time pointer values are allowed, setting to zero\n");
 		}
         }
-        else if (frIndx >= p->maxFr) // if we're trying to get frames past where we have data
+        else if (frIndx > p->maxFr) // if we're trying to get frames past where we have data
         {
-                frIndx = (float)p->maxFr - 1.0;
+                frIndx = (float)p->maxFr;
                 if (p->prFlg)
                 {
                         p->prFlg = 0;   // set to false
-			sprintf(errmsg, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
-			initerror(errmsg);
+			fprintf(stderr, "ATSADDNZ: time pointer out of range, truncating to last frame\n");
                 }
         }
 	else
@@ -891,7 +858,7 @@ void atsaddnz(ATSADDNZ *p){
 	
 	buf = p->buf;
 	
-	FetchADDNZbands(p->datap, p->buf, frIndx);
+	FetchADDNZbands(p, p->buf, frIndx);
 	
 	// set local pointer to output and initialize output to zero
 	ar = p->aoutput;
@@ -901,6 +868,7 @@ void atsaddnz(ATSADDNZ *p){
    	
 	synthme = (int)*p->ibandoffset;
 	nsynthed = 0;
+	
 	for (i = 0; i < 25; i++)
 	{	
 		// do we even have to synthesize it?

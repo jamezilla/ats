@@ -101,17 +101,16 @@ typedef struct _atsaddnz
         float   *ibandoffset, *ibandincr; // optional arguments
         
 	MEMFIL  *atsmemfile;   // a pointer into the ATS file
-        FUNC    *AmpGateFunc;     // pointer to table with wave to synthesize sound
-        AUXCH   auxch;
         
-        double  maxFr;
+	double  maxFr;
 	int	prFlg;
         int     frmInc;         // amount to increment frame pointer to get to next frame
         double  timefrmInc;
         double  winsize;        // size of windows in analysis file, used to compute RMS amplitude from energy in noise band
-	char * filename;
-	double ** datap;
 	
+	double * datastart;
+	double firstband;
+
         double  buf[25];           // stores band information for passing data
         double   phaseinc[25];       // to create an array of noise
         unsigned int	oscphase;       //the phase of all the oscilators
