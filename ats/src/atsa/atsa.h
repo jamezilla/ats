@@ -418,8 +418,12 @@ void ats_save(ATS_SOUND *sound, FILE *outfile, float SMR_thres, int type);
  * resfile: path to residual file 
  */
 void tracker_init (ANARGS *anargs, char *soundfile);
-void tracker (ANARGS *anargs, int frame_n);
-ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile);
+void tracker_fft (ANARGS *anargs, int frame_n);
+void tracker_dct (ANARGS *anargs, int frame_n);
+ATS_SOUND *tracker_sound (ANARGS *anargs);
+void tracker_residual(ANARGS *anargs, char *resfile, ATS_SOUND *sound);
+void tracker_free (void);
+//ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile);
 
 /* utilities.c */
 
@@ -460,7 +464,7 @@ void optimize_sound(ANARGS *anargs, ATS_SOUND *sound);
  * win_samps: pointer to array of analysis windows center times
  * file_sampling_rate: sampling rate of analysis file
  */
-void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate);
+void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate);
 
 /* residual-analysis.c */
 

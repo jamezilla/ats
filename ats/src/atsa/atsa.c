@@ -28,14 +28,15 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
   /* call tracker */
   tracker_init (anargs, soundfile);
   for (frame_n=0; frame_n<anargs->frames; frame_n++) {
-    tracker(anargs, frame_n);
+    tracker_fft(anargs, frame_n);
   }
-  sound = tracker_finish(anargs, resfile);
+  sound = tracker_sound(anargs);
+  tracker_residual(anargs, resfile, sound);
+  tracker_free();
   /* save sound */
   if(sound != NULL) {
-    fprintf(stderr,"saving ATS data...");
+    fprintf(stderr,"saving ATS data...\n");
     ats_save(sound, outfile, anargs->SMR_thres, anargs->type);
-    fprintf(stderr, "done!\n");
   }
   else{
     /* file I/O error */

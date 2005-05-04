@@ -272,16 +272,16 @@ void do_analysis (GtkWidget *widget, gpointer data)
 
   /* call tracker */
   fprintf(stderr, "tracking...\n");
-
   tracker_init (&anargs, in_title);
   StartProgress("Tracking Spundfile...",FALSE);
   for (frame_n=0; frame_n<anargs.frames; frame_n++) {
-    tracker(&anargs, frame_n);
+    tracker_fft(&anargs, frame_n);
     UpdateProgress(frame_n+1, anargs.frames);
   }
-  sound = tracker_finish(&anargs, res_title);
+  sound = tracker_sound(&anargs);
+  tracker_residual(&anargs, res_title, sound);
+  tracker_free();
   EndProgress();
-
   /* save sound */
   if(sound != NULL) {
     fprintf(stderr,"done!\n");

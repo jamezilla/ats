@@ -11,7 +11,7 @@ double compute_aux(double pha_1, double pha, double frq_1, int buffer_size, int 
 double compute_alpha(double aux, double frq_1, double frq, int buffer_size);
 double compute_beta(double aux, double frq_1, double frq, int buffer_size);
 double interp_phase(double pha_1, double frq_1, double alpha, double beta, int i);
-void read_frame(mus_sample_t **fil, int fil_len, int samp_1, int samp_2, double *in_buffer);
+void read_frame(double *audio, int fil_len, int samp_1, int samp_2, double *in_buffer);
 void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p2, double *buffer, int frame_samps);
 
 
@@ -55,7 +55,7 @@ double interp_phase(double pha_1, double frq_1, double alpha, double beta, int i
 /* read_frame
  * ==========
  * reads a frame from the input file
- * fil: pointer to an array with sound data
+ * audio: pointer to an array with sound data
  * fil_len: length of datas in samples
  * samp_1: first sample number in frame
  * samp_2: last sample number in frame
@@ -63,16 +63,16 @@ double interp_phase(double pha_1, double frq_1, double alpha, double beta, int i
  * which is filled out by the function
  * NOTE: caller should allocate memory for buffer
  */
-void read_frame(mus_sample_t **fil, int fil_len, int samp_1, int samp_2, double *in_buffer)
+void read_frame(double *audio, int fil_len, int samp_1, int samp_2, double *in_buffer)
 {
   int i, index, samps = samp_2 - samp_1;
-  mus_sample_t tmp;
-  //  samps = samp_2 - samp_1;
+  double tmp;
+
   for(i=0; i<samps; i++) {
     index = samp_1 + i;
-    if(index < fil_len) tmp = fil[0][index];
-    else tmp = (mus_sample_t)0.0;
-    in_buffer[i] = MUS_SAMPLE_TO_FLOAT(tmp);
+    if(index < fil_len) tmp = audio[index];
+    else tmp = (double)0.0;
+    in_buffer[i] = tmp;
   }
 }
 
@@ -115,23 +115,26 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
  * ================
  * Computes the difference between the synthesis and the original sound. 
  * the <win-samps> array contains the sample numbers in the input file corresponding to each frame
- * fil: pointer to analyzed data
+ * audio: pointer to analyzed data
  * fil_len: length of data in samples
  * output_file: output file path
  * sound: pointer to ATS_SOUND
  * win_samps: pointer to array of analysis windows center times
  * file_sampling_rate: sampling rate of analysis file
  */
-void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate)
+void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate)
 {
   int i, frm, frm_1, frm_2, par, frames, partials, frm_samps, out_smp=0, ptout;
-  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth;
+  double *in_buff, *synth_buff, *res, mag, a1, a2, f1, f2, p1, p2, diff, synth;
   mus_sample_t **obuf;
 
   frames = sound->frames;
   partials = sound->partials;
   frm_samps = sound->frame_size;
   mag = TWOPI / (double)file_sampling_rate;
+  res = (double *)calloc(fil_len + 2*frm_samps, sizeof(double));
+  //      fprintf(stderr, "fil_len %d, frames %d, frm_samps %d\n", fil_len, frames, frm_samps);
+
   in_buff = (double *)malloc(frm_samps * sizeof(double));
   synth_buff = (double *)malloc(frm_samps * sizeof(double));
   /* open output file */
@@ -150,7 +153,7 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
     frm_1 = frm - 1;
     frm_2 = frm;
     /* read frame from input */
-    read_frame(fil, fil_len, win_samps[frm_1], win_samps[frm_2], in_buff);
+    read_frame(audio, fil_len, win_samps[frm_1], win_samps[frm_2], in_buff);
     /* compute one synthesis frame */
     for(par=0; par<partials; par++) {
       a1 = sound->amp[par][frm_1];
@@ -158,8 +161,6 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
       /*  have to convert the frequency into radians per sample!!! */
       f1 = sound->frq[par][frm_1] * mag;
       f2 = sound->frq[par][frm_2] * mag;
-//       f1 *= mag;
-//       f2 *= mag;
       p1 = sound->pha[par][frm_1];
       p2 = sound->pha[par][frm_2];
       if( !( a1 <= 0.0 && a2 <= 0.0 ) ) {
@@ -180,12 +181,13 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
 	synth_buffer(a1, a2, f1, f2, p1, p2, synth_buff, frm_samps);
       }
     }
-    /* write output: chan 0 residual chan 1 synthesis */
+    /* write output: chan 0 residual, chan 1 synthesis */
     for(i=0; i<frm_samps; i++) {
       synth = synth_buff[i];
       diff = in_buff[i] - synth;
-      obuf[0][i] = MUS_FLOAT_TO_SAMPLE(diff);
-      obuf[1][i] = MUS_FLOAT_TO_SAMPLE(synth);
+      obuf[0][i] = MUS_DOUBLE_TO_SAMPLE(diff);
+      obuf[1][i] = MUS_DOUBLE_TO_SAMPLE(synth);
+      res[out_smp] = diff;
       out_smp++;
     }
     mus_sound_write(ptout, 0, frm_samps-1, 2, obuf);
@@ -197,4 +199,6 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
   free(obuf[0]);
   free(obuf[1]);
   free(obuf);
+  for(i=0; i<fil_len; i++) audio[i] = res[i];
+  free(res);
 }
