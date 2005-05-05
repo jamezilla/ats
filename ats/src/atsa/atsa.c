@@ -32,7 +32,7 @@ int main_anal(char *soundfile, char *ats_outfile, ANARGS *anargs, char *resfile)
   }
   sound = tracker_sound(anargs);
   tracker_residual(anargs, resfile, sound);
-  tracker_free();
+  tracker_free(anargs);
   /* save sound */
   if(sound != NULL) {
     fprintf(stderr,"saving ATS data...\n");

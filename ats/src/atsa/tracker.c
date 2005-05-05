@@ -13,7 +13,6 @@ int filptr, n_partials, sflen, *win_samps, tracks_size, peaks_size, first_point,
 ATS_FRAME *ana_frames;
 float *window, norm;
 ATS_PEAK *peaks, *tracks;
-double *audio;
 
 #ifdef FFTW
   fftw_plan plan;
@@ -170,7 +169,7 @@ void tracker_init (ANARGS *anargs, char *soundfile)
   bufs = (mus_sample_t **)malloc(sizeof(mus_sample_t*));
   bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
   /* alloc memory for audio buffer */
-  audio = (double *)malloc(sflen * sizeof(double));
+  anargs->audio = (double *)malloc(sflen * sizeof(double));
   /* make our window */
   window = make_window(anargs->win_type, anargs->win_size);
   /* get window norm */
@@ -194,7 +193,7 @@ void tracker_init (ANARGS *anargs, char *soundfile)
   /* read sound into memory */
   mus_sound_read(fd, 0, sflen-1, 1, bufs);
   /* copy sound data into the audio buffer */
-  for(i=0; i<sflen; i++) audio[i] = MUS_SAMPLE_TO_DOUBLE(bufs[0][i]);
+  for(i=0; i<sflen; i++) anargs->audio[i] = MUS_SAMPLE_TO_DOUBLE(bufs[0][i]);
   /* free up bufs */
   free(bufs[0]);
   free(bufs);
@@ -239,9 +238,9 @@ void tracker_fft (ANARGS *anargs, int frame_n)
   for (k=0; k<anargs->win_size; k++) {
     if ((filptr >= 0) && (filptr < sflen)) 
 #ifdef FFTW
-    fft.data[(k+first_point)%fft.size][0] = window[k] * audio[filptr];
+    fft.data[(k+first_point)%fft.size][0] = window[k] * anargs->audio[filptr];
 #else
-    fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * audio[filptr];
+    fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * anargs->audio[filptr];
 #endif
     filptr++;
   }
@@ -325,9 +324,9 @@ void tracker_dct (ANARGS *anargs, int frame_n)  /* this is simply a copy of trac
   for (k=0; k<anargs->win_size; k++) {
     if ((filptr >= 0) && (filptr < sflen)) 
 #ifdef FFTW
-    fft.data[(k+first_point)%fft.size][0] = window[k] * audio[filptr];
+    fft.data[(k+first_point)%fft.size][0] = window[k] * anargs->audio[filptr];
 #else
-    fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * audio[filptr];
+    fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * anargs->audio[filptr];
 #endif
     filptr++;
   }
@@ -434,19 +433,20 @@ void tracker_residual (ANARGS *anargs, char *resfile, ATS_SOUND *sound)
   if( anargs->type == 3 || anargs->type == 4 ) {
   /* compute  residual */
     fprintf(stderr, "Computing residual...\n");
-    compute_residual(audio, sflen, resfile, sound, win_samps, anargs->srate);
+    compute_residual(anargs, sflen, resfile, sound, win_samps);
   /* analyze residual */
     fprintf(stderr, "Analyzing residual...\n");
     residual_analysis(ATSA_RES_FILE, sound);
   }
 }
 
-void tracker_free (void)
+void tracker_free (ANARGS *anargs)
 {
   free(window);
   free(tracks);
   free(win_samps);
-  free(audio);
+  free(anargs->audio);
+  free(anargs->residual);
 #ifdef FFTW
   fftw_destroy_plan(plan);
   fftw_free(fft.data);

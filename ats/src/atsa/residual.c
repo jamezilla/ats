@@ -122,23 +122,23 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
  * win_samps: pointer to array of analysis windows center times
  * file_sampling_rate: sampling rate of analysis file
  */
-void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate)
+void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps)
 {
   int i, frm, frm_1, frm_2, par, frames, partials, frm_samps, out_smp=0, ptout;
-  double *in_buff, *synth_buff, *res, mag, a1, a2, f1, f2, p1, p2, diff, synth;
+  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth;
   mus_sample_t **obuf;
 
   frames = sound->frames;
   partials = sound->partials;
   frm_samps = sound->frame_size;
-  mag = TWOPI / (double)file_sampling_rate;
-  res = (double *)calloc(fil_len + 2*frm_samps, sizeof(double));
+  mag = TWOPI / (double)anargs->srate;
+  anargs->residual = (double *)calloc(fil_len + 2*frm_samps, sizeof(double));
   //      fprintf(stderr, "fil_len %d, frames %d, frm_samps %d\n", fil_len, frames, frm_samps);
 
   in_buff = (double *)malloc(frm_samps * sizeof(double));
   synth_buff = (double *)malloc(frm_samps * sizeof(double));
   /* open output file */
-  if((ptout=mus_sound_open_output(output_file,file_sampling_rate,2,MUS_LSHORT,MUS_RIFF,"created by ATSA"))==-1) {
+  if((ptout=mus_sound_open_output(output_file,anargs->srate,2,MUS_LSHORT,MUS_RIFF,"created by ATSA"))==-1) {
     fprintf(stderr, "\nERROR: can't open file %s for writing\n", output_file);  
     exit(1);
   } 
@@ -153,7 +153,7 @@ void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *
     frm_1 = frm - 1;
     frm_2 = frm;
     /* read frame from input */
-    read_frame(audio, fil_len, win_samps[frm_1], win_samps[frm_2], in_buff);
+    read_frame(anargs->audio, fil_len, win_samps[frm_1], win_samps[frm_2], in_buff);
     /* compute one synthesis frame */
     for(par=0; par<partials; par++) {
       a1 = sound->amp[par][frm_1];
@@ -187,7 +187,7 @@ void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *
       diff = in_buff[i] - synth;
       obuf[0][i] = MUS_DOUBLE_TO_SAMPLE(diff);
       obuf[1][i] = MUS_DOUBLE_TO_SAMPLE(synth);
-      res[out_smp] = diff;
+      anargs->residual[out_smp] = diff;
       out_smp++;
     }
     mus_sound_write(ptout, 0, frm_samps-1, 2, obuf);
@@ -199,6 +199,6 @@ void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *
   free(obuf[0]);
   free(obuf[1]);
   free(obuf);
-  for(i=0; i<fil_len; i++) audio[i] = res[i];
-  free(res);
+  //for(i=0; i<fil_len; i++) audio[i] = res[i];
+  //free(res);
 }

@@ -147,6 +147,8 @@ typedef struct {
   int lowest_bin;
   int highest_bin;
   int frames;
+  double *audio;
+  double *residual;
 } ANARGS;
 
 /* ATS_FFT
@@ -422,7 +424,7 @@ void tracker_fft (ANARGS *anargs, int frame_n);
 void tracker_dct (ANARGS *anargs, int frame_n);
 ATS_SOUND *tracker_sound (ANARGS *anargs);
 void tracker_residual(ANARGS *anargs, char *resfile, ATS_SOUND *sound);
-void tracker_free (void);
+void tracker_free (ANARGS *anargs);
 //ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile);
 
 /* utilities.c */
@@ -464,7 +466,7 @@ void optimize_sound(ANARGS *anargs, ATS_SOUND *sound);
  * win_samps: pointer to array of analysis windows center times
  * file_sampling_rate: sampling rate of analysis file
  */
-void compute_residual(double *audio, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate);
+void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps);
 
 /* residual-analysis.c */
 
