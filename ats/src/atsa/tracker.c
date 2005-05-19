@@ -61,9 +61,7 @@ void tracker_init (ANARGS *anargs, char *soundfile)
     anargs->start = (float)0.0;
   }
   /* check duration */
-  if(anargs->duration == ATSA_DUR) {
-    anargs->duration = sfdur - anargs->start;
-  }
+  if(anargs->duration == ATSA_DUR) anargs->duration = sfdur - anargs->start;
   f_tmp = anargs->duration + anargs->start;
   if( !(anargs->duration > 0.0 && f_tmp <= sfdur) ){
     fprintf(stderr, "Warning: duration %f out of bounds, limited to file duration\n", anargs->duration);
@@ -170,6 +168,7 @@ void tracker_init (ANARGS *anargs, char *soundfile)
   bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
   /* alloc memory for audio buffer */
   anargs->audio = (double *)malloc(sflen * sizeof(double));
+  anargs->residual = NULL;
   /* make our window */
   window = make_window(anargs->win_type, anargs->win_size);
   /* get window norm */
@@ -198,7 +197,6 @@ void tracker_init (ANARGS *anargs, char *soundfile)
   free(bufs[0]);
   free(bufs);
 
-
   /* make our fft-struct */
   fft.size = anargs->fft_size;
   fft.rate = anargs->srate;
@@ -219,7 +217,6 @@ void tracker_init (ANARGS *anargs, char *soundfile)
 
     /* DCT initialization can go here 
         make sure its conditional! */
-
 }
 
 void tracker_fft (ANARGS *anargs, int frame_n)
@@ -436,7 +433,7 @@ void tracker_residual (ANARGS *anargs, char *resfile, ATS_SOUND *sound)
     compute_residual(anargs, sflen, resfile, sound, win_samps);
   /* analyze residual */
     fprintf(stderr, "Analyzing residual...\n");
-    residual_analysis(ATSA_RES_FILE, sound);
+    residual_analysis(anargs, sound);
   }
 }
 
@@ -446,7 +443,7 @@ void tracker_free (ANARGS *anargs)
   free(tracks);
   free(win_samps);
   free(anargs->audio);
-  free(anargs->residual);
+  if(anargs->residual != NULL) free(anargs->residual);
 #ifdef FFTW
   fftw_destroy_plan(plan);
   fftw_free(fft.data);

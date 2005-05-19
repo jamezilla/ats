@@ -476,7 +476,7 @@ void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND 
  * file: name of the sound file containing the residual 
  * sound: sound to store the residual data 
  */
-void residual_analysis(char *file, ATS_SOUND *sound);
+void residual_analysis(ANARGS *anargs, ATS_SOUND *sound);
 
 /* band_energy_to_res
  * ==================

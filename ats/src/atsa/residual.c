@@ -132,7 +132,8 @@ void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND 
   partials = sound->partials;
   frm_samps = sound->frame_size;
   mag = TWOPI / (double)anargs->srate;
-  anargs->residual = (double *)calloc(fil_len + 2*frm_samps, sizeof(double));
+  /* this might fail if fil_len or frm_samps changes */
+  if(anargs->residual == NULL) anargs->residual = (double *)calloc(fil_len + 2*frm_samps, sizeof(double));
   //      fprintf(stderr, "fil_len %d, frames %d, frm_samps %d\n", fil_len, frames, frm_samps);
 
   in_buff = (double *)malloc(frm_samps * sizeof(double));
