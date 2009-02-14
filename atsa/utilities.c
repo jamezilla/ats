@@ -86,9 +86,9 @@ void optimize_sound(ANARGS *anargs, ATS_SOUND *sound)
 void fill_sound_gaps(ATS_SOUND *sound, int min_gap_len)
 {
   int i, j, k, next_val, next_zero, prev_val, gap_size;
-  double f_inc, a_inc, s_inc, mag; 
-  mag = TWOPI / (double)sound->srate;
-  fprintf(stderr, "Filling sound gaps...\n");
+  double f_inc, a_inc, s_inc, mag = TWOPI / (double)sound->srate;
+
+  fprintf(stderr, "Filling sound gaps...");
   for(i = 0 ; i < sound->partials ; i++){
     /* first we fix the freq gap before attack */
     next_val = find_next_val_arr(sound->frq[i], 0, sound->frames);
@@ -144,6 +144,7 @@ void fill_sound_gaps(ATS_SOUND *sound, int min_gap_len)
       }
     }
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* trim_partials
@@ -159,7 +160,7 @@ void trim_partials(ATS_SOUND *sound, int min_seg_len, float min_seg_smr)
 {
   int i, j, k, seg_beg, seg_end, seg_size, count=0;
   double val=0.0, smr_av=0.0;
-  fprintf(stderr, "Trimming short partials...\n");
+  fprintf(stderr, "Trimming short partials...");
   for(i = 0 ; i < sound->partials ; i++){
     k = 0;
     while( k < sound->frames ){
@@ -199,42 +200,40 @@ void trim_partials(ATS_SOUND *sound, int min_seg_len, float min_seg_smr)
       }
     }
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* auxiliary functions to fill_sound_gaps and trim_partials */
-int find_next_val_arr(double* arr, int beg, int size)
+int find_next_val_arr(double *arr, int beg, int size)
 {
   int j, next_val=NIL;
-  for( j = beg ; j < size ; j++){
-    if( arr[j] > 0.0 ){
+  for(j=beg; j<size; j++) 
+    if(arr[j] > 0.0) {
       next_val = j;
       break;
     }
-  }
   return(next_val);
 }
 
-int find_next_zero_arr(double* arr, int beg, int size)
+int find_next_zero_arr(double *arr, int beg, int size)
 {
   int j, next_zero=NIL;
-  for( j = beg ; j < size ; j++){
-    if( arr[j] == 0.0 ){
+  for(j=beg; j<size; j++)
+    if(arr[j] == 0.0) {
       next_zero = j;
       break;
     }
-  }
   return(next_zero);
 }
 
-int find_prev_val_arr(double* arr, int beg)
+int find_prev_val_arr(double *arr, int beg)
 {
   int j, prev_val=NIL;
-  for( j = beg ; j >= 0 ; j--){
-    if( arr[j] != 0.0 ){
+  for(j=beg; j>=0; j--)
+    if(arr[j] != 0.0) {
       prev_val = j;
       break;
     }
-  }
   return(prev_val);
 }
 
@@ -248,7 +247,7 @@ void set_av(ATS_SOUND *sound)
 {
   int i, j, count;
   double val;
-  fprintf(stderr,"Computing averages..\n");
+  fprintf(stderr,"Computing averages...");
   for( i = 0 ; i < sound->partials ; i++){
     /* smr */
     val=0.0;
@@ -282,15 +281,16 @@ void set_av(ATS_SOUND *sound)
     /* set track# */
     sound->av[i].track = i;
   }
+  fprintf(stderr, "done!\n");
 }
 
 /* init_sound
  * ==========
  * initializes a new sound allocating memory
  */
-void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials)
+void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials, int use_noise)
 {
-  int i, j, k;
+  int i, j;
   sound->srate = sampling_rate;
   sound->frame_size = frame_size;
   sound->window_size = window_size;
@@ -306,24 +306,27 @@ void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_
   sound->smr = (void *)malloc(partials * sizeof(void *));
   sound->res = (void *)malloc(partials * sizeof(void *));
   /* allocate memory for time, amp, frq, smr, and res data */
-  for(k=0; k<partials; k++) {
-    sound->time[k] = (double *)malloc(frames * sizeof(double));
-    sound->amp[k] = (double *)malloc(frames * sizeof(double));
-    sound->frq[k] = (double *)malloc(frames * sizeof(double));
-    sound->pha[k] = (double *)malloc(frames * sizeof(double));
-    sound->smr[k] = (double *)malloc(frames * sizeof(double));
-    sound->res[k] = (double *)malloc(frames * sizeof(double));
+  for(i=0; i<partials; i++) {
+    sound->time[i] = (double *)malloc(frames * sizeof(double));
+    sound->amp[i] = (double *)malloc(frames * sizeof(double));
+    sound->frq[i] = (double *)malloc(frames * sizeof(double));
+    sound->pha[i] = (double *)malloc(frames * sizeof(double));
+    sound->smr[i] = (double *)malloc(frames * sizeof(double));
+    sound->res[i] = (double *)malloc(frames * sizeof(double));
   }
   /* init all array values with 0.0 */
-  for( i = 0 ; i < partials ; i++){
-    for( j = 0 ; j < frames ; j++){
+  for(i=0; i<partials; i++)
+    for(j=0; j<frames; j++) {
       sound->amp[i][j] = (double)0.0;
       sound->frq[i][j] = (double)0.0;
       sound->pha[i][j] = (double)0.0;
       sound->smr[i][j] = (double)0.0;
       sound->res[i][j] = (double)0.0;
     }
-  }      
+  if(use_noise) {
+    sound->band_energy = (double **)malloc(ATSA_CRITICAL_BANDS*sizeof(double *));
+    for(i=0; i<ATSA_CRITICAL_BANDS; i++) sound->band_energy[i] = (double *)malloc(frames*sizeof(double));
+  } else sound->band_energy = NULL;
 }  
 
 
@@ -334,30 +337,32 @@ void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_
 void free_sound(ATS_SOUND *sound)
 {
   int k;
-  free(sound->av);
-  /* data */
-  for(k=0; k < sound->partials; k++) {
-    free(sound->time[k]);
-    free(sound->amp[k]);
-    free(sound->frq[k]);
-    free(sound->pha[k]);
-    free(sound->smr[k]);
-    free(sound->res[k]);
-  }
-  /* pointers to data */
-  free(sound->time);
-  free(sound->frq);
-  free(sound->amp);
-  free(sound->pha);
-  free(sound->smr);
-  free(sound->res);
-  /* check if we have residual data 
-   * and free its memory up
-   */
-  if( sound->band_energy != NULL ){
-    for(k=0 ; k<ATSA_CRITICAL_BANDS ; k++){
-      free(sound->band_energy[k]);
+
+  if(sound != NULL) {
+    free(sound->av);
+    /* data */
+    for(k=0; k<sound->partials; k++) {
+      free(sound->time[k]);
+      free(sound->amp[k]);
+      free(sound->frq[k]);
+      free(sound->pha[k]);
+      free(sound->smr[k]);
+      free(sound->res[k]);
     }
-    free(sound->band_energy);
+    /* pointers to data */
+    free(sound->time);
+    free(sound->frq);
+    free(sound->amp);
+    free(sound->pha);
+    free(sound->smr);
+    free(sound->res);
+    /* check if we have residual data 
+     * and free its memory up
+     */
+    if( sound->band_energy != NULL ) {
+      for(k=0; k<ATSA_CRITICAL_BANDS; k++) free(sound->band_energy[k]);
+      free(sound->band_energy);
+    }
+    free(sound);
   }
 }

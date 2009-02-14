@@ -3,6 +3,10 @@
  * Oscar Pablo Di Liscia / Pete Moss / Juan Pampin 
  */
 
+#ifdef FFTW
+#include <fftw3.h>
+#endif
+
 /* sndlib stuff starts here */
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
@@ -26,14 +30,12 @@
 /* sndlib stuff ends here */
 
 /*  window types */
-
 #define  BLACKMAN   0
 #define  BLACKMAN_H 1
 #define  HAMMING    2
 #define  VONHANN    3
 
-/* analysis parameters */
-
+/********** ANALYSIS PARAMETERS ***********/
 /* start time */
 #define  ATSA_START 0.0
 /* duration */
@@ -67,7 +69,7 @@
 /* last peak contribution for tracking (ratio) */
 #define  ATSA_LPKCONT 0.0
 /* SMR contribution for tracking (ratio) */
-#define  ATSA_SMRCONT 0.0
+#define  ATSA_SMRCONT 0.5
 /* minimum number of frames for analysis (frames) */
 #define ATSA_MFRAMES 4
 /* default analysis file type 
@@ -143,12 +145,20 @@ typedef struct {
 /* ATS_FFT
  * fft data
  */
+#if defined(FFTW)
+typedef struct {
+  int size;
+  int rate;
+  fftw_complex *data;
+} ATS_FFT;
+#else
 typedef struct {
   int size;
   int rate;
   double *fdr;
   double *fdi;
 } ATS_FFT;
+#endif
 
 /* ATS_PEAK
  * ========
@@ -303,6 +313,13 @@ ATS_PEAK *push_peak(ATS_PEAK *new_peak, ATS_PEAK *peaks, int *peaks_size);
  */
 int peak_frq_inc(void const *a, void const *b);
 
+/* peak_amp_inc
+ * ============
+ * function used by qsort to sort an array of peaks
+ * in increasing amplitude order.
+ */
+int peak_amp_inc(void const *a, void const *b);
+
 /* peak_smr_dec
  * ============
  * function used by qsort to sort an array of peaks
@@ -310,7 +327,7 @@ int peak_frq_inc(void const *a, void const *b);
  */
 int peak_smr_dec(void const *a, void const *b);
 
-
+#ifndef FFTW
 /* fft
  * ===
  * standard fft based on simplfft by Joerg Arndt.
@@ -319,7 +336,8 @@ int peak_smr_dec(void const *a, void const *b);
  * n: size of data
  * is: 1=forward trasnform -1=backward transform
  */
-void fft(double *rl, double *im, int n, int is);
+void fft_slow(double *rl, double *im, int n, int is);
+#endif
 
 /* peak-detection.c */
 
@@ -350,7 +368,7 @@ ATS_PEAK *peak_detection(ATS_FFT *ats_fft, int lowest_bin, int highest_bin, floa
  * SMR_cont: contribution of SMR to tracking
  * n_partials: pointer to the number of partials before tracking
  */
-ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials);
+ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials);
 
 /* update_tracks
  * =============
@@ -466,8 +484,7 @@ void res_to_band_energy(ATS_SOUND *sound, int frame);
  * ==========
  * initializes a new sound allocating memory
  */
-void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials);
-
+void init_sound(ATS_SOUND *sound, int sampling_rate, int frame_size, int window_size, int frames, double duration, int partials, int use_noise);
 
 /* free_sound
  * ==========

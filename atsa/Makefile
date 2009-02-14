@@ -1,10 +1,18 @@
 CC = gcc
-DEFS = -DLINUX
-CFLAGS = -I. -g -O2
-LIBS = ./atsa-sndlib/sndlib.a
-NOGUI_LIBS = -lm atsa.a
 LD = ld
-LD_FLAGS = -r
+CFLAGS = -I. -ggdb -O2 -Wall
+
+#you might need to put -lm here as well
+LIBS = ./atsa-sndlib/sndlib.a #-lfftw3
+#LIBS = ./atsa-sndlib/sndlib.a /usr/local/lib/libfftw3.a
+
+#if you have fftw installed, then -DFFTW
+DEFS = -DLINUX #-DFFTW
+
+#if you have/use gls you need to also include -lgsl -lgslcblas in this line
+NOGUI_LIBS = -lm atsa.a
+#if you have fftw, you need to list the directory of libfftw3.a after -L
+LD_FLAGS = -r -L/usr/local/lib
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
@@ -25,3 +33,6 @@ sndlib:
 
 clean:
 	rm -f *.o atsa.a atsa
+
+sndlibclean:
+	cd atsa-sndlib ; make clean

@@ -57,12 +57,11 @@ int main(int argc, char **argv)
   ANARGS *anargs;
   char *soundfile, *ats_outfile;
 
-  if( argc < 3) usage();
-  if( argv[1][0] == '-' || argv[2][0] == '-') usage();
+  if(argc < 3 || argv[1][0] == '-' || argv[2][0] == '-') usage();
 
   anargs=(ANARGS*)malloc(sizeof(ANARGS));
   
-/* default values for analysis args */
+  /* default values for analysis args */
   anargs->start = ATSA_START; 
   anargs->duration = ATSA_DUR;
   anargs->lowest_freq = ATSA_LFREQ; 
@@ -84,34 +83,33 @@ int main(int argc, char **argv)
   soundfile = argv[1];
   ats_outfile = argv[2];
 
-  for( i=3; i<argc; ++i){
-      switch(argv[i][0])
-	{ case '-' :
-	    { switch(argv[i][1])
-	      {
-	      case 'b' : sscanf(argv[i]+2, "%f\n", &(anargs->start)); break;
-	      case 'e' : sscanf(argv[i]+2, "%f\n", &(anargs->duration)); break;
-	      case 'l' : sscanf(argv[i]+2, "%f\n", &(anargs->lowest_freq)); break;
-	      case 'H' : sscanf(argv[i]+2, "%f\n", &(anargs->highest_freq)); break;
-	      case 'd' : sscanf(argv[i]+2, "%f\n", &(anargs->freq_dev)); break;
-	      case 'c' : sscanf(argv[i]+2, "%d\n", &(anargs->win_cycles)); break;
-	      case 'w' : sscanf(argv[i]+2, "%d\n", &(anargs->win_type)); break;
-	      case 'h' : sscanf(argv[i]+2, "%f\n", &(anargs->hop_size)); break;
-	      case 'm' : sscanf(argv[i]+2, "%f\n", &(anargs->lowest_mag)); break;
-	      case 't' : sscanf(argv[i]+2, "%d\n", &(anargs->track_len)); break;
-	      case 's' : sscanf(argv[i]+2, "%d\n", &(anargs->min_seg_len)); break;
-	      case 'g' : sscanf(argv[i]+2, "%d\n", &(anargs->min_gap_len)); break;
-	      case 'T' : sscanf(argv[i]+2, "%fL\n", &(anargs->SMR_thres)); break;
-	      case 'S' : sscanf(argv[i]+2, "%f\n", &(anargs->min_seg_SMR)); break;
-	      case 'P' : sscanf(argv[i]+2, "%f\n", &(anargs->last_peak_cont)); break;
-	      case 'M' : sscanf(argv[i]+2, "%f\n", &(anargs->SMR_cont)); break;
-	      case 'F' : sscanf(argv[i]+2, "%d\n", &(anargs->type)); break;
-	      default  : usage();
-	      }
-	    break;
-	    }
-	default : usage();
-	}
+  for(i=3; i<argc; ++i) {
+    switch(argv[i][0]) {
+    case '-' :
+      {switch(argv[i][1]) {
+        case 'b' : sscanf(argv[i]+2, "%f\n", &(anargs->start)); break;
+        case 'e' : sscanf(argv[i]+2, "%f\n", &(anargs->duration)); break;
+        case 'l' : sscanf(argv[i]+2, "%f\n", &(anargs->lowest_freq)); break;
+        case 'H' : sscanf(argv[i]+2, "%f\n", &(anargs->highest_freq)); break;
+        case 'd' : sscanf(argv[i]+2, "%f\n", &(anargs->freq_dev)); break;
+        case 'c' : sscanf(argv[i]+2, "%d\n", &(anargs->win_cycles)); break;
+        case 'w' : sscanf(argv[i]+2, "%d\n", &(anargs->win_type)); break;
+        case 'h' : sscanf(argv[i]+2, "%f\n", &(anargs->hop_size)); break;
+        case 'm' : sscanf(argv[i]+2, "%f\n", &(anargs->lowest_mag)); break;
+        case 't' : sscanf(argv[i]+2, "%d\n", &(anargs->track_len)); break;
+        case 's' : sscanf(argv[i]+2, "%d\n", &(anargs->min_seg_len)); break;
+        case 'g' : sscanf(argv[i]+2, "%d\n", &(anargs->min_gap_len)); break;
+        case 'T' : sscanf(argv[i]+2, "%fL\n", &(anargs->SMR_thres)); break;
+        case 'S' : sscanf(argv[i]+2, "%f\n", &(anargs->min_seg_SMR)); break;
+        case 'P' : sscanf(argv[i]+2, "%f\n", &(anargs->last_peak_cont)); break;
+        case 'M' : sscanf(argv[i]+2, "%f\n", &(anargs->SMR_cont)); break;
+        case 'F' : sscanf(argv[i]+2, "%d\n", &(anargs->type)); break;
+        default  : usage();
+        }
+        break;
+      }
+    default : usage();
+    }
   }
   val = main_anal(soundfile, ats_outfile, anargs, ATSA_RES_FILE);
   free(anargs);

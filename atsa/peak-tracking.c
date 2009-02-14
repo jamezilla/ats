@@ -5,16 +5,20 @@
 
 #include "atsa.h"
 
+/* private types */
+typedef struct {
+  int size;
+  ATS_PEAK *cands;
+} ATS_CANDS;
+
 /* private function prototypes */
 ATS_PEAK *find_candidates(ATS_PEAK *peaks, int peaks_size, double lo, double hi, int *cand_size);
-ATS_PEAK *find_best_candidate(ATS_PEAK *peak_candidates, int cand_size, double peak_frq, double peak_smr, float alpha, ATS_PEAK *tracks, int tracks_size);
-
-#define LARGEST_DOUBLE 1.7976931348623157e308
+void sort_candidates(ATS_CANDS *cands, ATS_PEAK peak, float SMR_cont);
 
 /* peak_tracking
  * =============
  * connects peaks from one analysis frame to tracks
- * returns a pointer to the analysis frame.
+ * returns a pointer to two frames of orphaned peaks.
  * tracks: pointer to the tracks
  * tracks_size: numeber of tracks
  * peaks: peaks to connect
@@ -23,55 +27,77 @@ ATS_PEAK *find_best_candidate(ATS_PEAK *peak_candidates, int cand_size, double p
  * SMR_cont: contribution of SMR to tracking
  * n_partials: pointer to the number of partials before tracking
  */
-ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials)
+ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int *tracks_size, ATS_PEAK *peaks, int *peaks_size, float frq_dev, float SMR_cont, int *n_partials)
 {
-  ATS_PEAK track, *matched_peak = NULL, *peak_candidates = NULL;
-  double track_frq, track_smr, lo, hi;
-  int h, i, k, j, cand_size;
+  ATS_CANDS *track_candidates = (ATS_CANDS *)malloc(*peaks_size*sizeof(ATS_CANDS));
+  double lo, hi;
+  int k, j, used, goback;
   ATS_FRAME *returned_peaks = (ATS_FRAME *)malloc(2*sizeof(ATS_FRAME));
 
   returned_peaks[0].peaks = returned_peaks[1].peaks = NULL;
   returned_peaks[0].n_peaks = returned_peaks[1].n_peaks = 0;
 
-  if(tracks_size && *peaks_size) {
-    qsort(peaks, *peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
-    for (k=0; k<tracks_size; k++) {
-      track = tracks[k];
-      track_frq = track.frq;
-      track_smr = track.smr;
-      /* find frq limits for candidates */
-      lo = track_frq - (.5 * track_frq * frq_dev);
-      hi = track_frq + (.5 * track_frq * frq_dev);
-      /* get possible candidates */
-      cand_size = 0;
-      peak_candidates = find_candidates(peaks, *peaks_size, lo, hi, &cand_size);
-      /* find best candidate */
-      matched_peak = find_best_candidate(peak_candidates, cand_size, track_frq, track_smr, SMR_cont, tracks, tracks_size);
-      if(matched_peak != NULL) {
-        for(i=0; i<*peaks_size; i++) 
-          if(peaks[i].frq == matched_peak->frq) {
-	    if( matched_peak->track >= 0){
-	      /* put previously holding track into unmatched peaks */
-	      for(j=0; j<tracks_size; j++){
-		if(tracks[j].track == matched_peak->track) break;
-	      } 
-	      returned_peaks[0].peaks = push_peak(&tracks[j], returned_peaks[0].peaks, &returned_peaks[0].n_peaks);
-	    }
-	    peaks[i].track = track.track;
-	    break;
-	  }
-      } else {
-	returned_peaks[0].peaks = push_peak(&track, returned_peaks[0].peaks, &returned_peaks[0].n_peaks);
+  /* sort data to prepare for matching */
+  qsort(tracks, *tracks_size, sizeof(ATS_PEAK), peak_frq_inc);
+  qsort(peaks, *peaks_size, sizeof(ATS_PEAK), peak_frq_inc);
+
+  /* find candidates for each peak and set each peak to best candidate */
+  for (k=0; k<*peaks_size; k++) {
+    /* find frq limits for candidates */
+    lo = peaks[k].frq - (.5 * peaks[k].frq * frq_dev);
+    hi = peaks[k].frq + (.5 * peaks[k].frq * frq_dev);
+    /* get possible candidates */
+    track_candidates[k].size = 0;
+    track_candidates[k].cands = find_candidates(tracks, *tracks_size, lo, hi, &track_candidates[k].size);
+    if(track_candidates[k].size) {
+      sort_candidates(&track_candidates[k], peaks[k], SMR_cont);
+      peaks[k].track = track_candidates[k].cands[0].track;
+    } 
+  }      
+
+  /* compare adjacent peaks track numbers to insure unique track numbers */
+  do {
+    goback = 0;
+    for (j=0; j<(*peaks_size - 1); j++) 
+      if((peaks[j].track == peaks[j+1].track) && (peaks[j].track > -1)) {
+        if(track_candidates[j].cands[0].amp > track_candidates[j+1].cands[0].amp) {
+          track_candidates[j].cands[0].amp = ATSA_HFREQ;
+          qsort(track_candidates[j].cands, track_candidates[j].size, sizeof(ATS_PEAK), peak_amp_inc);
+          if(track_candidates[j].cands[0].amp < ATSA_HFREQ) {
+            peaks[j].track = track_candidates[j].cands[0].track;
+            goback = 1;
+          } else peaks[j].track = -1;
+        } else {
+          track_candidates[j+1].cands[0].amp =  ATSA_HFREQ;
+          qsort(track_candidates[j+1].cands, track_candidates[j+1].size, sizeof(ATS_PEAK), peak_amp_inc);
+          if(track_candidates[j+1].cands[0].amp < ATSA_HFREQ)
+            peaks[j+1].track = track_candidates[j+1].cands[0].track;
+          else peaks[j+1].track = -1;
+        }
       }
-      free(peak_candidates);
-      peak_candidates = NULL;
-    }      
-  }
-  for(i=0; i<*peaks_size; i++)
-    if(peaks[i].track < 0) {
-      peaks[i].track = (*n_partials)++;
-      returned_peaks[1].peaks = push_peak(&peaks[i], returned_peaks[1].peaks, &returned_peaks[1].n_peaks);
+  } while (goback);
+
+  /* by this point, all peaks will either have a unique track number, or -1 
+     now we need to take care of those left behind */
+  for(k=0; k<*peaks_size; k++)
+    if(peaks[k].track == -1) {
+      peaks[k].track = (*n_partials)++;
+      returned_peaks[1].peaks = push_peak(&peaks[k], returned_peaks[1].peaks, &returned_peaks[1].n_peaks);
     }
+
+  /* check for tracks that didnt get assigned */
+  for(k=0; k<*tracks_size; k++) {
+    used = 0;
+    for(j=0; j<*peaks_size; j++)
+      if(tracks[k].track == peaks[j].track) {
+        used = 1;
+        break;
+      }
+    if(!used) returned_peaks[0].peaks = push_peak(&tracks[k], returned_peaks[0].peaks, &returned_peaks[0].n_peaks);
+  }
+
+  for (k=0; k<*peaks_size; k++) free(track_candidates[k].cands);
+  free(track_candidates);
   return(returned_peaks);
 }
 
@@ -84,8 +110,6 @@ ATS_FRAME *peak_tracking(ATS_PEAK *tracks, int tracks_size, ATS_PEAK *peaks, int
  * lo: lowest frequency to consider candidates
  * hi: highest frequency to consider candidates
  * cand_size: pointer to the number of candidates returned
- * Note: this function assumes peaks were sorted 
- * by increasing freq by caller
  */
 ATS_PEAK *find_candidates(ATS_PEAK *peaks, int peaks_size, double lo, double hi, int *cand_size)
 {
@@ -93,49 +117,31 @@ ATS_PEAK *find_candidates(ATS_PEAK *peaks, int peaks_size, double lo, double hi,
   ATS_PEAK *cand_list = NULL;
 
   for(i=0; i<peaks_size; i++) 
-    if((lo <= peaks[i].frq) && (peaks[i].frq <= hi)) {
+    if((lo <= peaks[i].frq) && (peaks[i].frq <= hi))
       cand_list = push_peak(&peaks[i], cand_list, cand_size);
-    }
+
   return(cand_list);
 }
 
-/* find_best_candidate
+/* sort_candidates
  * ===================
- * finds best candidate to continue a track form a pool of peaks 
- * returns a pointer to the best candidate peak
+ * sorts candidates from best to worst according to frequency and SMR
  * peak_candidates: pointer to an array of candidate peaks
- * cand_size: number of candidates
- * track_frq: frequency of track
- * track_smr: SMR of track 
+ * peak: the peak we are matching
  * SMR_cont: contribution of SMR to the matching
- * tracks: pointer to array of tracks
- * tracks_size: number of tracks
  */
-ATS_PEAK *find_best_candidate(ATS_PEAK *peak_candidates, int cand_size, double track_frq, double track_smr, float SMR_cont, ATS_PEAK *tracks, int tracks_size)
+void sort_candidates(ATS_CANDS *cands, ATS_PEAK peak, float SMR_cont)
 {
-  ATS_PEAK *best_peak = NULL;
-  double local_delta, delta = LARGEST_DOUBLE;
-  int i, k;
+  int i;
 
-  for(i=0; i<cand_size; i++) {
-    local_delta = ((fabs(peak_candidates[i].frq - track_frq) + (SMR_cont * fabs(peak_candidates[i].smr - track_smr))) / (SMR_cont + 1));
-    /* check if peak has been claimed */
-    if(peak_candidates[i].track >= 0) {
-      /* find track holding candidate */
-      for(k=0; k<tracks_size; k++){
-	if(tracks[k].track == peak_candidates[i].track) break;
-      }  
-      /* see if current delta is greater */
-      if(local_delta > ((fabs(tracks[k].frq - peak_candidates[i].frq) + (SMR_cont * fabs(tracks[k].smr - peak_candidates[i].smr))) / (SMR_cont + 1))) {
-	continue;
-      } 
-    }
-    if(local_delta < delta) {
-      best_peak = &peak_candidates[i];
-      delta = local_delta;
-      }
-  }
-  return(best_peak);
+  /* compute delta values and store them in cands.amp 
+     (dont worry, the candidate amps are useless otherwise!) */
+  for(i=0; i<cands->size; i++)
+    cands->cands[i].amp = (fabs(cands->cands[i].frq - peak.frq) + (SMR_cont * fabs(cands->cands[i].smr - peak.smr))) / (SMR_cont + 1);
+
+  /* sort list by amp (increasing) */
+  qsort(cands->cands, cands->size, sizeof(ATS_PEAK), peak_amp_inc);
+
 }
       
 /* update_tracks

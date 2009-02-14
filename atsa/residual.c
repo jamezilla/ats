@@ -22,38 +22,33 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
 
 int compute_m(double pha_1, double frq_1, double pha, double frq, int buffer_size) 
 {
-  int val;
-  val = (int)((((pha_1 + (frq_1 * (double)buffer_size) - pha) + ((frq - frq_1) * 0.5 * (double)buffer_size)) / TWOPI) + 0.5);
-  return(val);
+  //  int val = (int)((((pha_1 + (frq_1 * (double)buffer_size) - pha) + ((frq - frq_1) * 0.5 * (double)buffer_size)) / TWOPI) + 0.5);
+  return((int)((((pha_1 + (frq_1 * (double)buffer_size) - pha) + ((frq - frq_1) * 0.5 * (double)buffer_size)) / TWOPI) + 0.5));
 }
 
 
 double compute_aux(double pha_1, double pha, double frq_1, int buffer_size, int M)
 {
-  double val;
-  val = (double)((pha + (TWOPI * (double)M)) - (pha_1 + (frq_1 * (double)buffer_size)));
-  return(val);
+  //  double val = (double)((pha + (TWOPI * (double)M)) - (pha_1 + (frq_1 * (double)buffer_size)));
+  return((double)((pha + (TWOPI * (double)M)) - (pha_1 + (frq_1 * (double)buffer_size))));
 }
 
 double compute_alpha(double aux, double frq_1, double frq, int buffer_size)
 {
-  double val;
-  val = (double)(((3.0 / (double)(buffer_size * buffer_size)) * aux ) - ((frq - frq_1) / (double)buffer_size));
-  return(val);
+  //  double val = (double)(((3.0 / (double)(buffer_size * buffer_size)) * aux ) - ((frq - frq_1) / (double)buffer_size));
+  return((double)(((3.0 / (double)(buffer_size * buffer_size)) * aux ) - ((frq - frq_1) / (double)buffer_size)));
 }
 
 double compute_beta(double aux, double frq_1, double frq, int buffer_size)
 {
-  double val;
-  val = (double)(((-2.0 / (double)(buffer_size * buffer_size * buffer_size)) * aux) + ((frq - frq_1) / (double)(buffer_size * buffer_size)));
-  return(val);
+  //  double val = (double)(((-2.0 / (double)(buffer_size * buffer_size * buffer_size)) * aux) + ((frq - frq_1) / (double)(buffer_size * buffer_size)));
+  return((double)(((-2.0 / (double)(buffer_size * buffer_size * buffer_size)) * aux) + ((frq - frq_1) / (double)(buffer_size * buffer_size))));
 }
 
 double interp_phase(double pha_1, double frq_1, double alpha, double beta, int i) 
 {
-  double val;
-  val = (double)((beta * (double)(i * i * i)) + (alpha * (double)(i * i)) + (frq_1 * (double)i) + pha_1);
-  return(val);
+  //  double val = (double)((beta * (double)(i * i * i)) + (alpha * (double)(i * i)) + (frq_1 * (double)i) + pha_1);
+  return((double)((beta * (double)(i * i * i)) + (alpha * (double)(i * i)) + (frq_1 * (double)i) + pha_1));
 }
 
 
@@ -70,16 +65,13 @@ double interp_phase(double pha_1, double frq_1, double alpha, double beta, int i
  */
 void read_frame(mus_sample_t **fil, int fil_len, int samp_1, int samp_2, double *in_buffer)
 {
-  int i, samps, index;
+  int i, index, samps = samp_2 - samp_1;
   mus_sample_t tmp;
-  samps = samp_2 - samp_1;
-  for(i = 0 ; i < samps ; i++){
+  //  samps = samp_2 - samp_1;
+  for(i=0; i<samps; i++) {
     index = samp_1 + i;
-    if(index < fil_len){
-      tmp = fil[0][index];
-    } else {
-      tmp = (mus_sample_t)0.0;
-    }
+    if(index < fil_len) tmp = fil[0][index];
+    else tmp = (mus_sample_t)0.0;
     in_buffer[i] = MUS_SAMPLE_TO_FLOAT(tmp);
   }
 }
@@ -111,7 +103,7 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
   beta = compute_beta(aux, f1, f2, frame_samps);
   amp = a1;
   amp_inc = (a2 - a1) / (double)frame_samps;
-  for(k = 0; k < frame_samps; k++){
+  for(k = 0; k < frame_samps; k++) {
     int_pha = interp_phase(p1, f1, alpha, beta, k);
     buffer[k] += amp * cos(int_pha);
     amp += amp_inc;
@@ -132,11 +124,9 @@ void synth_buffer(double a1,double a2, double f1, double f2, double p1, double p
  */
 void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate)
 {
-  int i, frm, frm_1, frm_2, par, out_fil, frames, partials, frm_samps, out_smp=0, ptout;
-  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth, tmp, *sine_table;
+  int i, frm, frm_1, frm_2, par, frames, partials, frm_samps, out_smp=0, ptout;
+  double *in_buff, *synth_buff, mag, a1, a2, f1, f2, p1, p2, diff, synth;
   mus_sample_t **obuf;
-
-  fprintf(stderr, "Computing residual...\n");
 
   frames = sound->frames;
   partials = sound->partials;
@@ -144,57 +134,54 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
   mag = TWOPI / (double)file_sampling_rate;
   in_buff = (double *)malloc(frm_samps * sizeof(double));
   synth_buff = (double *)malloc(frm_samps * sizeof(double));
-  // open output file 
+  /* open output file */
   if((ptout=mus_sound_open_output(output_file,file_sampling_rate,2,MUS_LSHORT,MUS_RIFF,"created by ATSA"))==-1) {
-    fprintf(stderr, "ERROR: can't open file %s for writing\n", output_file);  
+    fprintf(stderr, "\nERROR: can't open file %s for writing\n", output_file);  
     exit(1);
   } 
-  // allocate memory
+  /* allocate memory */
   obuf = (mus_sample_t **)malloc(2*sizeof(mus_sample_t *));
   obuf[0] = (mus_sample_t *)calloc(frm_samps, sizeof(mus_sample_t));
   obuf[1] = (mus_sample_t *)calloc(frm_samps, sizeof(mus_sample_t));
-  // computer residual frame by frame
-  for(frm = 1 ; frm < frames ; frm++){
-    // clean buffers up
-    for(i = 0; i < frm_samps ; i++){
-      in_buff[i] = 0.0;
-      synth_buff[i] = 0.0;
-    }
+  /* compute residual frame by frame */
+  for(frm=1; frm<frames; frm++) {
+    /* clean buffers up */
+    for(i=0; i<frm_samps; i++) in_buff[i] = synth_buff[i] = 0.0;
     frm_1 = frm - 1;
     frm_2 = frm;
-    // read frame from input
+    /* read frame from input */
     read_frame(fil, fil_len, win_samps[frm_1], win_samps[frm_2], in_buff);
-    // compute one synthesis frame
-    for(par = 0 ; par < partials; par++){
+    /* compute one synthesis frame */
+    for(par=0; par<partials; par++) {
       a1 = sound->amp[par][frm_1];
       a2 = sound->amp[par][frm_2];
-      //  have to convert the frequency into radians per sample!!!
-      f1 = sound->frq[par][frm_1];
-      f2 = sound->frq[par][frm_2];
-      f1 *= mag;
-      f2 *= mag;
+      /*  have to convert the frequency into radians per sample!!! */
+      f1 = sound->frq[par][frm_1] * mag;
+      f2 = sound->frq[par][frm_2] * mag;
+//       f1 *= mag;
+//       f2 *= mag;
       p1 = sound->pha[par][frm_1];
       p2 = sound->pha[par][frm_2];
       if( !( a1 <= 0.0 && a2 <= 0.0 ) ) {
-	// check amp 0 in frame 1
-	if( a1 <= 0.0 ){
+	/* check amp 0 in frame 1 */
+	if(a1 <= 0.0) {
 	  f1 = f2;
 	  p1 =  p2 - ( f2 * frm_samps );
-      	  while(p1 > PI){ p1 -= TWOPI; }
-      	  while(p1 < (PI * -1)){ p1 += TWOPI; }
+      	  while(p1 > PI) p1 -= TWOPI;
+      	  while(p1 < (PI * -1)) p1 += TWOPI;
       	}
-	// check amp 0 in frame 2
-      	if( a2 <= 0.0 ){
+	/* check amp 0 in frame 2 */
+      	if(a2 <= 0.0) {
       	  f2 = f1;
       	  p2 = p1 + ( f1 * frm_samps );
-      	  while(p2 > PI){ p2 -= TWOPI; }
-      	  while(p2 < (PI * -1)){ p2 += TWOPI; }
+      	  while(p2 > PI) p2 -= TWOPI;
+      	  while(p2 < (PI * -1)) p2 += TWOPI;
       	}
 	synth_buffer(a1, a2, f1, f2, p1, p2, synth_buff, frm_samps);
       }
     }
-    // write output: chan 0 residual chan 1 synthesis
-    for(i = 0 ; i < frm_samps ; i++){
+    /* write output: chan 0 residual chan 1 synthesis */
+    for(i=0; i<frm_samps; i++) {
       synth = synth_buff[i];
       diff = in_buff[i] - synth;
       obuf[0][i] = MUS_FLOAT_TO_SAMPLE(diff);
@@ -205,7 +192,7 @@ void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SO
   }
   free(in_buff);
   free(synth_buff);
-  // update header and close output file
+  /* update header and close output file */
   mus_sound_close_output(ptout,2 * out_smp * mus_data_format_to_bytes_per_sample(MUS_LSHORT));
   free(obuf[0]);
   free(obuf[1]);

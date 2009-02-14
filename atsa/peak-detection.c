@@ -31,7 +31,7 @@ ATS_PEAK *peak_detection(ATS_FFT *ats_fft, int lowest_bin, int highest_bin, floa
 
   lowest_mag  = (float)db2amp(lowest_mag);
 
-  // init peak
+  /* init peak */
   ats_peak.amp = (double)0.0; 
   ats_peak.frq = (double)0.0; 
   ats_peak.pha = (double)0.0;
@@ -81,11 +81,14 @@ void to_polar(ATS_FFT *ats_fft, double *mags, double *phase, int N, double norm)
   double x, y;
 
   for(k=0; k<N; k++) {
-    x = ats_fft->fdr[k]; y = ats_fft->fdi[k];
+#ifdef FFTW
+    x = ats_fft->data[k][0];
+    y = ats_fft->data[k][1];
+#else
+    x = ats_fft->fdr[k];
+    y = ats_fft->fdi[k];
+#endif
     mags[k] = norm * sqrt(x*x + y*y);
-    // wrong method for phase computation!!!
-    // must use atan2(-y, x) JP
-    //    phase[k] = ((x==0.0 && y==0.0) ? 0.0 : atan(-y/x));
     phase[k] = ((x==0.0 && y==0.0) ? 0.0 : atan2(-y, x));
   }
 }

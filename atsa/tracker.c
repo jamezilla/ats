@@ -8,19 +8,6 @@
 /* private function prototypes */
 int compute_frames(ANARGS *anargs);
 
-/* int compute_frames(ANARGS *anargs)
- * computes number of analysis frames from the user's parameters 
- * returns the number of frames
- * anargs: pointer to analysis parameters
- */
-int compute_frames(ANARGS *anargs)
-{
-  int n_frames = (int)floor((float)anargs->total_samps / (float)anargs->hop_smp);
-  while((n_frames++ * anargs->hop_smp - anargs->hop_smp + anargs->first_smp) < (anargs->first_smp + anargs->total_samps)) {
-    //    n_frames++;
-  }
-  return(n_frames);
-}
 
 /* ATS_SOUND *tracker (ANARGS *anargs, char *soundfile)
  * partial tracking function 
@@ -32,14 +19,19 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
 {
   int fd, M_2, first_point, filptr, n_partials = 0;
   int frame_n, k, sflen, *win_samps, peaks_size, tracks_size = 0;
-  int i, j, frame, i_tmp;
+  int i, frame, i_tmp;
   float *window, norm, sfdur, f_tmp;
   /* declare structures and buffers */
   ATS_SOUND *sound = NULL;
-  ATS_FFT fft_struct;
   ATS_PEAK *peaks, *tracks = NULL, cpy_peak;
   ATS_FRAME *ana_frames = NULL, *unmatched_peaks = NULL;
   mus_sample_t **bufs;
+  ATS_FFT fft;
+#ifdef FFTW
+  fftw_plan plan;
+  FILE *fftw_wisdom_file;
+#endif
+
   /* open input file
      we get srate and total_samps in file in anargs */
   if ((fd = mus_sound_open_input(soundfile))== -1) {
@@ -52,6 +44,9 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
 	    mus_sound_chans(soundfile));
     return(NULL);
   }
+
+  fprintf(stderr, "tracking...\n");
+
   /* get sample rate and # of frames from file header */
   anargs->srate = mus_sound_srate(soundfile);
   sflen = mus_sound_frames(soundfile);
@@ -166,14 +161,10 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* continue computing parameters */
   /* fft size */
   anargs->fft_size = ppp2(2*anargs->win_size);
-  /* make our fft-struct */
-  fft_struct.size = anargs->fft_size;
-  fft_struct.rate = anargs->srate;
-  fft_struct.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
-  fft_struct.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
+
   /* allocate memory for sound, we read the whole sound in memory */
-  bufs = (mus_sample_t **)malloc(sizeof(mus_sample_t**));
-  bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
+  bufs = malloc(sizeof(mus_sample_t*));
+  bufs[0] = malloc(sflen * sizeof(mus_sample_t));
   /* make our window */
   window = make_window(anargs->win_type, anargs->win_size);
   /* get window norm */
@@ -196,14 +187,41 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   filptr = anargs->first_smp - M_2;   
   /* read sound into memory */
   mus_sound_read(fd, 0, sflen-1, 1, bufs);     
+
+  /* make our fft-struct */
+  fft.size = anargs->fft_size;
+  fft.rate = anargs->srate;
+#ifdef FFTW
+  fft.data = fftw_malloc(sizeof(fftw_complex) * fft.size);
+  if(fftw_import_system_wisdom()) fprintf(stderr, "system wisdom loaded!\n");
+  else fprintf(stderr, "cannot locate system wisdom!\n");
+  if((fftw_wisdom_file = fopen("ats-wisdom", "r")) != NULL) {
+    fftw_import_wisdom_from_file(fftw_wisdom_file);
+    fprintf(stderr, "ats-wisdom loaded!\n");
+    fclose(fftw_wisdom_file);
+  } else fprintf(stderr, "cannot locate ats-wisdom!\n");
+  plan = fftw_plan_dft_1d(fft.size, fft.data, fft.data, FFTW_FORWARD, FFTW_PATIENT);
+#else
+  fft.fdr = (double *)malloc(anargs->fft_size * sizeof(double));
+  fft.fdi = (double *)malloc(anargs->fft_size * sizeof(double));
+#endif
+
   /* main loop */
   for (frame_n=0; frame_n<anargs->frames; frame_n++) {
     /* clear fft arrays */
-    for(k=0; k<anargs->fft_size; k++) fft_struct.fdr[k] = fft_struct.fdi[k] = 0.0f;
+#ifdef FFTW
+    for(k=0; k<fft.size; k++) fft.data[k][0] = fft.data[k][1] = 0.0f;
+#else
+    for(k=0; k<fft.size; k++) fft.fdr[k] = fft.fdi[k] = 0.0f;
+#endif
     /* multiply by window */
     for (k=0; k<anargs->win_size; k++) {
       if ((filptr >= 0) && (filptr < sflen)) 
-        fft_struct.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#ifdef FFTW
+        fft.data[(k+first_point)%fft.size][0] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#else
+        fft.fdr[(k+first_point)%anargs->fft_size] = window[k] * MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
+#endif
       filptr++;
     }
     /* we keep sample numbers of window midpoints in win_samps array */
@@ -211,10 +229,14 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
     /* move file pointer back */
     filptr = filptr - anargs->win_size + anargs->hop_smp;
     /* take the fft */
-    fft(fft_struct.fdr, fft_struct.fdi, fft_struct.size, 1);
+#ifdef FFTW
+    fftw_execute(plan);
+#else
+    fft_slow(fft.fdr, fft.fdi, fft.size, 1);
+#endif
     /* peak detection */
     peaks_size = 0;
-    peaks = peak_detection(&fft_struct, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
+    peaks = peak_detection(&fft, anargs->lowest_bin, anargs->highest_bin, anargs->lowest_mag, norm, &peaks_size); 
     /* peak tracking */
     if (peaks != NULL) {
       /* evaluate peaks SMR (masking curves) */
@@ -222,12 +244,8 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
       if (frame_n) {
 	/* initialize or update tracks */
 	if ((tracks = update_tracks(tracks, &tracks_size, anargs->track_len, frame_n, ana_frames, anargs->last_peak_cont)) != NULL) {
-	  /* track peaks and get leftover */
-	  //           qsort(tracks, tracks_size, sizeof(ATS_PEAK), peak_smr_dec);
-          qsort(tracks, tracks_size, sizeof(ATS_PEAK), peak_frq_inc);
-          unmatched_peaks = NULL;
 	  /* do peak matching */
-          unmatched_peaks = peak_tracking(tracks, tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
+          unmatched_peaks = peak_tracking(tracks, &tracks_size, peaks, &peaks_size,  anargs->freq_dev, 2.0 * anargs->SMR_cont, &n_partials);
 	  /* kill unmatched peaks from previous frame */
           if(unmatched_peaks[0].peaks != NULL) {
 	    for(k=0; k<unmatched_peaks[0].n_peaks; k++) {
@@ -268,16 +286,23 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
       ana_frames[frame_n].n_peaks = 0;
       ana_frames[frame_n].time = (double)(win_samps[frame_n] - anargs->first_smp) / (double)anargs->srate;
     }
- }
+  }
   /* free up some memory */
-  free(fft_struct.fdr);
-  free(fft_struct.fdi);
   free(window);
   free(tracks);
+#ifdef FFTW
+  fftw_destroy_plan(plan);
+  fftw_free(fft.data);
+#else
+  free(fft.fdr);
+  free(fft.fdi);
+#endif
   /* init sound */
-  fprintf(stderr, "Initializing sound...\n");
+  fprintf(stderr, "Initializing ATS data...");
   sound = (ATS_SOUND *)malloc(sizeof(ATS_SOUND));
-  init_sound(sound, anargs->srate, (int)(anargs->hop_size * anargs->win_size), anargs->win_size, anargs->frames, anargs->duration, n_partials);
+  init_sound(sound, anargs->srate, (int)(anargs->hop_size * anargs->win_size), 
+             anargs->win_size, anargs->frames, anargs->duration, n_partials,
+             ((anargs->type == 3 || anargs->type == 4) ? 1 : 0));
   /* store values from frames into the arrays */
   for(k=0; k<n_partials; k++) {
     for(frame=0; frame<sound->frames; frame++) {
@@ -291,6 +316,7 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
         }
     }
   }
+  fprintf(stderr, "done!\n");
   /* free up ana_frames memory */
   /* first, free all peaks in each slot of ana_frames... */
   for (k=0; k<anargs->frames; k++) free(ana_frames[k].peaks);  
@@ -299,14 +325,38 @@ ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile)
   /* optimize sound */
   optimize_sound(anargs, sound);
   /* compute  residual */
-  if( anargs->type == 3 || anargs->type == 4 )
+  if( anargs->type == 3 || anargs->type == 4 ) {
+    fprintf(stderr, "Computing residual...");
     compute_residual(bufs, sflen, resfile, sound, win_samps, anargs->srate);
+    fprintf(stderr, "done!\n");
+  }
   /* free the rest of the memory */
   free(win_samps);
   free(bufs[0]);
   free(bufs);
   /* analyze residual */
-  if( anargs->type == 3 || anargs->type == 4 )
+  if( anargs->type == 3 || anargs->type == 4 ) {
+    fprintf(stderr, "Analyzing residual...");
     residual_analysis(ATSA_RES_FILE, sound);
+    fprintf(stderr, "done!\n");
+  }
+#ifdef FFTW
+  fftw_wisdom_file = fopen("ats-wisdom", "w");
+  fftw_export_wisdom_to_file(fftw_wisdom_file);
+  fclose(fftw_wisdom_file);
+#endif
+  fprintf(stderr, "tracking completed.\n");
   return(sound);
+}
+
+/* int compute_frames(ANARGS *anargs)
+ * computes number of analysis frames from the user's parameters 
+ * returns the number of frames
+ * anargs: pointer to analysis parameters
+ */
+int compute_frames(ANARGS *anargs)
+{
+  int n_frames = (int)floor((float)anargs->total_samps / (float)anargs->hop_smp);
+  while((n_frames++ * anargs->hop_smp - anargs->hop_smp + anargs->first_smp) < (anargs->first_smp + anargs->total_samps));
+  return(n_frames);
 }
