@@ -2,7 +2,7 @@
 AC_PREREQ(2.57)
 
 # initialize everything
-AC_INIT(ats, 1.1)
+AC_INIT(ats, 1.0)
 AC_CONFIG_SRCDIR(src/atsa/atsa.c)
 AM_INIT_AUTOMAKE(foreign)
 
@@ -18,25 +18,23 @@ AC_CHECK_LIB(m, sin)
 AC_CHECK_LIB(gslcblas,main)
 AC_CHECK_LIB(gsl,main)
 
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.2.0)
-
-#GTK_CONFIG=gtk-config
-#AC_MSG_CHECKING(for GTK 1.x)
-#if $GTK_CONFIG --version > /dev/null 2>&1; then 
-#  dnl We need the "%d" in order not to get e-notation on hpux.
-#  vers=`$GTK_CONFIG --version | awk 'BEGIN { FS = "."; } { printf "%d", ($[1] * 1000 + $[2]) * 1000 + $[3];}'`
-#  if test "$vers" -le 2000000; then
-#    AC_MSG_RESULT(found)
-#  else
-#    AC_MSG_ERROR(You need GTK+ 1.x to use atsh)
-#  fi
-#else
-#  AC_MSG_ERROR(Did not find GTK+ installed)
-#fi
-#GTK_CFLAGS=`$GTK_CONFIG --cflags`
-#GTK_LIBS=`$GTK_CONFIG --libs`
-#AC_SUBST(GTK_CFLAGS)
-#AC_SUBST(GTK_LIBS)
+GTK_CONFIG=gtk-config
+AC_MSG_CHECKING(for GTK 1.x)
+if $GTK_CONFIG --version > /dev/null 2>&1; then 
+  dnl We need the "%d" in order not to get e-notation on hpux.
+  vers=`$GTK_CONFIG --version | awk 'BEGIN { FS = "."; } { printf "%d", ($[1] * 1000 + $[2]) * 1000 + $[3];}'`
+  if test "$vers" -le 2000000; then
+    AC_MSG_RESULT(found)
+  else
+    AC_MSG_ERROR(You need GTK+ 1.x to use atsh)
+  fi
+else
+  AC_MSG_ERROR(Did not find GTK+ installed)
+fi
+GTK_CFLAGS=`$GTK_CONFIG --cflags`
+GTK_LIBS=`$GTK_CONFIG --libs`
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
 
 # Checks for header files.
 AC_HEADER_STDC

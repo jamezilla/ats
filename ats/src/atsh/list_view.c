@@ -5,21 +5,18 @@ Oscar Pablo Di Liscia / Juan Pampin
 
 #include "atsh.h"
 
-extern char ats_title[];
-extern SELECTION selection, position;
-extern ATS_SOUND *ats_sound;
-extern ATS_HEADER atshed;
+extern char *ats_tittle;
 
 /////////////////////////////////////////////////////////////////////////////
 void from_now(GtkWidget *widget, GtkAdjustment *adj)
 {
-  selection.from=(int)adj->value;
+  selection->from=(int)adj->value;
 
-  if(selection.from > selection.to ) {selection.from = selection.to;}
-  sprintf(ffro," (from frame = %d ", selection.from+1);
+  if(selection->from > selection->to ) {selection->from = selection->to;}
+  sprintf(ffro," (from frame = %d ", selection->from+1);
   gtk_label_set_text(GTK_LABEL(fr_from),ffro); 
     
-  //set_avec(selection.to - selection.from);
+  set_avec();
   //backup_edition(SEL_EDIT);
 
   clist_update(adj);
@@ -28,12 +25,12 @@ void from_now(GtkWidget *widget, GtkAdjustment *adj)
 /////////////////////////////////////////////////////////////////////////////
 void to_now(GtkWidget *widget, GtkAdjustment *adj)
 {
-  selection.to=(int)adj->value;
-  if(selection.to < selection.from) {selection.to = selection.from;}
-  sprintf(fto," to frame = %d )", selection.to+1);
+  selection->to=(int)adj->value;
+  if(selection->to < selection->from) {selection->to = selection->from;}
+  sprintf(fto," to frame = %d )", selection->to+1);
   gtk_label_set_text(GTK_LABEL(fr_to),fto); 
   
-  //set_avec(selection.to - selection.from);
+  set_avec();
   //backup_edition(SEL_EDIT);
   clist_update(adj);
   return;
@@ -56,7 +53,7 @@ void redraw_screen()
 {
 int temp=0, i;
  
- for(i=0; i<(int)atshed.par; i++) { //check whether something is selected
+ for(i=0; i<(int)atshed->par; i++) { //check whether something is selected
    if (selected[i]==TRUE) {
      ++temp; //it is...
      break;
@@ -85,7 +82,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
  gtk_clist_clear((GtkCList*)clist);
  gtk_clist_freeze((GtkCList*)clist); 
     
- for ( indx=0 ; indx < (int)atshed.par ; indx++ ) {
+ for ( indx=0 ; indx < (int)atshed->par ; indx++ ) {
           
       *nbuf=*abuf=*fbuf=*pbuf=*sbuf=0;
       sprintf(nbuf," %d ",indx+1);
@@ -105,7 +102,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
 
       gtk_clist_append( (GtkCList *) clist,ats_data);
       
-      if(selected[indx]==1 &&  (int)adj->value >= selection.from && (int)adj->value <=selection.to) {
+      if(selected[indx]==1 &&  (int)adj->value >= selection->from && (int)adj->value <=selection->to) {
 	for(x = 0; x < 4; ++x) {
 	  gtk_clist_select_row((GtkCList*)clist,indx,x);
 	}
@@ -114,7 +111,7 @@ update_time(ats_sound->time[0][(int)adj->value], (int)adj->value);
  }
     
  gtk_clist_thaw((GtkCList*)clist);
- //set_avec(selection.to - selection.from);
+ set_avec();
  //backup_edition(SEL_EDIT);
 
 return;
@@ -125,7 +122,7 @@ void delete_window (GtkWidget *widget, gpointer data)
 {
 int temp=0, i;
  
- for(i=0; i<(int)atshed.par; i++) { //check whether something is selected
+ for(i=0; i<(int)atshed->par; i++) { //check whether something is selected
     if (selected[i]==TRUE) {
       ++temp;
       break; //it is...
@@ -195,7 +192,7 @@ int list_view()
     GtkWidget *vbox, *hbox1, *hbox2, *hbox3;
     GtkWidget *scrolled_window;
     gchar *titles[5] = { "Partial #", "Amplitude", "Frequency","SMR", "Phase"};
-    GtkWidget *sc_title, *ti_title; 
+    GtkWidget *sc_tittle, *ti_tittle; 
     GtkObject *adj1;
     GtkWidget *scrollbar;
     GtkWidget *fromb, *tob, *redrawb;
@@ -204,20 +201,20 @@ int list_view()
    
     first=TRUE;
 
-    if(*ats_title==0) { //no ATS file data alocated, just ignore the call
+    if(*ats_tittle==0) { //no ATS file data alocated, just ignore the call
       return(0); 
     }
     
     init_str();
     offset=0;
-    maxval=(atshed.par > 35.? 35:(int)atshed.par ); //clip the max val for clist to 35.
+    maxval=(atshed->par > 35.? 35:(int)atshed->par ); //clip the max val for clist to 35.
     window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_set_size_request(GTK_WIDGET(window),450,22 * maxval);
+    gtk_widget_set_usize(GTK_WIDGET(window),450,22 * maxval);
 
-    gtk_window_set_title(GTK_WINDOW(window), ats_title);
-    g_signal_connect(G_OBJECT(window),
+    gtk_window_set_title(GTK_WINDOW(window), ats_tittle);
+    gtk_signal_connect(GTK_OBJECT(window),
 		       "destroy",
-		       G_CALLBACK(delete_window),
+		       GTK_SIGNAL_FUNC(delete_window),
 		       GTK_WIDGET(window));
     
     vbox=gtk_vbox_new(FALSE, 5);
@@ -230,10 +227,10 @@ int list_view()
     gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, FALSE, 0);
     gtk_widget_show(hbox1);
   
-    sc_title = gtk_label_new ("Current frame");
-    gtk_box_pack_start (GTK_BOX (hbox1), sc_title, FALSE, FALSE,10);
-    gtk_misc_set_alignment(GTK_MISC(sc_title),0.,.8);
-    gtk_widget_show (sc_title);
+    sc_tittle = gtk_label_new ("Current frame");
+    gtk_box_pack_start (GTK_BOX (hbox1), sc_tittle, FALSE, FALSE,10);
+    gtk_misc_set_alignment(GTK_MISC(sc_tittle),0.,.8);
+    gtk_widget_show (sc_tittle);
 
     fr_num = gtk_label_new (" 0    ");
     gtk_box_pack_start (GTK_BOX (hbox1), fr_num, FALSE, FALSE,10);
@@ -244,13 +241,13 @@ int list_view()
     //gtk_box_pack_start (GTK_BOX (hbox1), vsep, TRUE, TRUE, 30);
     //gtk_widget_show (vsep);
 
-    sprintf(ffro," (from frame = %d ", selection.from+1);
+    sprintf(ffro," (from frame = %d ", selection->from+1);
     fr_from = gtk_label_new (ffro);
     gtk_box_pack_start (GTK_BOX (hbox1), fr_from, FALSE, FALSE,5);
     gtk_misc_set_alignment(GTK_MISC(fr_from),0.,.8);
     gtk_widget_show (fr_from);         
     
-    sprintf(fto," to frame = %d )", selection.to+1);
+    sprintf(fto," to frame = %d )", selection->to+1);
     fr_to = gtk_label_new (fto);
     gtk_box_pack_start (GTK_BOX (hbox1), fr_to, FALSE, TRUE, 5);
     gtk_misc_set_alignment(GTK_MISC(fr_to),0.,.8);
@@ -261,10 +258,10 @@ int list_view()
     gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
     gtk_widget_show(hbox2);   
    
-    ti_title = gtk_label_new ("Current time ");
-    gtk_box_pack_start (GTK_BOX (hbox2), ti_title, FALSE,FALSE,10);
-    gtk_misc_set_alignment(GTK_MISC(ti_title),0.,.8);
-    gtk_widget_show (ti_title);
+    ti_tittle = gtk_label_new ("Current time ");
+    gtk_box_pack_start (GTK_BOX (hbox2), ti_tittle, FALSE,FALSE,10);
+    gtk_misc_set_alignment(GTK_MISC(ti_tittle),0.,.8);
+    gtk_widget_show (ti_tittle);
 
     ti_num = gtk_label_new ("0. segs.");
     gtk_box_pack_start (GTK_BOX (hbox2), ti_num, FALSE, FALSE,10);
@@ -273,16 +270,16 @@ int list_view()
  
 
     //SCALER   
-    adj1 = gtk_adjustment_new (0.0, 0.0,atshed.fra, 1., 10., 1.0);
+    adj1 = gtk_adjustment_new (0.0, 0.0,atshed->fra, 1., 10., 1.0);
     hbox3 = gtk_hbox_new(FALSE, 0);
-    gtk_adjustment_set_value(GTK_ADJUSTMENT(adj1), selection.from);
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(adj1), selection->from);
     gtk_box_pack_start(GTK_BOX(vbox), hbox3, FALSE, TRUE, 0);
     gtk_widget_show(hbox3);
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
    
     gtk_range_set_update_policy (GTK_RANGE (scrollbar),GTK_UPDATE_DISCONTINUOUS);
-    g_signal_connect (G_OBJECT(adj1), "value_changed",
-                        G_CALLBACK (clist_update), NULL);
+    gtk_signal_connect (GTK_OBJECT(adj1), "value_changed",
+                        GTK_SIGNAL_FUNC (clist_update), NULL);
     gtk_box_pack_start (GTK_BOX (hbox3), scrollbar, TRUE, TRUE, 0);
     
     gtk_widget_show (scrollbar);
@@ -295,32 +292,32 @@ int list_view()
     fromb=gtk_button_new_with_label("From=Now");
     gtk_box_pack_start(GTK_BOX(hboxb), fromb, FALSE, FALSE, 5);
     gtk_widget_show(fromb);
-    g_signal_connect (G_OBJECT (fromb), "clicked",
-			G_CALLBACK (from_now),G_OBJECT(adj1));
+    gtk_signal_connect (GTK_OBJECT (fromb), "clicked",
+			GTK_SIGNAL_FUNC (from_now),GTK_OBJECT(adj1));
 
     tob=gtk_button_new_with_label("To=Now");
     gtk_box_pack_start(GTK_BOX(hboxb), tob, FALSE, FALSE, 5);
     gtk_widget_show(tob);
-    g_signal_connect (G_OBJECT (tob), "clicked",
-			G_CALLBACK (to_now),G_OBJECT(adj1));
+    gtk_signal_connect (GTK_OBJECT (tob), "clicked",
+			GTK_SIGNAL_FUNC (to_now),GTK_OBJECT(adj1));
     
     redrawb=gtk_button_new_with_label("Redraw");
     gtk_box_pack_start(GTK_BOX(hboxb), redrawb, FALSE, FALSE, 5);
     gtk_widget_show(redrawb);
-    g_signal_connect (G_OBJECT (redrawb), "clicked",
-			G_CALLBACK (redraw_screen),NULL);
+    gtk_signal_connect (GTK_OBJECT (redrawb), "clicked",
+			GTK_SIGNAL_FUNC (redraw_screen),NULL);
     
     /////////////////////////////////////////
      /* Create the CList*/
     clist = gtk_clist_new_with_titles( 5, titles);
 
     /* selection made */
-    gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_MULTIPLE);
-    g_signal_connect(G_OBJECT(clist), "select_row",
-		       G_CALLBACK(selection_made),
+    gtk_clist_set_selection_mode(GTK_CLIST(clist),GTK_SELECTION_EXTENDED);
+    gtk_signal_connect(GTK_OBJECT(clist), "select_row",
+		       GTK_SIGNAL_FUNC(selection_made),
 		       NULL);
-    g_signal_connect(G_OBJECT(clist), "unselect_row",
-		       G_CALLBACK(unselection_made),
+    gtk_signal_connect(GTK_OBJECT(clist), "unselect_row",
+		       GTK_SIGNAL_FUNC(unselection_made),
 		       NULL);
     gtk_clist_set_shadow_type (GTK_CLIST(clist), GTK_SHADOW_OUT);
     for(i=0; i<5; ++i) {

@@ -88,7 +88,7 @@ void residual_compute_band_energy(ATS_FFT *fft, int *band_limits, int bands, dou
  * file: name of the sound file containing the residual 
  * sound: sound to store the residual data 
  */
-void residual_analysis(ANARGS *anargs, ATS_SOUND *sound)
+void residual_analysis(char *file, ATS_SOUND *sound)
 {
   int fil, file_sampling_rate, sflen, hop, M, N, frames, *band_limits;
   int smp=0, M_2, st_pt, filptr, i, frame_n, k;
@@ -96,23 +96,23 @@ void residual_analysis(ANARGS *anargs, ATS_SOUND *sound)
   double time_domain_energy=0.0, freq_domain_energy=0.0, sum=0.0;
   double edges[ATSA_CRITICAL_BANDS+1] = ATSA_CRITICAL_BAND_EDGES;
   ATS_FFT fft;
-//  mus_sample_t **bufs;
+  mus_sample_t **bufs;
 #ifdef FFTW
   fftw_plan plan;
   //  FILE *fftw_wisdom_file;
 #endif
-//  if ((fil = mus_sound_open_input(file))== -1) {
-//    fprintf(stderr, "\n%s: %s\n", file, strerror(errno));
-//    exit(1);
-//  }
-//  file_sampling_rate = mus_sound_srate(file);
-//  sflen = mus_sound_frames(file);
+  if ((fil = mus_sound_open_input(file))== -1) {
+    fprintf(stderr, "\n%s: %s\n", file, strerror(errno));
+    exit(1);
+  }
+  file_sampling_rate = mus_sound_srate(file);
+  sflen = mus_sound_frames(file);
   hop = sound->frame_size;
   M = sound->window_size;
   N = residual_get_N(M, ATSA_RES_MIN_FFT_SIZE, ATSA_RES_PAD_FACTOR);
-//  bufs = (mus_sample_t **)malloc(2*sizeof(mus_sample_t*));
-//  bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
-//  bufs[1] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
+  bufs = (mus_sample_t **)malloc(2*sizeof(mus_sample_t*));
+  bufs[0] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
+  bufs[1] = (mus_sample_t *)malloc(sflen * sizeof(mus_sample_t));
   fft.size = N;
   fft.rate = file_sampling_rate;
 #ifdef FFTW
@@ -137,7 +137,7 @@ void residual_analysis(ANARGS *anargs, ATS_SOUND *sound)
   st_pt = N - M_2;
   filptr = M_2 * -1;
   /* read sound into memory */
-//  mus_sound_read(fil, 0, sflen-1, 2, bufs);     
+  mus_sound_read(fil, 0, sflen-1, 2, bufs);     
 
   for(frame_n = 0 ; frame_n < frames ; frame_n++){ 
     for(i=0; i<N; i++) {
@@ -150,11 +150,9 @@ void residual_analysis(ANARGS *anargs, ATS_SOUND *sound)
     for(k=0; k<M; k++) {
       if (filptr >= 0 && filptr < sflen)
 #ifdef FFTW
-//        fft.data[(k+st_pt)%N][0] = MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
-        fft.data[(k+st_pt)%N][0] = anargs->residual[filptr];
+        fft.data[(k+st_pt)%N][0] = MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
 #else
-//	fft.fdr[(k+st_pt)%N] = MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
-	fft.fdr[(k+st_pt)%N] = anargs->residual[filptr];
+	fft.fdr[(k+st_pt)%N] = MUS_SAMPLE_TO_FLOAT(bufs[0][filptr]);
 #endif
       filptr++;
     }
@@ -192,9 +190,9 @@ void residual_analysis(ANARGS *anargs, ATS_SOUND *sound)
 #endif
   free(band_energy);
   free(band_limits);
-//  free(bufs[0]);
-//  free(bufs[1]);
-//  free(bufs);
+  free(bufs[0]);
+  free(bufs[1]);
+  free(bufs);
 }
 
 /* band_energy_to_res

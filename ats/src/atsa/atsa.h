@@ -135,7 +135,6 @@ typedef struct {
   float SMR_cont;
   float SMR_thres;
   float min_seg_SMR;
-  int type;
   /* parameters computed from command line */
   int first_smp;
   int cycle_smp;
@@ -147,8 +146,7 @@ typedef struct {
   int lowest_bin;
   int highest_bin;
   int frames;
-  double *audio;
-  double *residual;
+  int type;
 } ANARGS;
 
 /* ATS_FFT
@@ -419,13 +417,7 @@ void ats_save(ATS_SOUND *sound, FILE *outfile, float SMR_thres, int type);
  * soundfile: path to input file 
  * resfile: path to residual file 
  */
-void tracker_init (ANARGS *anargs, char *soundfile);
-void tracker_fft (ANARGS *anargs, int frame_n);
-void tracker_dct (ANARGS *anargs, int frame_n);
-ATS_SOUND *tracker_sound (ANARGS *anargs);
-void tracker_residual(ANARGS *anargs, char *resfile, ATS_SOUND *sound);
-void tracker_free (ANARGS *anargs);
-//ATS_SOUND *tracker_finish (ANARGS *anargs, char *resfile);
+ATS_SOUND *tracker (ANARGS *anargs, char *soundfile, char *resfile);
 
 /* utilities.c */
 
@@ -466,7 +458,7 @@ void optimize_sound(ANARGS *anargs, ATS_SOUND *sound);
  * win_samps: pointer to array of analysis windows center times
  * file_sampling_rate: sampling rate of analysis file
  */
-void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps);
+void compute_residual(mus_sample_t **fil, int fil_len, char *output_file, ATS_SOUND *sound, int *win_samps, int file_sampling_rate);
 
 /* residual-analysis.c */
 
@@ -476,7 +468,7 @@ void compute_residual(ANARGS *anargs, int fil_len, char *output_file, ATS_SOUND 
  * file: name of the sound file containing the residual 
  * sound: sound to store the residual data 
  */
-void residual_analysis(ANARGS *anargs, ATS_SOUND *sound);
+void residual_analysis(char *file, ATS_SOUND *sound);
 
 /* band_energy_to_res
  * ==================

@@ -9,10 +9,10 @@ void about(void)
   GtkWidget *label, *window, *box;
   gchar str[10] = "ATSH ";
 
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  window = gtk_window_new(GTK_WINDOW_DIALOG);
   gtk_window_set_title(GTK_WINDOW(window), "About ATSH");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-  gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+  gtk_window_set_policy(GTK_WINDOW(window), FALSE, FALSE, TRUE);
 
   box = gtk_vbox_new(FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(box), 20);

@@ -10,7 +10,6 @@ Oscar Pablo Di Liscia / Juan Pampin
 #define SYNTH_RES  1
 #define SYNTH_DET  2
 #define SYNTH_BOTH 3
-#define TABLE_LENGTH 16384
 
 typedef struct { //the data for the randi UG
   int   size; //size of the frame in samples this should be sr/freq.
@@ -20,7 +19,7 @@ typedef struct { //the data for the randi UG
 } RANDI;
 
 void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float p2, float dt, float frame_samps);
-float ioscilator(float amp,float freq,int op,float *oscpt);
+float ioscilator(float amp,float frec,int op,float *oscpt);
 int locate_frame(int from_frame, float time, float dif);
 void set_output_type(int *format, int *header);
 void randi_setup(float sr, float freq, RANDI *radat);
@@ -30,14 +29,11 @@ void synth_deterministic_only(float a1, float a2, float f1, float f2, float fram
 void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,float *oscpt, RANDI* rdata);
 void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata);
 
+
 double tl_sr;
-float *sine_table;
-extern char out_title[];
-extern char ats_title[];
-extern SPARAMS sparams;
-extern ATS_SOUND *ats_sound;
-extern ATS_HEADER atshed;
-extern short outype;
+extern float *sine_table;
+extern char *out_tittle;
+extern char *ats_tittle;
 
 
 //randi output random numbers in the range of 1,-1
@@ -74,7 +70,7 @@ float randif(RANDI *radat, float freq)
     radat->a1  = radat->a2; 
     radat->a2  = (float)random();
     radat->cnt = 0;
-    radat->size= (int) (sparams.sr / freq) - 1;
+    radat->size= (int) (sparams->sr / freq) - 1;
   }
 
   //output=(float)(((radat->a2 - radat->a1)/ radat->size) * radat->cnt)+ radat->a1;
@@ -97,10 +93,10 @@ void make_sine_table()
   }
 }
 
-float ioscilator(float amp,float freq,int op, float *oscpt)
+float ioscilator(float amp,float frec,int op, float *oscpt)
 {
   float output;
-  float incr = freq * tl_sr; 
+  float incr = frec * tl_sr; 
   int   v2=0;
 
   //LINEAR INTERPOLATION
@@ -153,29 +149,29 @@ void synth_buffer_phint(float a1, float a2, float f1, float f2, float p1, float 
 void synth_deterministic_only(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt)
 {
   int k;
-  float  a_inc, f_inc, amp, freq;
+  float  a_inc, f_inc, amp, frec;
   float out=0.;
 
   if(a1!=0. || a2!=0.) {  //no synthesis if no amplitude
     amp  =  a1;
-    freq =  f1;
+    frec =  f1;
     a_inc= (a2 - a1) / frame_samps;
     f_inc= (f2 - f1) / frame_samps;
   
     //we should do this conditional on the main loop... 
-    if (sparams.allorsel == FALSE)
+    if (sparams->allorsel == FALSE)
       for(k = 0; k < (int)frame_samps; k++) { 
-        out =ioscilator(amp,freq,op,oscpt) * sparams.amp;  
+        out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
         amp  +=a_inc;
-        freq +=f_inc;
+        frec +=f_inc;
         frbuf[k] +=out; //buffer adds each partial at each pass
       }
     else 
       if(selected[op] == TRUE)
         for(k = 0; k < (int)frame_samps; k++) { 
-          out =ioscilator(amp,freq,op,oscpt) * sparams.amp;  
+          out =ioscilator(amp,frec,op,oscpt) * sparams->amp;  
           amp  +=a_inc;
-          freq +=f_inc;
+          frec +=f_inc;
           frbuf[k] +=out; //buffer adds each partial at each pass
         }
   }
@@ -194,7 +190,7 @@ void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,
     for(k=0; k<samps; k++) { 
       out  = ioscilator(amp,freq,op,oscpt);  
       amp  += a_inc;
-      frbuf[k] += out * sparams.ramp * randi(rdata); 
+      frbuf[k] += out * sparams->ramp * randi(rdata); 
     }
   }
 }
@@ -202,7 +198,7 @@ void synth_residual_only(float a1, float a2,float freq,float frame_samps,int op,
 void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op, float *oscpt,float r1, float r2, RANDI* rdata)
 {
   int k;
-  float  a_inc, f_inc, amp, freq;
+  float  a_inc, f_inc, amp, frec;
   float  r_inc, res;
   float  out=0., rsig;
   float  rf1, rf2, rf_inc, rfreq;
@@ -213,31 +209,31 @@ void synth_both(float a1, float a2, float f1, float f2, float frame_samps,int op
     rf_inc=(rf2 - rf1) / frame_samps;
     rfreq = rf1;
     amp   =  a1;
-    freq  =  f1;
+    frec  =  f1;
     res   =  r1;
     a_inc = (a2 - a1) / frame_samps;
     f_inc = (f2 - f1) / frame_samps;
     r_inc = (r2 - r1) / frame_samps;
   
     //we should do this conditional on the main loop... 
-    if (sparams.allorsel == FALSE)
+    if (sparams->allorsel == FALSE)
       for(k = 0; k < (int)frame_samps; k++) { 
-        out = ioscilator(1.0,freq,op,oscpt);  
+        out = ioscilator(1.0,frec,op,oscpt);  
         rsig = res*randif(rdata,rfreq);
-        frbuf[k] += (out * amp * sparams.amp) + (out * rsig * sparams.ramp); 
+        frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 
         amp   +=  a_inc;
-        freq  +=  f_inc;
+        frec  +=  f_inc;
         res   +=  r_inc;
         rfreq += rf_inc;
       }
     else {
       if(selected[op] == TRUE) 
         for(k = 0; k < (int)frame_samps; k++) { 
-          out =ioscilator(1.0,freq,op,oscpt);  
+          out =ioscilator(1.0,frec,op,oscpt);  
           rsig = res*randif(rdata,rfreq);
-          frbuf[k] += (out * amp * sparams.amp) + (out * rsig * sparams.ramp); 	
+          frbuf[k] += (out * amp * sparams->amp) + (out * rsig * sparams->ramp); 	
           amp   +=  a_inc;
-          freq  +=  f_inc;
+          frec  +=  f_inc;
           res   +=  r_inc;
           rfreq += rf_inc;
         }
@@ -271,15 +267,15 @@ void do_synthesis()
   char str[100];
 
   //ATTEMPT TO CATCH TWO POSSIBLE ERRORS........ 
-  if(*ats_title==0) {
+  if(*ats_tittle==0) {
     Popup("ERROR: ATS file undefined,  select it first");
     return; 
   }
-  if(*out_title==0) {
+  if(*out_tittle==0) {
     Popup("ERROR: Output Soundfile undefined, select it first");  
     return; 
   }  
-  if(sparams.amp==0. && sparams.ramp==0.) {
+  if(sparams->amp==0. && sparams->ramp==0.) {
     Popup("ERROR: Deterministic and Residual output set to zero");  
     return; 
   }  
@@ -288,28 +284,26 @@ void do_synthesis()
   //OPEN OUTPUT FILE
   set_output_type(&format, &header);
 
-  if((ptout=mus_sound_open_output(out_title,(int)sparams.sr,1,format,header,"created by ATSH"))==-1) {
+  if((ptout=mus_sound_open_output(out_tittle,(int)sparams->sr,1,format,header,"created by ATSH"))==-1) {
     Popup("ERROR: could not open Output Soundfile for writing");  
     return;
   }
 
   //do residual data transfer
   if (FILE_HAS_NOISE)
-    for(i=0; i<(int)atshed.fra; ++i) band_energy_to_res(ats_sound, i);
+    for(i=0; i<(int)atshed->fra; ++i) band_energy_to_res(ats_sound, i);
 
   //NOW CHECK WHAT TO DO...
-  if(sparams.amp > 0.) sflag |= SYNTH_DET;  //deterministic synthesis only
-  if(sparams.ramp > 0.) sflag |= SYNTH_RES; //residual synthesis only
+  if(sparams->amp > 0.) sflag |= SYNTH_DET;  //deterministic synthesis only
+  if(sparams->ramp > 0.) sflag |= SYNTH_RES; //residual synthesis only
 
-  //setup default timeenv here if we never popped up tWedit
-
-  tl_sr = (float)TABLE_LENGTH / sparams.sr; //needed for ioscilator...
+  tl_sr = (float)TABLE_LENGTH / sparams->sr; //needed for ioscilator...
   nbp   = get_nbp(timenv->curve);
   tdata = (TIME_DATA*)malloc(nbp * sizeof(TIME_DATA));
   
 
   //g_print(" \nNPOINTS= %d \n", nbp); 
-  sparams.max_stretch=0.;  
+  sparams->max_stretch=0.;  
   todo=0;
 
   //We first must calculate data of each breakpoint
@@ -329,13 +323,13 @@ void do_synthesis()
     if(dify == 0.) dify=.001; 
 
     //find out the max. stretching factor(needed to alocate the I/O buffer)
-    if(fabs(difx) / fabs(dify) >= sparams.max_stretch) {
-      sparams.max_stretch=fabs(difx) / fabs(dify);
+    if(fabs(difx) / fabs(dify) >= sparams->max_stretch) {
+      sparams->max_stretch=fabs(difx) / fabs(dify);
     }
     
     //locate the frame for the beggining and end of segments
     if(i == 0){
-      if(dify < 0.) bframe= locate_frame((int)atshed.fra-1,cyval, dify);
+      if(dify < 0.) bframe= locate_frame((int)atshed->fra-1,cyval, dify);
       else bframe= locate_frame(0,cyval, dify);
     }
     eframe= locate_frame(bframe, nyval, dify);
@@ -356,19 +350,19 @@ void do_synthesis()
 
   //INITIALIZE PROGRESSBAR
   strcpy(str,"Writing File " );
-  strcat(str, out_title);
+  strcat(str, out_tittle);
   StartProgress(str, TRUE);
 
   //ALLOCATE AND CLEAN AUDIO BUFFERS
-  maxlen= (int)ceil(maxtim * sparams.sr * sparams.max_stretch); 
+  maxlen= (int)ceil(maxtim * sparams->sr * sparams->max_stretch); 
   frbuf = (float *) malloc(maxlen * sizeof(float));
   for(z = 0; z < maxlen; ++z) frbuf[z]=0.;
   obuf[0] = (mus_sample_t *)calloc(maxlen, sizeof(mus_sample_t));
 
   switch(sflag) { //see which memory resources do we need and allocate them
   case SYNTH_DET: 
-    dospt = (float *) malloc( (int)atshed.par * sizeof(float));
-    for(z=0; z<(int)atshed.par; ++z) dospt[z]=0.;
+    dospt = (float *) malloc( (int)atshed->par * sizeof(float));
+    for(z=0; z<(int)atshed->par; ++z) dospt[z]=0.;
     break;
     
   case SYNTH_RES: 
@@ -376,17 +370,17 @@ void do_synthesis()
     rarray= (RANDI *) malloc((int)ATSA_CRITICAL_BANDS * sizeof(RANDI));
     for(z=0; z<(int)ATSA_CRITICAL_BANDS; ++z) {
       res_band_centers[z]= res_band_edges[z]+((res_band_edges[z+1]-res_band_edges[z])*0.5); 
-      randi_setup(sparams.sr,res_band_edges[z+1]-res_band_edges[z],&rarray[z]);
+      randi_setup(sparams->sr,res_band_edges[z+1]-res_band_edges[z],&rarray[z]);
       rospt[z]=0.;
     }
     break;
 
   case SYNTH_BOTH: 
-    dospt = (float *) malloc( (int)atshed.par * sizeof(float));
-    rarray= (RANDI *) malloc( (int)atshed.par * sizeof(RANDI));
-    for(z=0; z<(int)atshed.par; ++z) {
+    dospt = (float *) malloc( (int)atshed->par * sizeof(float));
+    rarray= (RANDI *) malloc( (int)atshed->par * sizeof(RANDI));
+    for(z=0; z<(int)atshed->par; ++z) {
       rfreq=(ats_sound->frq[z][tdata[0].from] < 500.? 50. : ats_sound->frq[z][tdata[0].from] * bw);
-      randi_setup(sparams.sr,rfreq,&rarray[z]);
+      randi_setup(sparams->sr,rfreq,&rarray[z]);
       dospt[z]=0.;
     }
     break;  
@@ -403,40 +397,40 @@ void do_synthesis()
     for(j=0; j < tdata[i].size;   j++) {
 
       next=(tdata[i].from < tdata[i].to ? curr+1 : curr-1 );	        
-      if(next < 0 || next >= (int)atshed.fra) break;
+      if(next < 0 || next >= (int)atshed->fra) break;
 
       dt=fabs(ats_sound->time[0][next] - ats_sound->time[0][curr]);
-      frame_samps=dt * sparams.sr * tdata[i].tfac ;      
+      frame_samps=dt * sparams->sr * tdata[i].tfac ;      
 
       switch (sflag) {
       case SYNTH_DET: { //deterministic synthesis only
-	for(x = 0; x < (int)atshed.par; x++) {                       
+	for(x = 0; x < (int)atshed->par; x++) {                       
 	  synth_deterministic_only(ats_sound->amp[x][curr], 
 				   ats_sound->amp[x][next], 
-				   ats_sound->frq[x][curr] * sparams.freq,
-				   ats_sound->frq[x][next] * sparams.freq, 
+				   ats_sound->frq[x][curr] * sparams->frec,
+				   ats_sound->frq[x][next] * sparams->frec, 
 				   frame_samps,x, dospt);     	  	         
 	}
 	break;
       }	
       case SYNTH_RES: { //residual synthesis only
 	for(x = 0; x < (int)ATSA_CRITICAL_BANDS; x++) {
-	  synth_residual_only(ENG_RMS(ats_sound->band_energy[x][curr], atshed.ws), 
-			      ENG_RMS(ats_sound->band_energy[x][next],atshed.ws) ,
+	  synth_residual_only(ENG_RMS(ats_sound->band_energy[x][curr], atshed->ws), 
+			      ENG_RMS(ats_sound->band_energy[x][next],atshed->ws) ,
 			      res_band_centers[x],frame_samps,x,rospt,&rarray[x]);  
 	}
 	break;
       }
       case SYNTH_BOTH: { //residual and deterministic synthesis  
-	for(x = 0; x < (int)atshed.par; x++) {
+	for(x = 0; x < (int)atshed->par; x++) {
 	  rfreq=(ats_sound->frq[x][curr] < 500.? 50. : ats_sound->frq[x][curr]* bw);
 	  synth_both(ats_sound->amp[x][curr], 
 		     ats_sound->amp[x][next], 
-		     ats_sound->frq[x][curr] * sparams.freq,
-		     ats_sound->frq[x][next] * sparams.freq, 
+		     ats_sound->frq[x][curr] * sparams->frec,
+		     ats_sound->frq[x][next] * sparams->frec, 
 		     frame_samps,x, dospt,
-		     ENG_RMS(ats_sound->res[x][curr] * sparams.ramp, atshed.ws), 
-		     ENG_RMS(ats_sound->res[x][next] * sparams.ramp, atshed.ws),
+		     ENG_RMS(ats_sound->res[x][curr] * sparams->ramp, atshed->ws), 
+		     ENG_RMS(ats_sound->res[x][next] * sparams->ramp, atshed->ws),
 		     &rarray[x]);     	  	         
 	}
 	break;
@@ -508,7 +502,7 @@ int locate_frame(int from_frame, float time, float dif)
   
   //These two cases are obvious
   if(time <= ats_sound->time[0][1]) return(0);
-  if(time >= ats_sound->time[0][(int)atshed.fra-1]) return((int)atshed.fra-1);
+  if(time >= ats_sound->time[0][(int)atshed->fra-1]) return((int)atshed->fra-1);
 
   //not obvious cases...
   do{
@@ -529,7 +523,7 @@ int locate_frame(int from_frame, float time, float dif)
   } while(i > 0);
   
   if(frame < 0) frame=0;
-  if(frame > (int)atshed.fra-1) frame=(int)atshed.fra-1;
+  if(frame > (int)atshed->fra-1) frame=(int)atshed->fra-1;
 
   return(frame);
 }
